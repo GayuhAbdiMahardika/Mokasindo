@@ -113,3 +113,29 @@ Route::post('/register', function (Request $request) {
     // Untuk sementara redirect kembali dengan pesan sukses
     return redirect('/register')->with('status', 'Registrasi berhasil (demo).');
 })->name('company.register');
+
+// Login: tampilkan form login
+Route::get('/login', function () {
+    if (Auth::check()) {
+        return redirect('/');
+    }
+    return view('pages.company.login');
+})->name('login.form');
+
+// Proses login
+Route::post('/login', function (Request $request) {
+    $data = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    $credentials = ['email' => $data['email'], 'password' => $data['password']];
+    $remember = $request->has('remember');
+
+    if (Auth::attempt($credentials, $remember)) {
+        $request->session()->regenerate();
+        return redirect()->intended('/');
+    }
+
+    return back()->withErrors(['email' => 'Email atau password salah'])->withInput();
+})->name('login.process');
