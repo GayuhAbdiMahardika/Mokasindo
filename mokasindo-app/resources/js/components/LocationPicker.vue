@@ -137,11 +137,11 @@ export default {
   },
 
   mounted() {
-    this.loadGoogleMaps();
+    this.loadMap();
   },
 
   methods: {
-    loadGoogleMaps() {
+    loadMap() {
       if (window.google && window.google.maps) {
         this.initMap();
         return;
@@ -151,7 +151,7 @@ export default {
       
       if (!apiKey) {
         this.loading = false;
-        this.error = 'Google Maps API key tidak ditemukan';
+        this.error = 'Map API key tidak ditemukan';
         return;
       }
 
@@ -162,7 +162,7 @@ export default {
       script.onload = () => this.initMap();
       script.onerror = () => {
         this.loading = false;
-        this.error = 'Gagal memuat Google Maps';
+        this.error = 'Gagal memuat peta';
       };
       document.head.appendChild(script);
     },

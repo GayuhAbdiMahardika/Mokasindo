@@ -80,7 +80,7 @@ class LocationController extends Controller
     }
 
     /**
-     * Reverse geocode coordinates to address using Google Maps API
+     * Reverse geocode coordinates to address using Nominatim API
      */
     public function reverseGeocode(Request $request)
     {
@@ -107,7 +107,7 @@ class LocationController extends Controller
         if (!$apiKey) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Google Maps API key not configured'
+                'message' => 'Geocoding API key not configured'
             ], 500);
         }
 
@@ -154,7 +154,7 @@ class LocationController extends Controller
     }
 
     /**
-     * Parse Google Maps geocoding result
+     * Parse geocoding result
      */
     private function parseGeocodingResult(array $results): array
     {

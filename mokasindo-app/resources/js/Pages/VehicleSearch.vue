@@ -481,7 +481,7 @@ export default {
 
     initSearchMap() {
       if (!window.google || !window.google.maps) {
-        console.warn('Google Maps not loaded');
+        console.warn('Map library not loaded');
         return;
       }
 

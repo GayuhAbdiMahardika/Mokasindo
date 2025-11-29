@@ -1,6 +1,6 @@
 <template>
   <div class="vehicle-location-form">
-    <!-- Google Maps Picker -->
+    <!-- Map Picker -->
     <div class="mb-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Pilih Lokasi di Peta</h3>
       <LocationPicker

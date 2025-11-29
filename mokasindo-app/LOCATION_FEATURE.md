@@ -4,7 +4,7 @@ This document describes the location feature implementation for vehicle registra
 
 ## Table of Contents
 1. [Setup](#setup)
-2. [Google Maps API Configuration](#google-maps-api-configuration)
+2. [Map Configuration](#map-configuration)
 3. [Database Setup](#database-setup)
 4. [API Endpoints](#api-endpoints)
 5. [Vue Components](#vue-components)
@@ -19,7 +19,7 @@ This document describes the location feature implementation for vehicle registra
 - Laravel 10+
 - PHP 8.1+
 - Vue.js 3
-- Google Cloud Platform account
+- Leaflet.js (for maps)
 
 ### Installation Steps
 
@@ -33,7 +33,7 @@ This document describes the location feature implementation for vehicle registra
    php artisan db:seed --class=IndonesiaLocationSeeder
    ```
 
-3. **Configure Google Maps API** (see below)
+3. **Configure Map Settings** (see below)
 
 4. **Build frontend assets**
    ```bash
@@ -42,52 +42,29 @@ This document describes the location feature implementation for vehicle registra
 
 ---
 
-## Google Maps API Configuration
+## Map Configuration
 
-### 1. Enable Required APIs in Google Cloud Console
+This application uses **OpenStreetMap** with **Leaflet.js** for interactive maps and **Nominatim** for geocoding services.
 
-Go to [Google Cloud Console](https://console.cloud.google.com/) and enable:
+### Features
 
-- ✅ **Maps JavaScript API** - For interactive maps
-- ✅ **Geocoding API** - For reverse geocoding (coordinates to address)
-- ✅ **Places API** - For location search box
+- ✅ **Interactive Maps** - Leaflet.js with OpenStreetMap tiles
+- ✅ **Reverse Geocoding** - Nominatim API for converting coordinates to address
+- ✅ **Location Search** - OpenStreetMap search functionality
 
-### 2. Create API Keys
+### Configuration
 
-Create two API keys (recommended for security):
+No API key is required for OpenStreetMap/Nominatim. However, you should follow the usage policy:
 
-1. **Frontend Key** (restricted to HTTP referrers)
-   - Add restrictions: `yourdomain.com/*`, `localhost:*`
-   - Enable: Maps JavaScript API, Places API
+- Use a proper User-Agent header for API requests
+- Limit request frequency (max 1 request/second)
+- Cache geocoding results when possible
 
-2. **Backend Key** (restricted to IP addresses)
-   - Add your server IP addresses
-   - Enable: Geocoding API
+### Security Best Practices
 
-### 3. Configure Environment Variables
-
-Add to your `.env` file:
-
-```env
-GOOGLE_MAPS_API_KEY=your_frontend_api_key_here
-GOOGLE_MAPS_GEOCODING_API_KEY=your_backend_api_key_here
-```
-
-### 4. Add API Key Meta Tag
-
-In your main Blade layout (`resources/views/layouts/app.blade.php`):
-
-```html
-<meta name="google-maps-api-key" content="{{ config('services.google_maps.api_key') }}">
-```
-
-### 5. Security Best Practices
-
-- Set API key restrictions in Google Cloud Console
-- Enable billing alerts
-- Monitor API usage regularly
-- Use separate keys for frontend and backend
-- Never commit API keys to version control
+- Cache geocoding results to reduce API calls
+- Implement rate limiting for geocoding requests
+- Never expose sensitive location data in public APIs
 
 ---
 
@@ -227,7 +204,7 @@ POST /api/locations/reverse-geocode
 
 ### LocationPicker
 
-Interactive Google Maps picker component.
+Interactive map picker component using OpenStreetMap and Leaflet.
 
 ```vue
 <LocationPicker
@@ -251,7 +228,7 @@ Interactive Google Maps picker component.
 - Draggable marker
 - Search box with autocomplete
 - "Use My Location" button
-- Reverse geocoding
+- Reverse geocoding via Nominatim
 - Auto-fill form data
 
 ### VehicleLocationForm
@@ -270,7 +247,7 @@ Complete location form with cascade dropdowns.
 - `errors` (Object) - Validation errors
 
 **Features:**
-- Google Maps picker integration
+- Map picker integration (OpenStreetMap/Leaflet)
 - Province → City → District → Sub-district cascade
 - Auto-fill from map selection
 - Postal code from sub-district
@@ -332,20 +309,19 @@ foreach ($vehicles as $vehicle) {
 
 ## Troubleshooting
 
-### Google Maps not loading
+### Map not loading
 
-1. Check API key is set in `.env`
-2. Verify meta tag is present in HTML
-3. Check browser console for errors
-4. Ensure APIs are enabled in Google Cloud Console
-5. Check API key restrictions
+1. Check browser console for errors
+2. Verify Leaflet library is properly loaded
+3. Check network tab for tile loading issues
+4. Ensure map container has proper dimensions
 
 ### Geocoding returns empty
 
-1. Verify Geocoding API is enabled
-2. Check backend API key has correct permissions
-3. Review server IP restrictions
-4. Check Laravel logs for errors
+1. Check if Nominatim API is accessible
+2. Review rate limiting (max 1 request/second)
+3. Check Laravel logs for errors
+4. Verify coordinates are within valid range
 
 ### Location cascade not working
 
