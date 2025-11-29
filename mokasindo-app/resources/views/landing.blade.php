@@ -25,6 +25,37 @@
                     </a>
                 </div>
 
+<div class="mt-8 w-full max-w-md mx-auto">
+    <form action="{{ url('/vehicle-search') }}" method="GET" class="relative" id="searchForm">
+        <div class="flex items-center bg-white rounded-full shadow-lg overflow-hidden border border-gray-200">
+            <div class="pl-4 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input 
+                type="text" 
+                name="q" 
+                class="w-full px-4 py-3 text-gray-700 leading-tight focus:outline-none" 
+                placeholder="Cari kendaraan (cth: Avanza, Honda Jazz)..."
+            >
+            <button type="submit" class="bg-blue-600 text-white px-6 py-3 font-semibold hover:bg-blue-700 transition duration-300">
+                Cari
+            </button>
+        </div>
+        
+        <input type="hidden" name="province" id="input_province">
+        <input type="hidden" name="city" id="input_city">
+        <input type="hidden" name="district" id="input_district">
+        <input type="hidden" name="subdistrict" id="input_subdistrict">
+        <input type="hidden" name="postal_code" id="input_postal_code">
+    </form>
+    
+    <div id="location-status" class="mt-2 text-xs text-center text-white opacity-0 transition-opacity">
+        Mencari di area: <span id="current-area" class="font-bold text-yellow-300">Semua Area</span>
+    </div>
+</div>
+
                 <div class="grid grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto">
                     <div>
                         <div class="text-4xl font-bold mb-2">1000+</div>
@@ -139,4 +170,136 @@
             </div>
         </div>
     </section>
+    <div id="locationModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-900 bg-opacity-75 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="text-lg font-bold text-gray-800">Konfirmasi Lokasi Anda</h3>
+            <button onclick="closeLocationModal()" class="text-gray-500 hover:text-gray-700">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-4">
+            <div id="map" class="w-full h-64 bg-gray-200 rounded mb-4"></div>
+            <p class="text-sm text-gray-600 mb-2">Lokasi terdeteksi:</p>
+            <p id="address-preview" class="font-semibold text-gray-800 mb-4">Sedang memuat...</p>
+        </div>
+        <div class="p-4 border-t bg-gray-50 flex justify-end">
+            <button onclick="closeLocationModal()" class="mr-3 px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+            <button onclick="saveLocation()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold">
+                Konfirmasi Lokasi
+            </button>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    let map, marker;
+    let currentLocation = {
+        province: '', city: '', district: '', subdistrict: '', postal_code: ''
+    };
+
+    function detectLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Tampilkan Modal
+                    document.getElementById('locationModal').classList.remove('hidden');
+                    
+                    // Init Map jika belum ada
+                    if (!map) {
+                        // Inisialisasi Peta (Leaflet)
+                        map = L.map('map').setView([lat, lng], 15);
+                        
+                        // Tambahkan Tile Layer (Peta Gambar dari OpenStreetMap)
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
+
+                        // Tambahkan Marker yang bisa digeser
+                        marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+
+                        // Event saat marker digeser
+                        marker.on('dragend', function(event) {
+                            var position = marker.getLatLng();
+                            reverseGeocode(position.lat, position.lng);
+                        });
+                    } else {
+                        map.setView([lat, lng], 15);
+                        marker.setLatLng([lat, lng]);
+                    }
+                    
+                    // Cari nama alamat awal
+                    reverseGeocode(lat, lng);
+                },
+                () => {
+                    alert("Gagal mendeteksi lokasi. Pastikan GPS aktif.");
+                }
+            );
+        } else {
+            alert("Browser Anda tidak mendukung Geolocation.");
+        }
+    }
+
+    // Fungsi Reverse Geocoding (Koordinat -> Alamat) menggunakan Nominatim (Gratis)
+    function reverseGeocode(lat, lng) {
+        document.getElementById('address-preview').innerText = "Sedang memuat alamat...";
+        
+        // Menggunakan API Nominatim (Gratis dari OpenStreetMap)
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(response => response.json())
+            .then(data => {
+                if(data && data.address) {
+                    document.getElementById('address-preview').innerText = data.display_name;
+                    
+                    // Parsing Data Alamat
+                    currentLocation.postal_code = data.address.postcode || '';
+                    currentLocation.province = data.address.state || '';
+                    currentLocation.city = data.address.city || data.address.town || data.address.regency || '';
+                    currentLocation.district = data.address.district || ''; // Kadang kecamatan masuk sini
+                    currentLocation.subdistrict = data.address.village || data.address.suburb || '';
+                } else {
+                    document.getElementById('address-preview').innerText = "Alamat tidak ditemukan";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('address-preview').innerText = "Gagal memuat alamat";
+            });
+    }
+
+    function saveLocation() {
+        localStorage.setItem('user_location', JSON.stringify(currentLocation));
+        const label = currentLocation.subdistrict || currentLocation.city || 'Lokasi Tersimpan';
+        document.getElementById('user-location-label').innerText = label;
+        updateSearchInputs();
+        closeLocationModal();
+        
+        // Feedback visual
+        const statusDiv = document.getElementById('location-status');
+        const areaSpan = document.getElementById('current-area');
+        if(statusDiv && areaSpan) {
+            areaSpan.innerText = `${currentLocation.subdistrict}, ${currentLocation.city}`;
+            statusDiv.classList.remove('opacity-0');
+        }
+    }
+
+    function updateSearchInputs() {
+        const storedLoc = JSON.parse(localStorage.getItem('user_location'));
+        if (storedLoc) {
+            if(document.getElementById('input_province')) document.getElementById('input_province').value = storedLoc.province;
+            if(document.getElementById('input_city')) document.getElementById('input_city').value = storedLoc.city;
+            // dst... sesuaikan dengan ID input hidden Anda
+        }
+    }
+
+    function closeLocationModal() {
+        document.getElementById('locationModal').classList.add('hidden');
+    }
+</script>
 @endsection
