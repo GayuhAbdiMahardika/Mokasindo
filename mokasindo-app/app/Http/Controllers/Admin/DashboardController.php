@@ -60,6 +60,27 @@ class DashboardController extends Controller
             ->get()
             ->pluck('total', 'month');
 
+        // Transactions today and revenue today
+        $transactions_today = Payment::whereDate('created_at', now()->toDateString())->count();
+        $revenue_today = Payment::whereDate('created_at', now()->toDateString())->where('status', 'success')->sum('amount');
+
+        // Last 7 days: revenue and new users (labels and series)
+        $labels7 = [];
+        $revenueLast7 = [];
+        $usersLast7 = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $labels7[] = now()->subDays($i)->format('d M');
+
+            $dayRevenue = Payment::whereDate('created_at', $date)
+                ->where('status', 'success')
+                ->sum('amount');
+            $revenueLast7[] = (float) $dayRevenue;
+
+            $dayUsers = User::whereDate('created_at', $date)->count();
+            $usersLast7[] = (int) $dayUsers;
+        }
+
         // Auction Status Distribution
         $auction_status = Auction::select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
@@ -74,7 +95,12 @@ class DashboardController extends Controller
             'pending_deposits',
             'monthly_revenue',
             'user_growth',
-            'auction_status'
+            'auction_status',
+            'transactions_today',
+            'revenue_today',
+            'labels7',
+            'revenueLast7',
+            'usersLast7'
         ));
     }
 }

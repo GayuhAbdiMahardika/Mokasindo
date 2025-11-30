@@ -11,8 +11,8 @@
             <p class="text-gray-600 mt-1">Welcome back, {{ auth()->user()->name }}</p>
         </div>
         <div class="text-right">
-            <p class="text-sm text-gray-500">{{ now()->format('l, d F Y') }}</p>
-            <p class="text-xs text-gray-400">{{ now()->format('H:i') }}</p>
+            <p id="local-date" class="text-sm text-gray-500">&nbsp;</p>
+            <p id="local-time" class="text-xs text-gray-400">&nbsp;</p>
         </div>
     </div>
 
@@ -189,6 +189,33 @@
         </div>
     </div>
 
+    <!-- Today KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
+            <p class="text-sm text-gray-600 mb-1">Transactions Today</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($transactions_today) }}</h3>
+            <p class="text-xs text-gray-500 mt-1">Successful revenue today: <strong>Rp {{ number_format($revenue_today,0,',','.') }}</strong></p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-teal-500">
+            <p class="text-sm text-gray-600 mb-1">Revenue Today</p>
+            <h3 class="text-2xl font-bold text-gray-800">Rp {{ number_format($revenue_today,0,',','.') }}</h3>
+            <p class="text-xs text-gray-500 mt-1">Transactions: {{ number_format($transactions_today) }}</p>
+        </div>
+    </div>
+
+    <!-- Charts: 7-day trends -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Revenue (Last 7 days)</h3>
+            <canvas id="revenueChart" height="160"></canvas>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">New Users (Last 7 days)</h3>
+            <canvas id="usersChart" height="160"></canvas>
+        </div>
+    </div>
+
     <!-- Recent Activities -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Recent Users -->
@@ -351,4 +378,95 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Prepare data from server
+    const labels7 = {!! json_encode($labels7 ?? []) !!};
+    const revenueLast7 = {!! json_encode($revenueLast7 ?? []) !!};
+    const usersLast7 = {!! json_encode($usersLast7 ?? []) !!};
+
+    // Local clock: updates every second using user's computer time
+    function updateLocalClock() {
+        const now = new Date();
+
+        // Date: weekday, DD Month YYYY (localized)
+        const dateOptions = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+        const localDate = now.toLocaleDateString(undefined, dateOptions);
+
+        // Time: HH:mm:ss
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const localTime = now.toLocaleTimeString(undefined, timeOptions);
+
+        const elDate = document.getElementById('local-date');
+        const elTime = document.getElementById('local-time');
+        if (elDate) elDate.textContent = localDate;
+        if (elTime) elTime.textContent = localTime;
+    }
+
+    // Initialize clock and refresh every second
+    updateLocalClock();
+    setInterval(updateLocalClock, 1000);
+
+    // Revenue Chart
+    const ctxRevenue = document.getElementById('revenueChart');
+    if (ctxRevenue) {
+        new Chart(ctxRevenue.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels7,
+                datasets: [{
+                    label: 'Revenue (Rp)',
+                    data: revenueLast7,
+                    backgroundColor: 'rgba(250, 204, 21, 0.08)',
+                    borderColor: 'rgba(250, 204, 21, 1)',
+                    pointBackgroundColor: 'rgba(250, 204, 21, 1)',
+                    tension: 0.3,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Rp ' + Number(context.parsed.y).toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(value) { return 'Rp ' + Number(value).toLocaleString('id-ID'); }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Users Chart
+    const ctxUsers = document.getElementById('usersChart');
+    if (ctxUsers) {
+        new Chart(ctxUsers.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels7,
+                datasets: [{
+                    label: 'New Users',
+                    data: usersLast7,
+                    backgroundColor: 'rgba(59,130,246,0.8)',
+                    borderColor: 'rgba(59,130,246,1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, precision: 0 } }
+            }
+        });
+    }
+</script>
 @endsection

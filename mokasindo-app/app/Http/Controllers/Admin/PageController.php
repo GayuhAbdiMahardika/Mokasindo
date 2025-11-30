@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\PageRevision;
+use Illuminate\Support\Facades\Auth;
 
 class PageController extends Controller
 {
@@ -56,9 +58,53 @@ class PageController extends Controller
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['title']);
         $validated['is_published'] = $request->has('is_published');
 
+        // Save revision before updating
+        PageRevision::create([
+            'page_id' => $page->id,
+            'user_id' => Auth::id(),
+            'title' => $page->title,
+            'slug' => $page->slug,
+            'content' => $page->content,
+            'meta_description' => $page->meta_description,
+            'is_published' => $page->is_published,
+        ]);
+
         $page->update($validated);
 
         return redirect()->route('admin.pages.index')->with('success', 'Page berhasil diupdate!');
+    }
+
+    // Revisions list
+    public function revisions(Page $page)
+    {
+        $revisions = PageRevision::where('page_id', $page->id)->orderBy('created_at', 'desc')->paginate(20);
+        return view('admin.pages.revisions', compact('page', 'revisions'));
+    }
+
+    // Revert to a revision
+    public function revertRevision(Page $page, PageRevision $revision)
+    {
+        // Save current as revision
+        PageRevision::create([
+            'page_id' => $page->id,
+            'user_id' => Auth::id(),
+            'title' => $page->title,
+            'slug' => $page->slug,
+            'content' => $page->content,
+            'meta_description' => $page->meta_description,
+            'is_published' => $page->is_published,
+        ]);
+
+        // Apply revision
+        $page->update([
+            'title' => $revision->title,
+            'slug' => $revision->slug,
+            'content' => $revision->content,
+            'meta_description' => $revision->meta_description,
+            'is_published' => $revision->is_published,
+        ]);
+
+        return redirect()->route('admin.pages.revisions', $page)->with('success', 'Page reverted to selected revision');
     }
 
     public function destroy(Page $page)
