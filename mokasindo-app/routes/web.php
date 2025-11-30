@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ShowcaseController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WishlistController;
 use App\Models\Page;
@@ -54,6 +55,11 @@ Route::controller(CompanyController::class)->group(function () {
         return view('pages.company.generic', compact('page'));
     })->name('company.cookie_policy');
 
+});
+
+Route::controller(ShowcaseController::class)->group(function (){
+    Route::get('/showcase', 'index')->name('showcase.index');
+    Route::get('/showcase/(id-produk)', 'showcase')->name('showcase.showcase'); //nanti atur ini
 });
 
 // ====================================================
