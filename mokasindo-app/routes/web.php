@@ -236,7 +236,7 @@ Route::get('/login', function () {
         return redirect('/');
     }
     return view('pages.company.login');
-})->name('login.form');
+})->name('login');
 
 // Proses login
 Route::post('/login', function (Request $request) {
@@ -279,6 +279,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Team Management
     Route::resource('teams', App\Http\Controllers\Admin\TeamController::class);
     
+    // Users Management (Admin)
+    Route::resource('users', App\Http\Controllers\Admin\UsersController::class);
+    
     // Vacancy Management
     Route::resource('vacancies', App\Http\Controllers\Admin\VacancyController::class);
     Route::get('vacancies/{vacancy}/applications', [App\Http\Controllers\Admin\VacancyController::class, 'applications'])
@@ -300,4 +303,49 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     
     // Page Management (CMS)
     Route::resource('pages', App\Http\Controllers\Admin\PageController::class);
+    Route::get('pages/{page}/revisions', [App\Http\Controllers\Admin\PageController::class, 'revisions'])->name('pages.revisions');
+    Route::post('pages/{page}/revisions/{revision}/revert', [App\Http\Controllers\Admin\PageController::class, 'revertRevision'])->name('pages.revisions.revert');
+
+    // Vehicle / Listings Management (Admin)
+    Route::resource('vehicles', App\Http\Controllers\Admin\VehiclesController::class);
+    Route::post('vehicles/bulk-action', [App\Http\Controllers\Admin\VehiclesController::class, 'bulkAction'])->name('vehicles.bulk');
+    Route::post('vehicles/assign-schedule', [App\Http\Controllers\Admin\VehiclesController::class, 'assignSchedule'])->name('vehicles.assign-schedule');
+    Route::post('vehicles/{vehicle}/approve', [App\Http\Controllers\Admin\VehiclesController::class, 'approve'])->name('vehicles.approve');
+    Route::post('vehicles/{vehicle}/reject', [App\Http\Controllers\Admin\VehiclesController::class, 'reject'])->name('vehicles.reject');
+    Route::post('vehicles/{vehicle}/toggle-feature', [App\Http\Controllers\Admin\VehiclesController::class, 'toggleFeature'])->name('vehicles.toggle-feature');
+    Route::post('vehicles/{vehicle}/status', [App\Http\Controllers\Admin\VehiclesController::class, 'changeStatus'])->name('vehicles.change-status');
+
+    // Auctions Management
+    Route::resource('auctions', App\Http\Controllers\Admin\AuctionsController::class);
+    Route::post('auctions/{auction}/force-end', [App\Http\Controllers\Admin\AuctionsController::class, 'forceEnd'])->name('auctions.force-end');
+    Route::post('auctions/{auction}/reopen', [App\Http\Controllers\Admin\AuctionsController::class, 'reopen'])->name('auctions.reopen');
+    Route::post('auctions/{auction}/adjust-timer', [App\Http\Controllers\Admin\AuctionsController::class, 'adjustTimer'])->name('auctions.adjust-timer');
+    Route::get('auctions/{auction}/bids', [App\Http\Controllers\Admin\AuctionsController::class, 'bids'])->name('auctions.bids');
+
+    // Auction schedules (jadwal lelang)
+    Route::resource('auction-schedules', App\Http\Controllers\Admin\AuctionSchedulesController::class);
+
+
+    // Payments & Transactions Management
+    Route::get('payments', [App\Http\Controllers\Admin\PaymentsController::class, 'index'])->name('payments.index');
+    Route::get('payments/{payment}', [App\Http\Controllers\Admin\PaymentsController::class, 'show'])->name('payments.show');
+    Route::post('payments/{payment}/verify', [App\Http\Controllers\Admin\PaymentsController::class, 'verify'])->name('payments.verify');
+    Route::post('payments/{payment}/reject', [App\Http\Controllers\Admin\PaymentsController::class, 'reject'])->name('payments.reject');
+    Route::post('payments/{payment}/refund', [App\Http\Controllers\Admin\PaymentsController::class, 'refund'])->name('payments.refund');
+    Route::get('payments/{payment}/invoice', [App\Http\Controllers\Admin\PaymentsController::class, 'invoice'])->name('payments.invoice');
+    Route::get('payments/webhook-logs', [App\Http\Controllers\Admin\PaymentsController::class, 'webhookLogs'])->name('payments.webhook-logs');
+
+    // Reconciliation Notes (Subscription Payments)
+    Route::get('payments/reconciliation', [App\Http\Controllers\Admin\PaymentsController::class, 'reconciliation'])->name('payments.reconciliation');
+    Route::post('payments/{payment}/reconciliation-note', [App\Http\Controllers\Admin\PaymentsController::class, 'updateReconciliationNote'])->name('payments.reconciliation.note');
+
+    // Subscription Plans (CRUD)
+    Route::resource('subscription-plans', App\Http\Controllers\Admin\SubscriptionPlansController::class);
+
+    // User Subscriptions Management
+    Route::get('user-subscriptions', [App\Http\Controllers\Admin\UserSubscriptionsController::class, 'index'])->name('user-subscriptions.index');
+    Route::get('user-subscriptions/{subscription}', [App\Http\Controllers\Admin\UserSubscriptionsController::class, 'show'])->name('user-subscriptions.show');
+    Route::post('user-subscriptions/{subscription}/approve', [App\Http\Controllers\Admin\UserSubscriptionsController::class, 'approve'])->name('user-subscriptions.approve');
+    Route::post('user-subscriptions/{subscription}/cancel', [App\Http\Controllers\Admin\UserSubscriptionsController::class, 'cancel'])->name('user-subscriptions.cancel');
+    Route::post('user-subscriptions/{subscription}/force-cancel', [App\Http\Controllers\Admin\UserSubscriptionsController::class, 'forceCancel'])->name('user-subscriptions.force-cancel');
 });

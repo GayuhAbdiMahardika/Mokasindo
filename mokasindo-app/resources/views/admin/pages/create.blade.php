@@ -36,7 +36,7 @@
         <!-- Content -->
         <div class="mt-6">
             <label class="block text-sm font-medium text-gray-700 mb-2">Page Content *</label>
-            <textarea name="content" rows="15" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm" required>{{ old('content', $page->content ?? '') }}</textarea>
+            <textarea id="pageContent" name="content" rows="15" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm" required>{{ old('content', $page->content ?? '') }}</textarea>
             <p class="mt-1 text-xs text-gray-500">Supports HTML formatting</p>
         </div>
 
@@ -53,6 +53,7 @@
             <a href="{{ route('admin.pages.index') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md text-center">
                 Cancel
             </a>
+            <button type="button" id="previewBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md">Preview</button>
             <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md">
                 {{ isset($page) ? 'Update' : 'Create' }} Page
             </button>
@@ -60,3 +61,26 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    tinymce.init({
+        selector: '#pageContent',
+        height: 500,
+        menubar: false,
+        plugins: 'link image code lists table',
+        toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code',
+    });
+
+    document.getElementById('previewBtn').addEventListener('click', function(){
+        const content = tinymce.get('pageContent').getContent();
+        const title = document.querySelector('input[name="title"]').value || '';
+        const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"></head><body class="p-6">${content}</body></html>`;
+        const previewWindow = window.open('', '_blank');
+        previewWindow.document.open();
+        previewWindow.document.write(html);
+        previewWindow.document.close();
+    });
+</script>
+@endpush

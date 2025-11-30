@@ -195,7 +195,7 @@
                 @else
                     <div class="bg-gray-50 rounded-lg p-4 mb-4">
                         <p class="text-gray-700 mb-3 text-center">Silakan login untuk ikut lelang</p>
-                        <a href="{{ route('login.form') }}" 
+                        <a href="{{ route('login') }}" 
                            class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-2 px-4 rounded-md transition duration-150">
                             Login
                         </a>

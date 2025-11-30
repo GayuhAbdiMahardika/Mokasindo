@@ -13,9 +13,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Services\QuotaService;
+use App\Exceptions\QuotaExceededException;
 
 class VehicleController extends Controller
 {
+    public function __construct(private readonly QuotaService $quotaService)
+    {
+    }
+
     // 1. GET LIST MOBIL (Pencarian & Filter)
     public function index(Request $request)
     {
@@ -145,11 +151,15 @@ class VehicleController extends Controller
         ]);
 
         try {
+            $user = Auth::user();
+            // Prevent users from bypassing role/override listing limits
+            $this->quotaService->ensureCanCreateListing($user);
+
             DB::beginTransaction();
 
             // Create vehicle
             $vehicle = Vehicle::create([
-                'user_id' => Auth::id(),
+                'user_id' => $user->id,
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'type' => $validated['type'],
@@ -189,6 +199,10 @@ class VehicleController extends Controller
 
             return redirect()->route('my-ads')->with('success', 'Kendaraan berhasil ditambahkan dan menunggu persetujuan admin!');
 
+        } catch (QuotaExceededException $exception) {
+            return back()
+                ->withInput()
+                ->withErrors(['quota' => $exception->getMessage()]);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Gagal menambahkan kendaraan: ' . $e->getMessage());

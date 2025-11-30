@@ -28,11 +28,42 @@
                     <a href="{{ route('admin.pages.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.pages.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-file-alt mr-2"></i> Pages
                     </a>
+                    <a href="{{ route('admin.vehicles.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.vehicles.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-car mr-2"></i> Vehicles
+                    </a>
                     <a href="{{ route('admin.teams.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.teams.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-users mr-2"></i> Team
                     </a>
+                    <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.users.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-user-cog mr-2"></i> Users
+                    </a>
                     <a href="{{ route('admin.faqs.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.faqs.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-question-circle mr-2"></i> FAQs
+                    </a>
+                </div>
+
+                <!-- Marketplace / Auctions -->
+                <div class="mt-4">
+                    <p class="text-xs text-gray-400 uppercase px-4 mb-2">Marketplace</p>
+                    <a href="{{ route('admin.auctions.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.auctions.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-gavel mr-2"></i> Auctions
+                    </a>
+                    <a href="{{ route('admin.auction-schedules.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.auction-schedules.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-calendar-alt mr-2"></i> Schedules
+                    </a>
+                </div>
+
+                <!-- Financial -->
+                <div class="mt-4">
+                    <p class="text-xs text-gray-400 uppercase px-4 mb-2">Financial</p>
+                    <a href="{{ route('admin.payments.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.payments.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-money-bill-wave mr-2"></i> Payments
+                    </a>
+                    <a href="{{ route('admin.subscription-plans.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.subscription-plans.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-layer-group mr-2"></i> Subscription Plans
+                    </a>
+                    <a href="{{ route('admin.user-subscriptions.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.user-subscriptions.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-users-cog mr-2"></i> Subscriptions
                     </a>
                 </div>
 
