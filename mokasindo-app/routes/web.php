@@ -9,6 +9,8 @@ use App\Http\Controllers\WishlistController;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\AdminSubscriptionController;
 
 Route::get('/', function () {
     return view('landing');
@@ -20,11 +22,31 @@ Route::prefix('etalase')->group(function () {
     Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
 });
 
+Route::get('/membership/pricing', [SubscriptionController::class, 'pricing'])->name('membership.pricing');
+
 Route::middleware('auth')->group(function () {
     Route::get('/wishlists', [WishlistController::class, 'index']);
     Route::post('/wishlists', [WishlistController::class, 'store']);
     Route::delete('/wishlists/{id}', [WishlistController::class, 'destroy']);
+
+    // Membership
+    Route::get('/membership/checkout/{plan:slug}', [SubscriptionController::class, 'checkout'])->name('membership.checkout');
+    Route::post('/membership/checkout/{plan:slug}', [SubscriptionController::class, 'processCheckout'])->name('membership.process');
+    Route::get('/membership/dashboard', [SubscriptionController::class, 'dashboard'])->name('membership.dashboard');
 });
+
+Route::middleware(['auth', 'can:isAdmin'])->group(function () {
+    Route::get(
+        '/admin/subscriptions',
+        [\App\Http\Controllers\AdminSubscriptionController::class, 'index']
+    )->name('admin.subscriptions.index');
+
+    Route::post(
+        '/admin/subscriptions/{subscription}/approve',
+        [\App\Http\Controllers\AdminSubscriptionController::class, 'approve']
+    )->name('admin.subscriptions.approve');
+});
+
 
 // Group Route Company
 Route::controller(CompanyController::class)->group(function () {
@@ -120,7 +142,7 @@ Route::get('/login', function () {
         return redirect('/');
     }
     return view('pages.company.login');
-})->name('login.form');
+})->name('login');
 
 // Proses login
 Route::post('/login', function (Request $request) {

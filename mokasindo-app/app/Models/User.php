@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Subscription;
 
 class User extends Authenticatable
 {
@@ -34,6 +35,8 @@ class User extends Authenticatable
         'verified_at',
         'weekly_post_count',
         'last_post_reset',
+        'membership_expires_at',
+
     ];
 
     /**
@@ -57,6 +60,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'verified_at' => 'datetime',
             'last_post_reset' => 'datetime',
+            'membership_expires_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
             'weekly_post_count' => 'integer',
@@ -124,6 +128,19 @@ class User extends Authenticatable
         return $this->belongsTo(SubDistrict::class);
     }
 
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function activeSubscription()
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('expires_at', '>=', now())
+            ->latest();  
+    }
+
     // Helper Methods
     public function isMember()
     {
@@ -145,10 +162,17 @@ class User extends Authenticatable
         return $this->role === 'owner';
     }
 
+    public function isActiveMember()
+    {
+        return $this->role === 'member'
+            && $this->membership_expires_at
+            && $this->membership_expires_at->isFuture();
+    }
+
     public function canPostThisWeek()
     {
-        if ($this->isMember() || $this->isAdmin() || $this->isOwner()) {
-            return true;
+        if ($this->isActiveMember() || $this->isAdmin() || $this->isOwner()) {
+        return true;
         }
 
         // Reset counter jika sudah lewat 1 minggu
