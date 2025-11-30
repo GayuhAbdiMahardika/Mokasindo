@@ -21,27 +21,38 @@
                 <div class="relative inline-block" onmouseenter="showDropdown()" onmouseleave="hideDropdown()">
                     <button class="flex items-center space-x-2 text-indigo-100 hover:text-white transition-colors font-medium">
                         <i class="bi bi-chevron-down"></i>
-                        <span id="currentPage">
-                            @if(request()->is('owner/overview'))
-                                Overview
-                            @elseif(request()->is('owner/reports'))
-                                Laporan & Analitik
-                            @else
-                                Overview
-                            @endif
-                        </span>
+                            <span id="currentPage">
+                                @if(request()->is('owner/overview'))
+                                    Overview
+                                @elseif(request()->is('owner/reports'))
+                                    Laporan & Analitik
+                                @elseif(request()->is('owner/settings'))
+                                    Pengaturan
+                                @else
+                                    Overview
+                                @endif
+                            </span>
                     </button>
                     
                     <!-- Dropdown Menu -->
                     <div id="dropdownMenu" class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl opacity-0 invisible transition-all duration-200 z-50">
                         <div class="py-2">
-                            <a href="/owner/overview" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors {{ request()->is('owner/overview') ? 'bg-indigo-50 text-indigo-600' : '' }}">
+                            <a href="/owner/overview"
+                            class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors {{ request()->is('owner/overview') ? 'bg-indigo-50 text-indigo-600' : '' }}">
                                 <i class="bi bi-speedometer2 text-xl"></i>
                                 <span class="font-medium">Overview</span>
                             </a>
-                            <a href="/owner/reports" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors {{ request()->is('owner/reports') ? 'bg-indigo-50 text-indigo-600' : '' }}">
+
+                            <a href="/owner/reports"
+                            class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors {{ request()->is('owner/reports') ? 'bg-indigo-50 text-indigo-600' : '' }}">
                                 <i class="bi bi-graph-up text-xl"></i>
-                                <span class="font-medium">Laporan & Analitik</span>
+                                <span class="font-medium">Laporan &amp; Analitik</span>
+                            </a>
+
+                            <a href="/owner/settings"
+                            class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors {{ request()->is('owner/settings') ? 'bg-indigo-50 text-indigo-600' : '' }}">
+                                <i class="bi bi-gear text-xl"></i>
+                                <span class="font-medium">Pengaturan</span>
                             </a>
                         </div>
                     </div>

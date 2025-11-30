@@ -83,6 +83,19 @@
 
                     {{-- Kalau sudah login --}}
                     @auth
+                        @php
+                            $role = auth()->user()->role ?? null;
+                        @endphp
+
+                        {{-- Hanya role owner & admin yang melihat tombol ini --}}
+                        @if(in_array($role, ['owner', 'admin']))
+                            <a href="{{ route('owner.settings.edit') }}"
+                            class="hidden md:inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
+                                {{-- bisa juga route('owner.overview') kalau mau ke dashboard --}}
+                                ⚙️ Pengaturan
+                            </a>
+                        @endif
+
                         <span class="text-sm text-gray-700 hidden md:inline">
                             Halo, <strong>{{ auth()->user()->name }}</strong>
                         </span>

@@ -190,7 +190,7 @@
             </div>
         </div>
     </section>
-@endsection
+
 <div id="locationModal"
     class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-900 bg-opacity-75 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">

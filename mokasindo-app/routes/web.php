@@ -20,6 +20,7 @@ use App\Http\Controllers\FacebookController;
 use App\Http\Controllers\OverviewController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AiAgentController;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -233,10 +234,15 @@ Route::prefix('owner')->middleware('auth')->group(function () {
     // Overview AJAX Routes:
     Route::get('/overview/quick-stats', [OverviewController::class, 'getQuickStats']);
     Route::get('/overview/weekly-chart', [OverviewController::class, 'getWeeklyChart']);
-    Route::get('/overview/ai-metrics', [AiAgentController::class, 'getRealPerformanceMetrics']); /
+    Route::get('/overview/ai-metrics', [AiAgentController::class, 'getRealPerformanceMetrics']);
     Route::get('/overview/ai-recommendations', [AiAgentController::class, 'getRealRecommendations']); 
     Route::get('/overview/ai-alerts', [AiAgentController::class, 'getRealAlerts']);
     // Reports AJAX Routes:
     Route::get('/reports/chart-data', [ReportController::class, 'getChartData']);
     Route::get('/reports/export-excel', [ReportController::class, 'exportExcel']);
+    // Settings (Admin / Owner)
+    Route::get('/settings', [SettingController::class, 'edit'])
+        ->name('owner.settings.edit');
+    Route::post('/settings', [SettingController::class, 'update'])
+        ->name('owner.settings.update');
 });
