@@ -370,20 +370,21 @@ Fitur ini menangani proses pasca-lelang, yaitu pengiriman unit kendaraan dari lo
 
 ### 23. Sistem Membership & Langganan Berbayar (2 Orang)
 
-Fitur ini menangani alur bisnis untuk mengubah status user dari "Anggota" (Gratis/Terbatas) menjadi "Member" (Berbayar/Premium).
+Fitur ini menangani alur bisnis untuk mengubah status user dari "Anggota Biasa" (Gratis/Terbatas) menjadi "Member" (Berbayar/Premium).
 
 #### Fitur Frontend (User):
 
--   **Pricing Page**: Halaman daftar harga paket (Misal: Silver Rp 200rb/bln, Gold Rp 500rb/thn) beserta perbandingan fiturnya.
--   **Subscription Checkout**: Alur pembayaran khusus untuk pembelian paket (terpisah dari pembayaran lelang).
--   **Status Dashboard**: Menampilkan status paket aktif, tanggal kadaluarsa, dan badge "PRO/Member" di profil user.
+-   **Pricing Page**: Menampilkan daftar paket membership dari database (contoh: Paket Pro Rp 150.000/bulan, Paket Premium Rp 1.200.000/tahun).
+-   **Subscription Checkout**: Proses pembelian paket membership secara terpisah dari pembayaran lelang.
+-   **Status Dashboard**: Menampilkan paket aktif, tanggal kadaluarsa, serta riwayat subscription membership.
 
 #### Fitur Backend (System Logic):
 
--   **Plan Management**: Admin dapat membuat, mengedit, atau menonaktifkan paket langganan.
+-   **Plan Management**: Paket langganan dikelola melalui tabel plans.
+-   **Subscription Approval**: Admin dapat melihat subscription pending dan mengaktifkannya. Saat di-approve, role user berubah menjadi member dan tanggal kedaluwarsa membership diperbarui.
 -   **Auto-Downgrade Scheduler**:
-    -   Sistem (Cron Job) otomatis mengecek setiap malam member yang masa aktifnya habis hari ini.
-    -   Jika habis, role user otomatis dikembalikan menjadi "Anggota Biasa".
+    -   Sistem (Scheduler) otomatis mengecek setiap hari membership yang sudah melewati tanggal kedaluwarsa.
+    -   Jika masa aktif habis, role user otomatis dikembalikan menjadi "Anggota Biasa".
 
 ---
 
