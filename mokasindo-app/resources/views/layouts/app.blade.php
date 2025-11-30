@@ -46,7 +46,7 @@
                 </div>
 
                 <!-- Right controls: lokasi, login, register -->
-                <div class="ml-auto flex items-center space-x-4">
+                {{-- <div class="ml-auto flex items-center space-x-4">
                     <button onclick="detectLocation()" class="flex items-center text-gray-700 hover:text-blue-600 transition" title="Atur Lokasi Saya">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -57,7 +57,46 @@
 
                     <a href="/login" class="{{ request()->is('login*') ? 'text-indigo-600 font-medium' : 'text-gray-700 hover:text-indigo-600 font-medium' }}">Masuk</a>
                     <a href="/register" class="{{ request()->is('register*') ? 'bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium' : 'bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium' }}">Daftar</a>
+                </div> --}}
+                <!-- Right controls: lokasi + auth (guest / logged in) -->
+                <div class="ml-auto flex items-center space-x-4">
+                    {{-- Tombol lokasi tetap --}}
+                    <button onclick="detectLocation()" class="flex items-center text-gray-700 hover:text-blue-600 transition" title="Atur Lokasi Saya">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span id="user-location-label" class="text-sm font-medium hidden md:block">Lokasi Saya</span>
+                    </button>
+
+                    {{-- Kalau belum login --}}
+                    @guest
+                        <a href="{{ route('login.form') }}"
+                        class="{{ request()->is('login*') ? 'text-indigo-600 font-medium' : 'text-gray-700 hover:text-indigo-600 font-medium' }}">
+                            Masuk
+                        </a>
+                        <a href="{{ route('register.form') }}"
+                        class="{{ request()->is('register*') ? 'bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium' : 'bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium' }}">
+                            Daftar
+                        </a>
+                    @endguest
+
+                    {{-- Kalau sudah login --}}
+                    @auth
+                        <span class="text-sm text-gray-700 hidden md:inline">
+                            Halo, <strong>{{ auth()->user()->name }}</strong>
+                        </span>
+
+                        <form action="{{ route('logout') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit"
+                                    class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-600">
+                                Logout
+                            </button>
+                        </form>
+                    @endauth
                 </div>
+
             </div>
         </div>
     </nav>
