@@ -9,6 +9,9 @@ use App\Http\Controllers\WishlistController;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\WilayahController;
+
 
 Route::get('/', function () {
     return view('landing');
@@ -83,59 +86,87 @@ Route::get('/force-login', function () {
     return "<h1>Berhasil Login!</h1> <p>Login sebagai: <b>" . $user->name . "</b></p><p>Silakan akses <a href='/wishlists'>/wishlists</a> atau <a href='/etalase/vehicles'>/etalase/vehicles</a></p>";
 });
 
-// Tampilkan form register perusahaan
-Route::get('/register', function () {
-    return view('pages.company.register');
-})->name('register.form');
+// // Tampilkan form register perusahaan
+// Route::get('/register', function () {
+//     return view('pages.company.register');
+// })->name('register.form');
 
-// Terima form register (sederhana)
-Route::post('/register', function (Request $request) {
-    $rules = [
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
-        'phone' => 'required|string|max:50',
-        'password' => 'required|confirmed|min:6',
-        'province_id' => 'required',
-        'city_id' => 'required',
-        'district_id' => 'required',
-        'sub_district_id' => 'required',
-        'postal_code' => 'required',
-        'address' => 'required',
-    ];
+// // Terima form register (sederhana)
+// Route::post('/register', function (Request $request) {
+//     $rules = [
+//         'name' => 'required|string|max:255',
+//         'email' => 'required|email|max:255',
+//         'phone' => 'required|string|max:50',
+//         'password' => 'required|confirmed|min:6',
+//         'province_id' => 'required',
+//         'city_id' => 'required',
+//         'district_id' => 'required',
+//         'sub_district_id' => 'required',
+//         'postal_code' => 'required',
+//         'address' => 'required',
+//     ];
 
-    $validator = Validator::make($request->all(), $rules);
+//     $validator = Validator::make($request->all(), $rules);
 
-    if ($validator->fails()) {
-        return redirect('/register')->withErrors($validator)->withInput();
-    }
+//     if ($validator->fails()) {
+//         return redirect('/register')->withErrors($validator)->withInput();
+//     }
 
-    // TODO: simpan data user/ perusahaan sesuai kebutuhan aplikasi
-    // Untuk sementara redirect kembali dengan pesan sukses
-    return redirect('/register')->with('status', 'Registrasi berhasil (demo).');
-})->name('company.register');
+//     // TODO: simpan data user/ perusahaan sesuai kebutuhan aplikasi
+//     // Untuk sementara redirect kembali dengan pesan sukses
+//     return redirect('/register')->with('status', 'Registrasi berhasil (demo).');
+// })->name('company.register');
 
-// Login: tampilkan form login
-Route::get('/login', function () {
-    if (Auth::check()) {
-        return redirect('/');
-    }
-    return view('pages.company.login');
-})->name('login.form');
+// // Login: tampilkan form login
+// Route::get('/login', function () {
+//     if (Auth::check()) {
+//         return redirect('/');
+//     }
+//     return view('pages.company.login');
+// })->name('login.form');
 
-// Proses login
-Route::post('/login', function (Request $request) {
-    $data = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+// // Proses login
+// Route::post('/login', function (Request $request) {
+//     $data = $request->validate([
+//         'email' => 'required|email',
+//         'password' => 'required',
+//     ]);
 
-    $credentials = ['email' => $data['email'], 'password' => $data['password']];
-    $remember = $request->has('remember');
+//     $credentials = ['email' => $data['email'], 'password' => $data['password']];
+//     $remember = $request->has('remember');
 
-    if (Auth::attempt($credentials, $remember)) {
-        $request->session()->regenerate();
-        return redirect()->intended('/');
-    }
+//     if (Auth::attempt($credentials, $remember)) {
+//         $request->session()->regenerate();
+//         return redirect()->intended('/');
+//     }
 
-    return back()->withErrors(['email' => 'Email atau password salah'])->withInput();
-})->name('login.process');
+//     return back()->withErrors(['email' => 'Email atau password salah'])->withInput();
+// })->name('login.process');
+
+// REGISTER
+Route::get('/register', [AuthController::class, 'showRegisterForm'])
+    ->name('register.form');
+
+Route::post('/register', [AuthController::class, 'register'])
+    ->name('register.process');
+
+Route::get('/login', [AuthController::class, 'showLoginForm'])
+    ->name('login.form');
+
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login.process');
+
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
+
+// WILAYAH ROUTES
+Route::get('/wilayah/cities', [WilayahController::class, 'cities'])
+    ->name('wilayah.cities');
+
+Route::get('/wilayah/districts', [WilayahController::class, 'districts'])
+    ->name('wilayah.districts');
+
+Route::get('/wilayah/sub-districts', [WilayahController::class, 'subDistricts'])
+    ->name('wilayah.subdistricts');
+
