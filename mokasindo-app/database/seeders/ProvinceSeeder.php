@@ -1,0 +1,58 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class ProvinceSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $provinces = [
+            ['code' => '11', 'name' => 'Aceh'],
+            ['code' => '12', 'name' => 'Sumatera Utara'],
+            ['code' => '13', 'name' => 'Sumatera Barat'],
+            ['code' => '14', 'name' => 'Riau'],
+            ['code' => '21', 'name' => 'Kepulauan Riau'],
+            ['code' => '15', 'name' => 'Jambi'],
+            ['code' => '16', 'name' => 'Sumatera Selatan'],
+            ['code' => '19', 'name' => 'Kepulauan Bangka Belitung'],
+            ['code' => '17', 'name' => 'Bengkulu'],
+            ['code' => '18', 'name' => 'Lampung'],
+            ['code' => '31', 'name' => 'DKI Jakarta'],
+            ['code' => '36', 'name' => 'Banten'],
+            ['code' => '32', 'name' => 'Jawa Barat'],
+            ['code' => '33', 'name' => 'Jawa Tengah'],
+            ['code' => '34', 'name' => 'DI Yogyakarta'],
+            ['code' => '35', 'name' => 'Jawa Timur'],
+            ['code' => '51', 'name' => 'Bali'],
+            ['code' => '52', 'name' => 'Nusa Tenggara Barat'],
+            ['code' => '53', 'name' => 'Nusa Tenggara Timur'],
+            ['code' => '61', 'name' => 'Kalimantan Barat'],
+            ['code' => '62', 'name' => 'Kalimantan Tengah'],
+            ['code' => '63', 'name' => 'Kalimantan Selatan'],
+            ['code' => '64', 'name' => 'Kalimantan Timur'],
+            ['code' => '65', 'name' => 'Kalimantan Utara'],
+            ['code' => '71', 'name' => 'Sulawesi Utara'],
+            ['code' => '75', 'name' => 'Gorontalo'],
+            ['code' => '72', 'name' => 'Sulawesi Tengah'],
+            ['code' => '76', 'name' => 'Sulawesi Barat'],
+            ['code' => '73', 'name' => 'Sulawesi Selatan'],
+            ['code' => '74', 'name' => 'Sulawesi Tenggara'],
+            ['code' => '81', 'name' => 'Maluku'],
+            ['code' => '82', 'name' => 'Maluku Utara'],
+            ['code' => '91', 'name' => 'Papua'],
+            ['code' => '92', 'name' => 'Papua Barat'],
+            ['code' => '93', 'name' => 'Papua Tengah'],
+            ['code' => '94', 'name' => 'Papua Pegunungan'],
+            ['code' => '95', 'name' => 'Papua Selatan'],
+            ['code' => '96', 'name' => 'Papua Barat Daya'],
+        ];
+
+        DB::table('provinces')->insert($provinces);
+    }
+}

@@ -745,6 +745,186 @@ POST /contact                  - Kirim pesan
 
 ---
 
+### ✅ ProfileController
+
+**Fitur:**
+
+-   Edit profil user (nama, phone, alamat)
+-   Upload/update avatar (image max 2MB)
+-   Ganti password dengan validasi
+
+**Routes:**
+
+```
+GET   /profile              - Form edit profil (auth required)
+PATCH /profile              - Update profil (auth required)
+GET   /profile/password     - Form ganti password (auth required)
+PATCH /profile/password     - Update password (auth required)
+```
+
+**Methods:**
+
+-   `edit()` - Tampilkan form edit profil
+-   `update()` - Update data profil & upload avatar
+-   `editPassword()` - Tampilkan form ganti password
+-   `updatePassword()` - Update password dengan validasi current password
+
+**File Upload:**
+
+-   Avatar disimpan di: `storage/app/public/avatars`
+-   Auto delete avatar lama saat upload baru
+-   Validation: image, mimes:jpeg,png,jpg, max:2048 KB
+
+---
+
+### ✅ MyAdController
+
+**Fitur:**
+
+-   List semua iklan/kendaraan yang diposting user
+-   Pagination 10 items per page
+-   Include foto utama & lokasi
+
+**Routes:**
+
+```
+GET /my-ads - List iklan saya (auth required)
+```
+
+**Methods:**
+
+-   `index()` - Tampilkan list kendaraan user dengan pagination
+
+---
+
+### ✅ MyBidController
+
+**Fitur:**
+
+-   List semua lelang yang pernah di-bid user
+-   Tampil bid tertinggi per auction
+-   Unique per auction (tidak duplikat)
+
+**Routes:**
+
+```
+GET /my-bids - List hasil bid (auth required)
+```
+
+**Methods:**
+
+-   `index()` - Tampilkan list bid user, sorted by amount desc, unique per auction
+
+---
+
+### ✅ InstagramController
+
+**Fitur:**
+
+-   Fetch media/posts dari Instagram Graph API
+-   Support carousel album (multiple images)
+-   Auto-fetch children media
+
+**Routes:**
+
+```
+GET /instagram-feed - Get Instagram posts
+```
+
+**Methods:**
+
+-   `getMedia()` - Fetch media dari Instagram API
+-   Support media types: IMAGE, VIDEO, CAROUSEL_ALBUM
+-   Error handling & logging
+
+**Environment Variables:**
+
+```env
+INSTAGRAM_ACCESS_TOKEN=your_instagram_token
+```
+
+---
+
+### ✅ Authentication Routes
+
+**Register:**
+
+```
+GET  /register - Form registrasi
+POST /register - Submit registrasi (route: company.register)
+```
+
+**Login:**
+
+```
+GET  /login - Form login
+POST /login - Proses login (route: login.process)
+```
+
+**Logout:**
+
+```
+POST /logout - Logout (route: logout)
+```
+
+**Validation:**
+
+-   Register: name, email, phone, password, address, province, city, district, sub_district, postal_code
+-   Login: email, password
+-   Remember me functionality
+
+---
+
+## 🎯 Services & Listeners
+
+### ✅ TelegramService (`app/Services/TelegramService.php`)
+
+**Methods:**
+
+-   `sendMessage($chatId, $message)` - Kirim pesan ke Telegram chat ID
+-   `sendToUser($user, $message)` - Kirim ke user berdasarkan database telegram_chat_id
+-   `sendAuctionWinnerNotif($user, $namaBarang, $hargaAkhir)` - Notifikasi pemenang lelang
+
+**Features:**
+
+-   Support HTML formatting
+-   Error handling & validation
+-   Logging untuk tracking
+
+**Environment Variables:**
+
+```env
+TELEGRAM_BOT_TOKEN=your_bot_token
+```
+
+---
+
+### ✅ SendNewUserTelegramNotification Listener
+
+**Event:** `Registered` (Laravel Auth Event)
+
+**Functionality:**
+
+-   Auto kirim welcome message ke user baru (jika punya telegram_chat_id)
+-   Auto kirim laporan pendaftaran ke admin
+-   Logging untuk tracking
+
+**Testing Route:**
+
+```
+GET /tes-register - Test notifikasi registrasi
+```
+
+**Flow:**
+
+1. User registrasi & event `Registered` trigger
+2. Listener detect event
+3. Kirim welcome message ke user (jika ada telegram_chat_id)
+4. Kirim laporan ke admin Telegram
+5. Log ke Laravel log
+
+---
+
 ## 🚀 Next Steps untuk Tim:
 
 ### Untuk Backend Developer:
@@ -753,10 +933,15 @@ POST /contact                  - Kirim pesan
 2. ✅ VehicleController (Etalase) sudah ready
 3. ✅ WishlistController sudah ready
 4. ✅ CompanyController sudah ready
-5. ⏳ Buat AuctionController (real-time bidding)
-6. ⏳ Buat PaymentController (payment gateway)
-7. ⏳ Buat Services (AuctionService, PaymentService, dll)
-8. ⏳ Implement business logic di Services
+5. ✅ ProfileController sudah ready (Edit profil, ganti password)
+6. ✅ MyAdController sudah ready (List iklan user)
+7. ✅ MyBidController sudah ready (List hasil bid user)
+8. ✅ InstagramController sudah ready (Fetch Instagram posts)
+9. ✅ TelegramService sudah ready (Kirim notifikasi)
+10. ✅ Authentication (Register, Login, Logout) sudah ready
+11. ⏳ Buat AuctionController (real-time bidding)
+12. ⏳ Buat PaymentController (payment gateway)
+13. ⏳ Implement business logic di Services
 
 ### Untuk Frontend Developer:
 
@@ -774,9 +959,10 @@ POST /contact                  - Kirim pesan
 
 ### Untuk Notification:
 
-1. Models & tabel sudah ready
-2. Tinggal integrate dengan:
-    - Telegram Bot API
+1. ✅ Models & tabel sudah ready
+2. ✅ TelegramService sudah dibuat & ready
+3. ✅ Event Listener untuk registrasi sudah ready
+4. ⏳ Tinggal integrate dengan:
     - Email service (SMTP/SES)
     - WhatsApp Business API
 

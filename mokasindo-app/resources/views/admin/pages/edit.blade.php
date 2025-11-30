@@ -1,0 +1,60 @@
+@extends('admin.layout')
+
+@section('title', 'Edit Page')
+@section('page-title', 'Edit Page')
+
+@section('content')
+<div class="max-w-4xl">
+    <form method="POST" action="{{ route('admin.pages.update', $page) }}" class="bg-white rounded-lg shadow p-6">
+        @csrf
+        @method('PUT')
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Title -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Page Title *</label>
+                <input type="text" name="title" value="{{ old('title', $page->title) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+            </div>
+
+            <!-- Slug -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Slug</label>
+                <input type="text" name="slug" value="{{ old('slug', $page->slug) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <p class="mt-1 text-xs text-gray-500">URL-friendly version of title</p>
+            </div>
+        </div>
+
+        <!-- Meta Description -->
+        <div class="mt-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Meta Description</label>
+            <input type="text" name="meta_description" value="{{ old('meta_description', $page->meta_description) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="SEO description (optional)">
+            <p class="mt-1 text-xs text-gray-500">Short description for search engines (150-160 characters)</p>
+        </div>
+
+        <!-- Content -->
+        <div class="mt-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Page Content *</label>
+            <textarea name="content" rows="15" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm" required>{{ old('content', $page->content) }}</textarea>
+            <p class="mt-1 text-xs text-gray-500">Supports HTML formatting</p>
+        </div>
+
+        <!-- Published Status -->
+        <div class="mt-6">
+            <label class="flex items-center">
+                <input type="checkbox" name="is_published" value="1" {{ old('is_published', $page->is_published) ? 'checked' : '' }} class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <span class="ml-2 text-sm text-gray-700">Published (visible to public)</span>
+            </label>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4 mt-6">
+            <a href="{{ route('admin.pages.index') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md text-center">
+                Cancel
+            </a>
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md">
+                Update Page
+            </button>
+        </div>
+    </form>
+</div>
+@endsection

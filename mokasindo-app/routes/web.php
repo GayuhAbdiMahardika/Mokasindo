@@ -11,13 +11,17 @@ use App\Models\User;
 use App\Services\TelegramService;          // Tambahan dari GitHub
 
 // Controllers
+use App\Http\Controllers\AuctionController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepositController;
 use App\Http\Controllers\InstagramController;
-use App\Http\Controllers\VehicleController;
-use App\Http\Controllers\WishlistController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MyAdController;
 use App\Http\Controllers\MyBidController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\WishlistController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +42,9 @@ Route::prefix('etalase')->group(function () {
 
 // Group Member Area (Auth Required)
 Route::middleware('auth')->group(function () {
+    // Dashboard User
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
     // 1. Wishlists
     Route::get('/wishlists', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlists', [WishlistController::class, 'store'])->name('wishlist.store');
@@ -56,6 +63,53 @@ Route::middleware('auth')->group(function () {
 
     // 5. Hasil Bid / Lelang
     Route::get('/my-bids', [MyBidController::class, 'index'])->name('my.bids');
+
+    // 6. Vehicle Management (CRUD Kendaraan)
+    Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
+    Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
+    Route::get('/vehicles/{id}/edit', [VehicleController::class, 'edit'])->name('vehicles.edit');
+    Route::put('/vehicles/{id}', [VehicleController::class, 'update'])->name('vehicles.update');
+    Route::delete('/vehicles/{id}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+});
+
+// Auction Routes (Sistem Lelang)
+Route::prefix('auctions')->name('auctions.')->group(function () {
+    // Public routes
+    Route::get('/', [AuctionController::class, 'index'])->name('index');
+    Route::get('/{id}', [AuctionController::class, 'show'])->name('show');
+    Route::get('/{id}/data', [AuctionController::class, 'getData'])->name('data');
+    
+    // Authenticated routes
+    Route::middleware('auth')->group(function () {
+        Route::get('/create/{vehicleId}', [AuctionController::class, 'create'])->name('create');
+        Route::post('/store', [AuctionController::class, 'store'])->name('store');
+        Route::post('/{id}/bid', [AuctionController::class, 'placeBid'])->name('bid');
+        Route::post('/{id}/cancel', [AuctionController::class, 'cancel'])->name('cancel');
+        Route::post('/{id}/end', [AuctionController::class, 'end'])->name('end');
+    });
+});
+
+// Deposit Routes (Deposit 5% sebelum bid)
+Route::prefix('deposits')->name('deposits.')->middleware('auth')->group(function () {
+    Route::get('/create', [DepositController::class, 'create'])->name('create');
+    Route::get('/{auctionId}', [DepositController::class, 'show'])->name('show');
+    Route::post('/{auctionId}/pay', [DepositController::class, 'pay'])->name('pay');
+    Route::get('/payment/{depositId}', [DepositController::class, 'payment'])->name('payment');
+    Route::post('/confirm/{depositId}', [DepositController::class, 'confirm'])->name('confirm');
+    Route::post('/webhook', [DepositController::class, 'webhook'])->name('webhook')->withoutMiddleware('auth');
+});
+
+// Payment Routes (Full payment untuk pemenang lelang)
+Route::prefix('payments')->name('payments.')->middleware('auth')->group(function () {
+    Route::get('/{auctionId}', [PaymentController::class, 'show'])->name('show');
+    Route::post('/{auctionId}/pay', [PaymentController::class, 'pay'])->name('pay');
+    Route::get('/invoice/{paymentId}', [PaymentController::class, 'invoice'])->name('invoice');
+    Route::post('/confirm/{paymentId}', [PaymentController::class, 'confirm'])->name('confirm');
+    Route::post('/webhook', [PaymentController::class, 'webhook'])->name('webhook')->withoutMiddleware('auth');
+    
+    // Admin only
+    Route::post('/verify/{paymentId}', [PaymentController::class, 'verify'])->name('verify');
+    Route::post('/reject/{paymentId}', [PaymentController::class, 'reject'])->name('reject');
 });
 
 // Group Route Company
@@ -196,7 +250,14 @@ Route::post('/login', function (Request $request) {
 
     if (Auth::attempt($credentials, $remember)) {
         $request->session()->regenerate();
-        return redirect()->intended('/');
+        
+        // Redirect based on role
+        $user = Auth::user();
+        if ($user->role === 'admin') {
+            return redirect()->intended('/admin');
+        }
+        
+        return redirect()->intended('/dashboard');
     }
 
     return back()->withErrors(['email' => 'Email atau password salah'])->withInput();
@@ -209,3 +270,34 @@ Route::post('/logout', function (Request $request) {
     $request->session()->regenerateToken();
     return redirect('/');
 })->name('logout');
+
+// Admin Routes - CMS Management
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    // Dashboard
+    Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    
+    // Team Management
+    Route::resource('teams', App\Http\Controllers\Admin\TeamController::class);
+    
+    // Vacancy Management
+    Route::resource('vacancies', App\Http\Controllers\Admin\VacancyController::class);
+    Route::get('vacancies/{vacancy}/applications', [App\Http\Controllers\Admin\VacancyController::class, 'applications'])
+        ->name('vacancies.applications');
+    Route::get('applications/{application}/download-cv', [App\Http\Controllers\Admin\VacancyController::class, 'downloadCV'])
+        ->name('applications.download-cv');
+    Route::patch('applications/{application}/status', [App\Http\Controllers\Admin\VacancyController::class, 'updateApplicationStatus'])
+        ->name('applications.update-status');
+    
+    // FAQ Management
+    Route::resource('faqs', App\Http\Controllers\Admin\FaqController::class);
+    
+    // Inquiry/Contact Management
+    Route::get('inquiries', [App\Http\Controllers\Admin\InquiryController::class, 'index'])->name('inquiries.index');
+    Route::get('inquiries/{inquiry}', [App\Http\Controllers\Admin\InquiryController::class, 'show'])->name('inquiries.show');
+    Route::post('inquiries/{inquiry}/reply', [App\Http\Controllers\Admin\InquiryController::class, 'reply'])->name('inquiries.reply');
+    Route::post('inquiries/{inquiry}/spam', [App\Http\Controllers\Admin\InquiryController::class, 'markAsSpam'])->name('inquiries.spam');
+    Route::delete('inquiries/{inquiry}', [App\Http\Controllers\Admin\InquiryController::class, 'destroy'])->name('inquiries.destroy');
+    
+    // Page Management (CMS)
+    Route::resource('pages', App\Http\Controllers\Admin\PageController::class);
+});

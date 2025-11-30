@@ -10,8 +10,11 @@
 
         <div class="md:col-span-3">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <h2 class="text-lg font-bold text-gray-900">Daftar Iklan Saya</h2>
+                    <a href="{{ route('vehicles.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm">
+                        + Tambah Kendaraan
+                    </a>
                 </div>
 
                 <div class="divide-y divide-gray-100">
@@ -45,12 +48,19 @@
                                 </div>
                                 
                                 <div class="mt-4 flex items-center gap-3">
-                                    <a href="#" class="flex-1 sm:flex-none text-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition">
+                                    <a href="{{ route('vehicles.edit', $vehicle->id) }}" class="flex-1 sm:flex-none text-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:border-indigo-300 hover:text-indigo-600 transition">
                                         Edit
                                     </a>
                                     <a href="{{ url('/etalase/vehicles/' . $vehicle->id) }}" class="flex-1 sm:flex-none text-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition">
                                         Lihat Detail
                                     </a>
+                                    <form action="{{ route('vehicles.destroy', $vehicle->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kendaraan ini?')" class="flex-1 sm:flex-none">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="w-full px-4 py-2 bg-red-50 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition">
+                                            Hapus
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

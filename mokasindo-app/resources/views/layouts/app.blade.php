@@ -8,6 +8,8 @@
     <!-- Menggunakan CDN Tailwind sesuai file asli -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -55,8 +57,49 @@
                         <span id="user-location-label" class="text-sm font-medium hidden md:block">Lokasi Saya</span>
                     </button>
 
-                    <a href="/login" class="{{ request()->is('login*') ? 'text-indigo-600 font-medium' : 'text-gray-700 hover:text-indigo-600 font-medium' }}">Masuk</a>
-                    <a href="/register" class="{{ request()->is('register*') ? 'bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium' : 'bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium' }}">Daftar</a>
+                    @auth
+                        <!-- User Menu Dropdown -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 font-medium">
+                                <i class="fas fa-user-circle text-2xl"></i>
+                                <span class="hidden md:block">{{ auth()->user()->name }}</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50" style="display: none;">
+                                @if(auth()->user()->role === 'admin')
+                                    <a href="/admin" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-tachometer-alt mr-2"></i>Admin Dashboard
+                                    </a>
+                                @else
+                                    <a href="/dashboard" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-th-large mr-2"></i>Dashboard
+                                    </a>
+                                    <a href="{{ route('my.ads') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-car mr-2"></i>My Vehicles
+                                    </a>
+                                    <a href="{{ route('my.bids') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-gavel mr-2"></i>My Bids
+                                    </a>
+                                    <a href="{{ route('wishlist.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-heart mr-2"></i>Wishlist
+                                    </a>
+                                @endif
+                                <hr class="my-2">
+                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-cog mr-2"></i>Settings
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <a href="/login" class="{{ request()->is('login*') ? 'text-indigo-600 font-medium' : 'text-gray-700 hover:text-indigo-600 font-medium' }}">Masuk</a>
+                        <a href="/register" class="{{ request()->is('register*') ? 'bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium' : 'bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium' }}">Daftar</a>
+                    @endauth
                 </div>
             </div>
         </div>

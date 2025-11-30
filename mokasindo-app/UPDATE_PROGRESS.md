@@ -1,6 +1,7 @@
 # 📝 Update Progress - Mokasindo Project
 
-**Tanggal Update:** 29 November 2025
+**Tanggal Update:** 30 November 2025  
+**Update Terakhir:** Tambahan Profile Management, Authentication, Telegram Notification, Instagram Integration
 
 ---
 
@@ -143,6 +144,186 @@ POST /contact - Submit
 
 ---
 
+### 5. ✅ **Authentication System** (UPDATE TERBARU)
+
+**Tim:** Registrasi & Member Management  
+**Status:** COMPLETED
+
+**Fitur:**
+
+-   ✅ Form registrasi dengan validasi lengkap
+-   ✅ Validasi: name, email, phone, password, address, lokasi (province, city, district, sub_district, postal_code)
+-   ✅ Form login dengan remember me
+-   ✅ Logout dengan session invalidation
+-   ✅ Auto-redirect setelah login
+-   ✅ Protect route untuk halaman yang memerlukan auth
+
+**Routes:**
+
+```
+GET  /register - Form registrasi
+POST /register - Submit registrasi
+GET  /login    - Form login
+POST /login    - Proses login
+POST /logout   - Logout
+```
+
+---
+
+### 6. ✅ **Profile Management** (UPDATE TERBARU)
+
+**Tim:** Profile User FE & BE  
+**Status:** COMPLETED
+
+#### 6.1. Edit Profil
+
+-   ✅ Edit nama, phone, alamat
+-   ✅ Upload avatar (JPEG, PNG, JPG max 2MB)
+-   ✅ Auto delete avatar lama
+-   ✅ Validation
+
+#### 6.2. Ganti Password
+
+-   ✅ Validasi current password
+-   ✅ Password baru min 8 karakter
+-   ✅ Confirm password
+
+**Routes:**
+
+```
+GET   /profile           - Form edit profil
+PATCH /profile           - Update profil
+GET   /profile/password  - Form ganti password
+PATCH /profile/password  - Update password
+```
+
+**Controller:** `ProfileController.php`  
+**Views:** `resources/views/pages/profile/edit.blade.php`, `password.blade.php`
+
+---
+
+### 7. ✅ **My Ads (Iklan Saya)** (UPDATE TERBARU)
+
+**Status:** COMPLETED
+
+-   ✅ List semua kendaraan yang diposting user
+-   ✅ Pagination 10 items per page
+-   ✅ Tampil foto utama kendaraan
+-   ✅ Info lokasi & status
+
+**Routes:**
+
+```
+GET /my-ads - List iklan saya (auth required)
+```
+
+**Controller:** `MyAdController.php`  
+**Views:** `resources/views/pages/profile/ads.blade.php`
+
+---
+
+### 8. ✅ **My Bids (Hasil Lelang)** (UPDATE TERBARU)
+
+**Status:** COMPLETED
+
+-   ✅ List semua lelang yang pernah di-bid
+-   ✅ Tampil bid tertinggi per auction
+-   ✅ Unique per auction (tidak duplikat)
+-   ✅ Info kendaraan yang di-bid
+
+**Routes:**
+
+```
+GET /my-bids - List hasil bid (auth required)
+```
+
+**Controller:** `MyBidController.php`  
+**Views:** `resources/views/pages/profile/bids.blade.php`
+
+---
+
+### 9. ✅ **Telegram Notification** (UPDATE TERBARU)
+
+**Tim:** Telegram Bot Notification  
+**Status:** COMPLETED (80%)
+
+#### Fitur yang Sudah Jalan:
+
+-   ✅ TelegramService untuk kirim pesan
+-   ✅ Welcome message untuk user baru
+-   ✅ Laporan pendaftaran ke admin
+-   ✅ Notifikasi pemenang lelang (method ready)
+-   ✅ Event Listener untuk registrasi
+-   ✅ Support HTML formatting
+-   ✅ Error handling & logging
+
+#### Yang Perlu Dilanjutkan:
+
+-   ⏳ Notifikasi bid baru
+-   ⏳ Notifikasi outbid
+-   ⏳ Reminder pembayaran
+-   ⏳ Notifikasi deposit hangus
+
+**Service:** `app/Services/TelegramService.php`  
+**Listener:** `app/Listeners/SendNewUserTelegramNotification.php`
+
+**Testing:**
+
+```
+GET /tes-register - Test notifikasi Telegram
+```
+
+**Environment:**
+
+```env
+TELEGRAM_BOT_TOKEN=your_bot_token
+```
+
+**Field Database:**
+
+-   `users.telegram_chat_id` - Simpan Chat ID user
+
+---
+
+### 10. ✅ **Instagram Integration** (UPDATE TERBARU)
+
+**Tim:** Instagram API Integration  
+**Status:** COMPLETED (60%)
+
+#### Fitur yang Sudah Jalan:
+
+-   ✅ Fetch media/posts dari Instagram
+-   ✅ Support carousel album (multiple images)
+-   ✅ Get children media dari carousel
+-   ✅ Error handling & logging
+
+#### Yang Perlu Dilanjutkan:
+
+-   ⏳ Auto-post ke Instagram
+-   ⏳ Story sharing
+-   ⏳ Shopping integration
+
+**Controller:** `InstagramController.php`
+
+**Routes:**
+
+```
+GET /instagram-feed - Get Instagram posts
+```
+
+**Environment:**
+
+```env
+INSTAGRAM_ACCESS_TOKEN=your_instagram_token
+```
+
+**Response Data:**
+
+-   id, caption, media_type, media_url, permalink, timestamp
+-   children (untuk CAROUSEL_ALBUM)
+
+---
+
 ## 📊 Database Update
 
 ### Tabel Baru yang Ditambahkan:
@@ -186,6 +367,17 @@ POST /contact - Submit
 1. ✅ `VehicleController` - Etalase kendaraan
 2. ✅ `WishlistController` - Favorit kendaraan
 3. ✅ `CompanyController` - Company pages
+4. ✅ `ProfileController` - Edit profil & ganti password
+5. ✅ `MyAdController` - List iklan user
+6. ✅ `MyBidController` - List hasil bid user
+7. ✅ `InstagramController` - Fetch Instagram posts
+
+---
+
+## 🔧 Services & Listeners:
+
+1. ✅ `TelegramService` - Service untuk kirim notifikasi Telegram
+2. ✅ `SendNewUserTelegramNotification` - Listener untuk registrasi user
 
 ---
 
@@ -219,27 +411,64 @@ GET  /contact                  - Contact form
 POST /contact                  - Submit pesan
 ```
 
+### Profile Management (Auth Required)
+
+```
+GET   /profile                 - Edit profil
+PATCH /profile                 - Update profil
+GET   /profile/password        - Ganti password
+PATCH /profile/password        - Update password
+```
+
+### My Ads & Bids (Auth Required)
+
+```
+GET /my-ads                    - List iklan saya
+GET /my-bids                   - List hasil bid
+```
+
+### Authentication
+
+```
+GET  /register                 - Form registrasi
+POST /register                 - Submit registrasi
+GET  /login                    - Form login
+POST /login                    - Proses login
+POST /logout                   - Logout
+```
+
+### Instagram Integration
+
+```
+GET /instagram-feed            - Get Instagram posts
+```
+
 ### Testing
 
 ```
 GET /force-login               - Auto-login (dev only)
+GET /tes-register              - Test Telegram notification
 ```
 
 ---
 
 ## 📈 Progress Status
 
-| Fitur             | Status     | Persentase |
-| ----------------- | ---------- | ---------- |
-| Database & Models | ✅ Done    | 100%       |
-| Etalase Kendaraan | ✅ Done    | 100%       |
-| Wishlist          | ✅ Done    | 100%       |
-| Company Pages     | ✅ Done    | 100%       |
-| Authentication    | ⏳ Pending | 0%         |
-| Sistem Lelang     | ⏳ Pending | 0%         |
-| Payment Gateway   | ⏳ Pending | 0%         |
-| Notifikasi        | ⏳ Pending | 0%         |
-| Admin Dashboard   | ⏳ Pending | 0%         |
+| Fitur                 | Status     | Persentase |
+| --------------------- | ---------- | ---------- |
+| Database & Models     | ✅ Done    | 100%       |
+| Etalase Kendaraan     | ✅ Done    | 100%       |
+| Wishlist              | ✅ Done    | 100%       |
+| Company Pages         | ✅ Done    | 100%       |
+| Authentication        | ✅ Done    | 100%       |
+| Profile Management    | ✅ Done    | 100%       |
+| My Ads & Bids         | ✅ Done    | 100%       |
+| Telegram Notification | ✅ Done    | 80%        |
+| Instagram Integration | ✅ Done    | 60%        |
+| Sistem Lelang         | ⏳ Pending | 0%         |
+| Payment Gateway       | ⏳ Pending | 0%         |
+| Notifikasi            | ⏳ Pending | 0%         |
+| Admin Dashboard       | ⏳ Pending | 0%         |
 
 ---
 

@@ -56,21 +56,75 @@
 
 ---
 
-### 3. Registrasi dan Data Anggota/Member (2 Orang)
+### 3. Registrasi dan Data Anggota/Member (2 Orang) ✅ **SUDAH DIBUAT**
 
 #### Tipe User:
 
 -   **Anggota**: Maksimal 2 iklan per minggu
 -   **Member**: Unlimited iklan
 
-#### Fitur:
+#### Fitur Authentication:
 
--   Registrasi user baru
--   Login/Logout
--   Manajemen profil
--   Publish iklan dengan batasan:
-    -   Anggota: Max 2 iklan/minggu (configurable)
-    -   Member: Unlimited
+-   ✅ Registrasi user baru dengan validasi lengkap
+-   ✅ Login/Logout dengan session management
+-   ✅ Remember me functionality
+-   ✅ Auto-redirect setelah login
+
+**Routes:**
+
+-   `GET /register` - Form registrasi
+-   `POST /register` - Submit registrasi (route: `company.register`)
+-   `GET /login` - Form login
+-   `POST /login` - Proses login (route: `login.process`)
+-   `POST /logout` - Logout (route: `logout`)
+
+#### Fitur Profile Management: ✅ **SUDAH DIBUAT**
+
+-   ✅ Edit profil (nama, phone, alamat)
+-   ✅ Upload/update avatar (JPEG, PNG, JPG max 2MB)
+-   ✅ Ganti password dengan validasi current password
+-   ✅ View data user yang sedang login
+
+**Routes:**
+
+-   `GET /profile` - Halaman edit profil (route: `profile.edit`)
+-   `PATCH /profile` - Update profil (route: `profile.update`)
+-   `GET /profile/password` - Halaman ganti password (route: `profile.password.edit`)
+-   `PATCH /profile/password` - Update password (route: `profile.password`)
+
+**Controller:** `ProfileController.php`
+
+-   `edit()` - Tampilkan form edit profil
+-   `update()` - Update data profil & avatar
+-   `editPassword()` - Tampilkan form ganti password
+-   `updatePassword()` - Update password user
+
+#### Fitur My Ads (Iklan Saya): ✅ **SUDAH DIBUAT**
+
+-   ✅ List semua iklan/kendaraan yang diposting user
+-   ✅ Pagination 10 items per page
+-   ✅ Tampil foto utama kendaraan
+-   ✅ Info lokasi (kota)
+-   ✅ Status approval
+
+**Routes:**
+
+-   `GET /my-ads` - List iklan saya (route: `my.ads`, auth required)
+
+**Controller:** `MyAdController.php`
+
+#### Fitur My Bids (Hasil Lelang): ✅ **SUDAH DIBUAT**
+
+-   ✅ List semua lelang yang pernah di-bid user
+-   ✅ Tampil bid tertinggi per auction
+-   ✅ Unique per auction (tidak duplikat)
+-   ✅ Info kendaraan yang di-bid
+
+**Routes:**
+
+-   `GET /my-bids` - List hasil bid (route: `my.bids`, auth required)
+
+**Controller:** `MyBidController.php`
 
 ---
 
@@ -156,23 +210,65 @@ Sistem lokasi berbasis:
 
 ---
 
-### 8. Notifikasi Bot Telegram (2 Orang)
+### 8. Notifikasi Bot Telegram (2 Orang) ✅ **SUDAH DIBUAT**
 
 #### Target Notifikasi:
 
--   Anggota
--   Member
--   Admin
+-   ✅ Anggota
+-   ✅ Member
+-   ✅ Admin
 
 #### Jenis Notifikasi:
 
--   Lelang dimulai
--   Outbid (ditawar lebih tinggi)
--   Menang lelang
--   Reminder pelunasan
--   Deposit hangus
--   Status pembayaran
--   Approval iklan
+-   ✅ Welcome message untuk user baru (saat registrasi)
+-   ✅ Laporan pendaftaran user baru ke admin
+-   ✅ Notifikasi pemenang lelang (auction winner)
+-   ⏳ Lelang dimulai (upcoming)
+-   ⏳ Outbid (ditawar lebih tinggi) (upcoming)
+-   ⏳ Reminder pelunasan (upcoming)
+-   ⏳ Deposit hangus (upcoming)
+-   ⏳ Status pembayaran (upcoming)
+-   ⏳ Approval iklan (upcoming)
+
+#### Fitur yang Sudah Dibuat:
+
+**TelegramService** (`app/Services/TelegramService.php`):
+
+-   ✅ `sendMessage($chatId, $message)` - Kirim pesan ke Telegram
+-   ✅ `sendToUser($user, $message)` - Kirim ke user berdasarkan database
+-   ✅ `sendAuctionWinnerNotif($user, $namaBarang, $hargaAkhir)` - Notif pemenang lelang
+-   ✅ Support HTML formatting
+-   ✅ Error handling & logging
+
+**Event Listener** (`app/Listeners/SendNewUserTelegramNotification.php`):
+
+-   ✅ Listen to `Registered` event
+-   ✅ Auto kirim welcome message ke user baru
+-   ✅ Auto kirim laporan ke admin
+-   ✅ Logging untuk tracking
+
+**Testing Route:**
+
+-   `GET /tes-register` - Testing notifikasi registrasi
+
+**Environment Variables Required:**
+
+```env
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+```
+
+**Field Database:**
+
+-   `users.telegram_chat_id` - Untuk menyimpan Telegram Chat ID user
+
+**Cara Kerja:**
+
+1. User registrasi & isi `telegram_chat_id`
+2. Event `Registered` otomatis trigger
+3. Listener kirim 2 notifikasi:
+    - Welcome message ke user baru
+    - Laporan pendaftaran ke admin
+4. Tim Lelang bisa panggil `sendAuctionWinnerNotif()` saat menentukan pemenang
 
 ---
 
@@ -211,14 +307,38 @@ Sistem lokasi berbasis:
 
 ---
 
-### 12. Integrasi Instagram API (1 Orang)
+### 12. Integrasi Instagram API (1 Orang) ✅ **SUDAH DIBUAT**
 
 #### Fitur Instagram:
 
--   Auto-post ke Instagram
--   Story sharing
--   Instagram shopping integration
--   Gallery sync
+-   ✅ Fetch Instagram media/posts
+-   ✅ Support carousel album (multiple images)
+-   ✅ Get children media dari carousel
+-   ✅ Error handling & logging
+-   ⏳ Auto-post ke Instagram (upcoming)
+-   ⏳ Story sharing (upcoming)
+-   ⏳ Instagram shopping integration (upcoming)
+
+**Controller:** `InstagramController.php`
+
+-   `getMedia()` - Fetch media dari Instagram Graph API
+-   Support media types: IMAGE, VIDEO, CAROUSEL_ALBUM
+-   Auto-fetch children untuk carousel
+
+**API Routes:**
+
+-   `GET /instagram-feed` - Get Instagram posts
+
+**Environment Variables Required:**
+
+```env
+INSTAGRAM_ACCESS_TOKEN=your_instagram_token_here
+```
+
+**Response Data:**
+
+-   id, caption, media_type, media_url, permalink, timestamp
+-   children (untuk CAROUSEL_ALBUM)
 
 ---
 
