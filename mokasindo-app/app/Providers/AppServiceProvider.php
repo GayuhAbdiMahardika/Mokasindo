@@ -2,39 +2,23 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
-use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
-use App\Listeners\SendNewUserTelegramNotification;
+use Illuminate\Support\ServiceProvider;
 
-class EventServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     /**
-     * The event to listener mappings for the application.
-     *
-     * @var array<class-string, array<int, class-string>>
+     * Register any application services.
      */
-    protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-            SendNewUserTelegramNotification::class,
-        ],
-    ];
-
-    /**
-     * Register any events for your application.
-     */
-    public function boot(): void
+    public function register(): void
     {
         //
     }
 
     /**
-     * Determine if events and listeners should be automatically discovered.
+     * Bootstrap any application services.
      */
-    public function shouldDiscoverEvents(): bool
+    public function boot(): void
     {
-        return false;
+        //
     }
 }
