@@ -1,8 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Events\Registered;
 use App\Http\Controllers\CompanyController;
+use App\Services\TelegramService;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\WishlistController;
+use App\Models\User;
 use App\Http\Controllers\InstagramController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WishlistController;
@@ -56,6 +62,28 @@ Route::controller(CompanyController::class)->group(function () {
         $page = Page::findBySlug('cookie-policy');
         return view('pages.company.generic', compact('page'));
     })->name('company.cookie_policy');
+});
+// --- TES EVENT LISTENER REGISTERED ---
+Route::get('/tes-register', function () {
+    // Kita pakai WAKTU (time) biar emailnya unik terus setiap detik
+    $unik = time();
+    
+    // Membuat User Baru Pura-pura
+    $userBaru = User::create([
+        'name' => "Member $unik",
+        'email' => "member$unik@test.com",
+        'password' => Hash::make('password123'),
+        'telegram_chat_id' => '6179231520', // GANTI ID INI DENGAN ID TELEGRAM SIAPAPUN YANG MAU TES ambil di @userinfobot
+        'role' => 'member'
+    ]);
+
+    // Memicu Event (Seolah-olah user baru saja daftar)
+    // Ini akan memicu Listener untuk kirim Laporan ke Admin
+    event(new Registered($userBaru));
+
+    return "✅ User <b>{$userBaru->name}</b> berhasil didaftarkan! <br><br>" .
+           "1. Cek HP Admin (Laporan Pendaftaran Masuk).<br>" .
+           "2. Cek HP User (Ucapan Selamat Datang Masuk).";
 });
 
 // Instagram feed (example)
