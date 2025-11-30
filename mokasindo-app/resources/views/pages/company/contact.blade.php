@@ -2,14 +2,22 @@
 
 @section('content')
 <div class="bg-gray-50 min-h-screen">
-    <div class="bg-indigo-900 text-white py-16">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl font-bold mb-4">Hubungi Kami</h1>
-            <p class="text-indigo-200 text-lg max-w-2xl mx-auto">
-                Punya pertanyaan tentang cara lelang atau kendala teknis? Tim support kami siap membantu Anda Senin - Sabtu (08.00 - 17.00 WIB).
-            </p>
+    <section class="relative bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-[7rem]">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Hubungi Kami</h1>
+                <p class="text-indigo-100 max-w-2xl mx-auto">
+                    Punya pertanyaan tentang cara lelang atau kendala teknis? Tim support kami siap membantu Anda Senin - Sabtu (08.00 - 17.00 WIB).
+                </p>
+            </div>
         </div>
-    </div>
+
+        <div class="absolute bottom-0 w-full">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full">
+                <path d="M0 0L60 10C120 20 240 40 360 46.7C480 53 600 47 720 43.3C840 40 960 40 1080 46.7C1200 53 1320 67 1380 73.3L1440 80V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V0Z" fill="#F9FAFB"/>
+            </svg>
+        </div>
+    </section>
 
     <div class="container mx-auto px-4 py-12 -mt-10">
         <div class="bg-white rounded-xl shadow-xl overflow-hidden">
