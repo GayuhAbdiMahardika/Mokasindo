@@ -2,66 +2,129 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
     <title>Instagram Feed</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    {{-- Tailwind CDN --}}
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-    <h1>Latest Instagram Posts</h1>
-    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-        @foreach($posts as $post)
-            <div style="border: 1px solid #ccc; padding: 10px; width: 300px;">
+<body class="bg-slate-900 text-slate-100 min-h-screen">
 
-                {{-- CAROUSEL ALBUM --}}
+    <div class="max-w-6xl mx-auto px-4 py-10">
+        <h1 class="text-3xl md:text-4xl font-bold mb-8">
+            Latest <span class="text-indigo-400">Instagram</span> Posts
+        </h1>
+
+        {{-- Grid cards --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($posts as $post)
+            <div class="bg-white text-slate-900 rounded-2xl shadow-lg overflow-hidden flex flex-col">
+
+                {{-- MEDIA --}}
                 @if($post['media_type'] == 'CAROUSEL_ALBUM' && !empty($post['children']))
-                    <div id="carousel-{{ $post['id'] }}" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
-                            @foreach($post['children'] as $index => $child)
-                                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                    @if($child['media_type'] == 'IMAGE')
-                                        <img src="{{ $child['media_url'] }}" class="d-block w-100"
-                                             alt="Carousel image">
-                                    @elseif($child['media_type'] == 'VIDEO')
-                                        <video class="d-block w-100" controls>
-                                            <source src="{{ $child['media_url'] }}" type="video/mp4">
-                                        </video>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <button class="carousel-control-prev" type="button"
-                                data-bs-target="#carousel-{{ $post['id'] }}" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button"
-                                data-bs-target="#carousel-{{ $post['id'] }}" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
+                {{-- Carousel / slider sederhana --}}
+                <div class="relative aspect-[4/5] bg-slate-200" data-carousel="{{ $post['id'] }}">
+                    @foreach($post['children'] as $index => $child)
+                    <div class="absolute inset-0 {{ $index === 0 ? '' : 'hidden' }} carousel-slide">
+                        @if($child['media_type'] == 'IMAGE')
+                        <img src="{{ $child['media_url'] }}"
+                            alt="Carousel image"
+                            class="w-full h-full object-cover">
+                        @elseif($child['media_type'] == 'VIDEO')
+                        <video class="w-full h-full object-cover" controls>
+                            <source src="{{ $child['media_url'] }}" type="video/mp4">
+                        </video>
+                        @endif
                     </div>
+                    @endforeach
 
-                {{-- SINGLE IMAGE / VIDEO --}}
+                    {{-- Nav buttons --}}
+                    <button type="button"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 text-white w-8 h-8 flex items-center justify-center hover:bg-black/80 transition"
+                        data-carousel-prev>
+                        ‹
+                    </button>
+                    <button type="button"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 text-white w-8 h-8 flex items-center justify-center hover:bg-black/80 transition"
+                        data-carousel-next>
+                        ›
+                    </button>
+                </div>
+
                 @elseif($post['media_type'] == 'IMAGE')
-                    <img src="{{ $post['media_url'] }}" alt="{{ $post['caption'] ?? 'Instagram Post' }}"
-                         style="width: 100%; height: auto;">
+                <div class="aspect-[4/5] bg-slate-200">
+                    <img src="{{ $post['media_url'] }}"
+                        alt="{{ $post['caption'] ?? 'Instagram Post' }}"
+                        class="w-full h-full object-cover">
+                </div>
+
                 @elseif($post['media_type'] == 'VIDEO')
-                    <video controls style="width: 100%; height: auto;">
+                <div class="aspect-[4/5] bg-black">
+                    <video controls class="w-full h-full object-cover">
                         <source src="{{ $post['media_url'] }}" type="video/mp4">
                     </video>
+                </div>
                 @endif
 
-                <p><strong>Description</strong><br>
-                    {{ \Illuminate\Support\Str::limit($post['caption'] ?? '', 50) }}
-                </p>
+                {{-- CONTENT --}}
+                <div class="p-4 flex-1 flex flex-col">
+                    <p class="font-semibold text-sm text-slate-700">Description</p>
 
-                <p><a href="{{ $post['permalink'] }}" target="_blank">View on Instagram</a></p>
-                <small>{{ \Carbon\Carbon::parse($post['timestamp'])->diffForHumans() }}</small>
+                    {{-- Caption seperti di Instagram (pakai line break) --}}
+                    <div class="text-sm text-slate-800 mb-3 leading-relaxed whitespace-pre-line">
+                        {{ $post['caption'] ?? '' }}
+                    </div>
+
+                    <a href="{{ $post['permalink'] }}" target="_blank"
+                        class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-700 font-medium mb-2">
+                        View on Instagram
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7h4m0 0v4m0-4L10 14" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 5v14h14" />
+                        </svg>
+                    </a>
+
+                    <span class="mt-auto text-xs text-slate-500">
+                        {{ \Carbon\Carbon::parse($post['timestamp'])->diffForHumans() }}
+                    </span>
+                </div>
+
             </div>
-        @endforeach
+            @endforeach
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {{-- JS kecil untuk carousel --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const carousels = document.querySelectorAll('[data-carousel]');
+
+            carousels.forEach(carousel => {
+                const slides = carousel.querySelectorAll('.carousel-slide');
+                let current = 0;
+
+                const showSlide = (index) => {
+                    slides.forEach((slide, i) => {
+                        slide.classList.toggle('hidden', i !== index);
+                    });
+                };
+
+                carousel.querySelector('[data-carousel-prev]')?.addEventListener('click', () => {
+                    current = (current - 1 + slides.length) % slides.length;
+                    showSlide(current);
+                });
+
+                carousel.querySelector('[data-carousel-next]')?.addEventListener('click', () => {
+                    current = (current + 1) % slides.length;
+                    showSlide(current);
+                });
+            });
+        });
+    </script>
 </body>
+
 </html>
