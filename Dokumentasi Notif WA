@@ -1,0 +1,136 @@
+# 🚀 Dokumentasi Fitur: Integrasi WhatsApp Gateway (Fonnte)
+
+Dokumen ini menjelaskan implementasi fitur Verifikasi WhatsApp Otomatis dan sistem notifikasi yang baru ditambahkan ke dalam project Mokasindo.
+
+---
+
+## ✅ 1. Log Perubahan (Change Log)
+
+Berikut adalah daftar modul yang telah dimodifikasi dan ditambahkan:
+
+### A. Database
+* **Tabel `users`:** Menambahkan kolom `verification_code` (varchar) untuk menyimpan kode unik sementara.
+
+### B. Otentikasi & Registrasi (`AuthController`)
+* **Register Flow:**
+    * User baru dibuat dengan status `is_active = false`.
+    * Sistem men-generate kode unik (Format: `REG-XXXXX`).
+    * Redirect otomatis ke halaman instruksi verifikasi WhatsApp setelah submit form.
+* **Halaman Verifikasi:** Menambahkan method `verificationPage` dan `checkStatus` (AJAX) untuk mengecek status verifikasi secara realtime tanpa refresh halaman.
+
+### C. Webhook & Service (Core Logic)
+* **`app/Services/WhatsappService.php` (BARU):** Class khusus untuk menangani pengiriman pesan ke API Fonnte.
+* **`app/Http/Controllers/WebhookController.php` (BARU):**
+    * Menerima pesan masuk dari User.
+    * Memvalidasi kode `REG-XXXX`.
+    * Mengaktifkan user (`is_active = true`) dan menyimpan nomor HP pengirim.
+* **`bootstrap/app.php`:** Menambahkan pengecualian CSRF (*Exclude Route*) untuk jalur `/webhook/fonnte` agar bisa diakses oleh server Fonnte.
+
+### D. Perbaikan Bug (Fixes)
+* **`WilayahController`:** Memperbaiki logika pengambilan data Kota, Kecamatan, dan Kelurahan agar dropdown di halaman register berfungsi normal (sebelumnya data tidak muncul).
+
+---
+
+## ⚙️ 2. Panduan Setup (Untuk Developer Lain)
+
+Jika Anda baru menarik (*pull*) update ini dari GitHub, wajib lakukan langkah berikut agar fitur berjalan:
+
+### Langkah 1: Update Database
+Jalankan migrasi untuk menambahkan kolom verifikasi ke tabel user.
+```bash
+php artisan migrate
+Langkah 2: Konfigurasi Environment (.env)
+Tambahkan Token Fonnte dan Nomor WhatsApp Bot di file .env Anda (jangan dipush ke GitHub).
+
+Ini, TOML
+
+FONNTE_TOKEN=isi_token_fonnte_disini
+WHATSAPP_BOT_NUMBER=628xxxxxxxxxx
+Langkah 3: Setup Webhook Fonnte (WAJIB)
+Agar sistem bisa menerima balasan dari user:
+
+Login ke Dashboard Fonnte.
+
+Masuk menu Device -> Edit.
+
+Isi kolom Webhook URL dengan URL server Anda.
+
+Jika Lokal: Gunakan Ngrok (contoh: https://abcd.ngrok-free.app/webhook/fonnte).
+
+Jika Live: Gunakan domain asli (contoh: https://mokasindo.com/webhook/fonnte).
+
+Pastikan status Webhook Enable.
+
+💡 3. Panduan Pengembangan (Untuk Tim Lelang)
+Fitur WhatsappService dirancang modular agar bisa digunakan untuk notifikasi lelang (Auction). Berikut adalah contoh implementasinya:
+
+Cara Menggunakan Service
+Cukup panggil class WhatsappService di Controller mana saja:
+
+PHP
+
+use App\Services\WhatsappService;
+
+$wa = new WhatsappService();
+$wa->sendMessage($nomorHpTarget, "Isi pesan Anda di sini...");
+Skenario A: Notifikasi Pemenang Lelang (Auto Winner)
+Kirim WA otomatis saat waktu lelang habis atau admin menutup lelang.
+
+Contoh Code (di AuctionController):
+
+PHP
+
+public function closeAuction($id) {
+    // ... logika tutup lelang ...
+    $winner = Bid::where('auction_id', $id)->latest()->first();
+
+    if ($winner) {
+        $wa = new WhatsappService();
+        $pesan = "🎉 *SELAMAT! ANDA MENANG LELANG* 🏆\n\n" .
+                 "Item: {$winner->auction->vehicle->name}\n" .
+                 "Harga Akhir: Rp " . number_format($winner->amount) . "\n\n" .
+                 "Silakan cek dashboard untuk instruksi pembayaran.";
+        
+        $wa->sendMessage($winner->user->phone_number, $pesan);
+    }
+}
+Skenario B: Notifikasi "Outbid" (Tawaran Terlampaui)
+Memberitahu penawar sebelumnya bahwa tawaran mereka sudah dikalahkan orang lain (memicu perang harga).
+
+Contoh Code (di BidController):
+
+PHP
+
+public function store(Request $request) {
+    // ... logika simpan bid baru ...
+    
+    // Cari penawar sebelumnya (yang baru saja kalah)
+    $previousBidder = Bid::where('auction_id', $id)
+                         ->where('user_id', '!=', auth()->id())
+                         ->latest()
+                         ->first();
+
+    if ($previousBidder) {
+        $wa = new WhatsappService();
+        $pesan = "⚠️ *TAWARAN ANDA TERGESER!* \n\n" .
+                 "Seseorang menawar lebih tinggi untuk: *{$item->name}*\n" .
+                 "Tawaran Baru: Rp " . number_format($request->amount) . "\n\n" .
+                 "Ayo bid lagi sebelum waktu habis! ⏳";
+        
+        $wa->sendMessage($previousBidder->user->phone_number, $pesan);
+    }
+}
+Skenario C: Reminder Pembayaran (Cron Job)
+Sistem otomatis mengecek transaksi yang belum dibayar H-1 jam sebelum expired.
+
+PHP
+
+// Di Console/Kernel.php (Scheduler)
+$pendingTrx = Transaction::where('status', 'pending')
+                         ->where('expired_at', '<=', now()->addHour())
+                         ->get();
+
+foreach ($pendingTrx as $trx) {
+    $wa = new WhatsappService();
+    $wa->sendMessage($trx->user->phone_number, "⏳ *PENGINGAT PEMBAYARAN*\nTagihan lelang Anda akan hangus dalam 1 jam.");
+}
