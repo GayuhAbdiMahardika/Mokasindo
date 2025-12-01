@@ -1,0 +1,21 @@
+IGAATn0ZBcEZANVBZAFJaZAnJaYUhEQWlsU1M5aHRpYk5kSTBlbTMyd3JMSHpuN3ZAIUkw3Vkg4aTlTQmJpLWJOdDFQbXN3eTRwdGVqMkQ0QlUwMjZAoVklxeU5wLVpieXZAXTVhzcFRCdjVJaWdOZAm9pak5mY2NjV0FPb2FPb1ZATRk90YwZDZD
+
+https://graph.instagram.com/me?fields=id,username&access_token=<IGAATn0ZBcEZANVBZAFJaZAnJaYUhEQWlsU1M5aHRpYk5kSTBlbTMyd3JMSHpuN3ZAIUkw3Vkg4aTlTQmJpLWJOdDFQbXN3eTRwdGVqMkQ0QlUwMjZAoVklxeU5wLVpieXZAXTVhzcFRCdjVJaWdOZAm9pak5mY2NjV0FPb2FPb1ZATRk90YwZDZD>
+
+
+https://graph.facebook.com/oauth/access_token?
+    grant_type=fb_exchange_token&
+    client_id=[1380797206783189]&
+    client_secret=[037d93815c43398b07ef56c8ea39c120]&
+    fb_exchange_token=[IGAATn0ZBcEZANVBZAFExaU9aWlJZAZAElPUTZAkckE2ekF6d1pQRXgwcnN0Wi1QbHg3MHVKSUlXekhkbXRQVnRTMEFKWC1CN2dWbnZAfUHFvZAHZA3VDJZASEtXZAnA1dzctWTZAGRUpZARXpydGY0SWdrMWJpUGdPVms2VXB4bWVmaFpLZAzQ0VQZDZD]
+
+    https://graph.facebook.com/oauth/access_token?
+    grant_type=fb_exchange_token&
+    client_id=[ID_APLIKASI_ANDA]&
+    client_secret=[RAHASIA_APLIKASI_ANDA]&
+    fb_exchange_token=[TOKEN_JANGKA_PENDEK]
+
+GET https://graph.instagram.com/me/media
+    ?fields=id,caption,media_type,media_url,permalink,timestamp
+    &access_token=IGAATn0ZBcEZANVBZAFExaU9aWlJZAZAElPUTZAkckE2ekF6d1pQRXgwcnN0Wi1QbHg3MHVKSUlXekhkbXRQVnRTMEFKWC1CN2dWbnZAfUHFvZAHZA3VDJZASEtXZAnA1dzctWTZAGRUpZARXpydGY0SWdrMWJpUGdPVms2VXB4bWVmaFpLZAzQ0VQZDZD
+
