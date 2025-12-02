@@ -24,6 +24,8 @@ class PageController extends Controller
 
     public function store(Request $request)
     {
+        $this->prepareSlug($request);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:pages,slug',
@@ -32,7 +34,6 @@ class PageController extends Controller
             'is_published' => 'boolean',
         ]);
 
-        $validated['slug'] = $validated['slug'] ?? Str::slug($validated['title']);
         $validated['is_published'] = $request->has('is_published');
 
         Page::create($validated);
@@ -47,6 +48,8 @@ class PageController extends Controller
 
     public function update(Request $request, Page $page)
     {
+        $this->prepareSlug($request);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:pages,slug,' . $page->id,
@@ -55,7 +58,6 @@ class PageController extends Controller
             'is_published' => 'boolean',
         ]);
 
-        $validated['slug'] = $validated['slug'] ?? Str::slug($validated['title']);
         $validated['is_published'] = $request->has('is_published');
 
         // Save revision before updating
@@ -112,4 +114,24 @@ class PageController extends Controller
         $page->delete();
         return redirect()->route('admin.pages.index')->with('success', 'Page berhasil dihapus!');
     }
+
+    public function togglePublish(Page $page)
+    {
+        $page->update(['is_published' => !$page->is_published]);
+        
+        $status = $page->is_published ? 'dipublish' : 'di-unpublish';
+        return redirect()->route('admin.pages.index')->with('success', "Page berhasil {$status}!");
+    }
+
+    private function prepareSlug(Request $request): void
+        {
+            $sourceValue = $request->filled('slug') ? $request->input('slug') : $request->input('title');
+            $slug = Str::slug($sourceValue ?? '');
+
+            if (blank($slug)) {
+                $slug = Str::slug('page-' . now()->timestamp);
+            }
+
+            $request->merge(['slug' => $slug]);
+        }
 }

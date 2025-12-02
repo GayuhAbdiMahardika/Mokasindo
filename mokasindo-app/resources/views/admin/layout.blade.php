@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel') - Mokasindo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @php
+        $viteHotFile = base_path('vite.hot');
+        $viteManifestFile = public_path('build/manifest.json');
+    @endphp
+    @if (file_exists($viteHotFile) || file_exists($viteManifestFile))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.10/dist/tailwind.min.css">
+    @endif
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-100">

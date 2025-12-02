@@ -20,83 +20,88 @@
         </form>
     </div>
 
-    <form method="POST" action="{{ route('admin.vehicles.bulk') }}" id="bulkForm">
-        @csrf
-        <div class="flex items-center space-x-3 mb-4">
-            <select name="action" id="bulkAction" class="border rounded px-3 py-2">
-                <option value="">Bulk action</option>
-                <option value="approve">Approve</option>
-                <option value="set_featured">Set Featured</option>
-                <option value="unset_featured">Unset Featured</option>
-            </select>
+    <div class="flex items-center space-x-3 mb-4">
+        <select name="action" id="bulkAction" class="border rounded px-3 py-2">
+            <option value="">Bulk action</option>
+            <option value="approve">Approve</option>
+            <option value="set_featured">Set Featured</option>
+            <option value="unset_featured">Unset Featured</option>
+        </select>
 
-            <select name="schedule_id" id="bulkSchedule" class="border rounded px-3 py-2">
-                <option value="">Assign schedule (optional)</option>
-                @foreach($schedules as $s)
-                <option value="{{ $s->id }}">{{ $s->title }} — {{ $s->start_date->format('d M') }}</option>
-                @endforeach
-            </select>
+        <select name="schedule_id" id="bulkSchedule" class="border rounded px-3 py-2">
+            <option value="">Assign schedule (optional)</option>
+            @foreach($schedules as $s)
+            <option value="{{ $s->id }}">{{ $s->title }} — {{ $s->start_date->format('d M') }}</option>
+            @endforeach
+        </select>
 
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded">Apply</button>
-        </div>
+        <button type="button" id="bulkApplyBtn" class="px-4 py-2 bg-indigo-600 text-white rounded">Apply</button>
+    </div>
 
-        <div class="overflow-x-auto bg-white rounded-lg shadow">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-2"><input type="checkbox" id="selectAll"></th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Listing</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($vehicles as $vehicle)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-2"><input type="checkbox" name="ids[]" value="{{ $vehicle->id }}" class="rowCheckbox"></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $vehicles->firstItem() + $loop->index }}</td>
-                        <td class="px-6 py-4">
-                            <div class="font-medium">{{ $vehicle->brand }} {{ $vehicle->model }} ({{ $vehicle->year }})</div>
-                            <div class="text-xs text-gray-500">{{ $vehicle->license_plate ?? '-' }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $vehicle->user->name ?? '—' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">Rp {{ number_format($vehicle->starting_price,0,',','.') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <span class="px-2 py-1 rounded-full text-xs {{ $vehicle->status==='approved' ? 'bg-green-100 text-green-800' : ($vehicle->status==='pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">{{ ucfirst($vehicle->status) }}</span>
-                            @if($vehicle->is_featured ?? false)
-                                <span class="ml-2 px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">Featured</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <a href="{{ route('admin.vehicles.edit', $vehicle) }}" class="text-blue-600 hover:underline mr-3">Edit</a>
-                            @if($vehicle->status === 'pending')
-                                <form method="POST" action="{{ route('admin.vehicles.approve', $vehicle) }}" class="inline">
-                                    @csrf
-                                    <button class="text-green-600 mr-2">Approve</button>
-                                </form>
-                                <button onclick="openRejectModal({{ $vehicle->id }}, '{{ addslashes($vehicle->brand . ' ' . $vehicle->model) }}')" class="text-red-600">Reject</button>
-                            @endif
-                            <form method="POST" action="{{ route('admin.vehicles.toggle-feature', $vehicle) }}" class="inline ml-2">
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2"><input type="checkbox" id="selectAll"></th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Listing</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @forelse($vehicles as $vehicle)
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2"><input type="checkbox" name="ids[]" value="{{ $vehicle->id }}" class="rowCheckbox"></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $vehicles->firstItem() + $loop->index }}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-medium">{{ $vehicle->brand }} {{ $vehicle->model }} ({{ $vehicle->year }})</div>
+                        <div class="text-xs text-gray-500">{{ $vehicle->license_plate ?? '-' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $vehicle->user->name ?? '—' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">Rp {{ number_format($vehicle->starting_price,0,',','.') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 py-1 rounded-full text-xs {{ $vehicle->status==='approved' ? 'bg-green-100 text-green-800' : ($vehicle->status==='pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">{{ ucfirst($vehicle->status) }}</span>
+                        @if($vehicle->is_featured ?? false)
+                            <span class="ml-2 px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">Featured</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <a href="{{ route('admin.vehicles.edit', $vehicle) }}" class="text-blue-600 hover:underline mr-3">Edit</a>
+                        @if($vehicle->status === 'pending')
+                            <form method="POST" action="{{ route('admin.vehicles.approve', $vehicle) }}" class="inline">
                                 @csrf
-                                <button class="text-indigo-600">{{ ($vehicle->is_featured ?? false) ? 'Unfeature' : 'Feature' }}</button>
+                                <button type="submit" class="text-green-600 mr-2">Approve</button>
                             </form>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">No vehicles found</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                            <button type="button" onclick="openRejectModal({{ $vehicle->id }}, '{{ addslashes($vehicle->brand . ' ' . $vehicle->model) }}')" class="text-red-600">Reject</button>
+                        @endif
+                        <form method="POST" action="{{ route('admin.vehicles.toggle-feature', $vehicle) }}" class="inline ml-2">
+                            @csrf
+                            <button type="submit" class="text-indigo-600">{{ ($vehicle->is_featured ?? false) ? 'Unfeature' : 'Feature' }}</button>
+                        </form>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">No vehicles found</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-        <div class="mt-4">
-            {{ $vehicles->links() }}
-        </div>
+    <div class="mt-4">
+        {{ $vehicles->links() }}
+    </div>
+
+    <!-- Hidden bulk form -->
+    <form method="POST" action="{{ route('admin.vehicles.bulk') }}" id="bulkForm" class="hidden">
+        @csrf
+        <input type="hidden" name="action" id="bulkFormAction">
+        <input type="hidden" name="schedule_id" id="bulkFormSchedule">
+        <div id="bulkFormIds"></div>
     </form>
 
     <!-- Reject modal (simple) -->
@@ -125,30 +130,47 @@
         document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = e.target.checked);
     });
 
-    // When bulk form is submitted, ensure at least one id is checked
-    document.getElementById('bulkForm')?.addEventListener('submit', function(e){
-        const checked = Array.from(document.querySelectorAll('.rowCheckbox')).some(cb => cb.checked);
-        if (!checked) {
-            e.preventDefault();
+    // Bulk Apply button click handler
+    document.getElementById('bulkApplyBtn')?.addEventListener('click', function(){
+        const checkedIds = Array.from(document.querySelectorAll('.rowCheckbox:checked')).map(cb => cb.value);
+        
+        if (checkedIds.length === 0) {
             alert('Pilih minimal 1 listing untuk tindakan massal.');
             return;
         }
 
-        // If a schedule is selected and no other action chosen, route to assign-schedule
-        const schedule = document.getElementById('bulkSchedule')?.value;
         const action = document.getElementById('bulkAction')?.value;
-        if (schedule && !action) {
-            // change form action to assign schedule endpoint
-            this.action = '{{ route('admin.vehicles.assign-schedule') }}';
-            return; // allow submit
-        }
-
-        // otherwise ensure an action is chosen
-        if (!action) {
-            e.preventDefault();
+        const schedule = document.getElementById('bulkSchedule')?.value;
+        
+        if (!action && !schedule) {
             alert('Pilih tindakan massal atau pilih schedule untuk ditugaskan.');
             return;
         }
+
+        // Populate hidden form
+        const form = document.getElementById('bulkForm');
+        document.getElementById('bulkFormAction').value = action;
+        document.getElementById('bulkFormSchedule').value = schedule;
+        
+        // Clear and add checked ids
+        const idsContainer = document.getElementById('bulkFormIds');
+        idsContainer.innerHTML = '';
+        checkedIds.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = id;
+            idsContainer.appendChild(input);
+        });
+
+        // Set form action based on selection
+        if (schedule && !action) {
+            form.action = '{{ route('admin.vehicles.assign-schedule') }}';
+        } else {
+            form.action = '{{ route('admin.vehicles.bulk') }}';
+        }
+
+        form.submit();
     });
 
     function openRejectModal(id, title) {

@@ -23,16 +23,6 @@ class AdminSeeder extends Seeder
         ]);
 
         \App\Models\User::create([
-            'name' => 'Owner Mokasindo',
-            'email' => 'owner@mokasindo.com',
-            'password' => bcrypt('password'),
-            'role' => 'owner',
-            'is_active' => true,
-            'email_verified_at' => now(),
-            'verified_at' => now(),
-        ]);
-
-        \App\Models\User::create([
             'name' => 'Test Member',
             'email' => 'member@test.com',
             'password' => bcrypt('password'),

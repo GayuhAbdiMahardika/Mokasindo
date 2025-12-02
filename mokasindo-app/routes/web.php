@@ -187,6 +187,18 @@ Route::get('/tes-register', function () {
 // Instagram feed (example)
 Route::get('/instagram-feed', [InstagramController::class, 'getMedia']);
 
+// Public Pages List (All Published Pages)
+Route::get('/pages', function () {
+    $pages = Page::where('is_published', true)->orderBy('updated_at', 'desc')->paginate(12);
+    return view('pages.index', compact('pages'));
+})->name('pages.index');
+
+// Public Page View (Dynamic CMS Pages)
+Route::get('/page/{slug}', function ($slug) {
+    $page = Page::where('slug', $slug)->where('is_published', true)->firstOrFail();
+    return view('pages.show', compact('page'));
+})->name('page.show');
+
 // ====================================================
 // 4. HELPER TESTING (Force Login)
 // ====================================================
@@ -319,6 +331,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     
     // Page Management (CMS)
     Route::resource('pages', App\Http\Controllers\Admin\PageController::class);
+    Route::post('pages/{page}/toggle-publish', [App\Http\Controllers\Admin\PageController::class, 'togglePublish'])->name('pages.toggle-publish');
     Route::get('pages/{page}/revisions', [App\Http\Controllers\Admin\PageController::class, 'revisions'])->name('pages.revisions');
     Route::post('pages/{page}/revisions/{revision}/revert', [App\Http\Controllers\Admin\PageController::class, 'revertRevision'])->name('pages.revisions.revert');
 

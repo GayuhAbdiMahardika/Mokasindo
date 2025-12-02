@@ -36,26 +36,64 @@
                         <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $page->slug }}</code>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        @if($page->is_published)
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Published</span>
-                        @else
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Draft</span>
-                        @endif
+                        <form action="{{ route('admin.pages.toggle-publish', $page) }}" method="POST" class="inline">
+                            @csrf
+                            @if($page->is_published)
+                                <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition cursor-pointer" title="Klik untuk unpublish">
+                                    <i class="fas fa-check-circle mr-1"></i>Published
+                                </button>
+                            @else
+                                <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition cursor-pointer" title="Klik untuk publish">
+                                    <i class="fas fa-file-alt mr-1"></i>Draft
+                                </button>
+                            @endif
+                        </form>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $page->updated_at->format('d M Y') }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="{{ route('admin.pages.edit', $page) }}" class="text-blue-600 hover:text-blue-900 mr-3">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                        <form action="{{ route('admin.pages.destroy', $page) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-900">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </form>
+                        <div class="flex items-center space-x-2">
+                            {{-- Toggle Publish Button --}}
+                            <form action="{{ route('admin.pages.toggle-publish', $page) }}" method="POST" class="inline">
+                                @csrf
+                                @if($page->is_published)
+                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900" title="Unpublish">
+                                        <i class="fas fa-eye-slash"></i>
+                                    </button>
+                                @else
+                                    <button type="submit" class="text-green-600 hover:text-green-900" title="Publish">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                @endif
+                            </form>
+                            
+                            {{-- View Public Page --}}
+                            @if($page->is_published)
+                                <a href="/page/{{ $page->slug }}" target="_blank" class="text-gray-600 hover:text-gray-900" title="View Page">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            @endif
+                            
+                            {{-- Edit --}}
+                            <a href="{{ route('admin.pages.edit', $page) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            {{-- Revisions --}}
+                            <a href="{{ route('admin.pages.revisions', $page) }}" class="text-purple-600 hover:text-purple-900" title="Revisions">
+                                <i class="fas fa-history"></i>
+                            </a>
+                            
+                            {{-- Delete --}}
+                            <form action="{{ route('admin.pages.destroy', $page) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             @empty

@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Mokasindo - Lelang Mobil & Motor Bekas Indonesia' }}</title>
     
-    <!-- Menggunakan CDN Tailwind sesuai file asli -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    @php
+        $viteHotFile = base_path('vite.hot');
+        $viteManifestFile = public_path('build/manifest.json');
+    @endphp
+    @if (file_exists($viteHotFile) || file_exists($viteManifestFile))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.10/dist/tailwind.min.css">
+    @endif
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -143,7 +150,7 @@
                     <ul class="space-y-2 text-sm">
                         <li><a href="{{ route('company.about') }}" class="text-gray-400 hover:text-white transition">Tentang Kami</a></li>
                         <li><a href="{{ route('company.career') }}" class="text-gray-400 hover:text-white transition">Karir</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                        <li><a href="{{ route('pages.index') }}" class="text-gray-400 hover:text-white transition">Blog</a></li>
                     </ul>
                 </div>
 
