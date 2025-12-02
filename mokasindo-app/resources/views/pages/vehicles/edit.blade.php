@@ -166,11 +166,6 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kota/Kabupaten *</label>
                         <select name="city_id" id="city" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                             <option value="">Pilih Kota</option>
-                            @foreach($cities as $city)
-                                <option value="{{ $city->id }}" {{ old('city_id', $vehicle->city_id) == $city->id ? 'selected' : '' }}>
-                                    {{ $city->name }}
-                                </option>
-                            @endforeach
                         </select>
                     </div>
 
@@ -179,11 +174,6 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kecamatan</label>
                         <select name="district_id" id="district" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                             <option value="">Pilih Kecamatan</option>
-                            @foreach($districts as $district)
-                                <option value="{{ $district->id }}" {{ old('district_id', $vehicle->district_id) == $district->id ? 'selected' : '' }}>
-                                    {{ $district->name }}
-                                </option>
-                            @endforeach
                         </select>
                     </div>
 
@@ -192,11 +182,6 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kelurahan/Desa</label>
                         <select name="sub_district_id" id="sub_district" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                             <option value="">Pilih Kelurahan</option>
-                            @foreach($subDistricts as $subDistrict)
-                                <option value="{{ $subDistrict->id }}" {{ old('sub_district_id', $vehicle->sub_district_id) == $subDistrict->id ? 'selected' : '' }}>
-                                    {{ $subDistrict->name }}
-                                </option>
-                            @endforeach
                         </select>
                     </div>
 
@@ -256,4 +241,111 @@
         </form>
     </div>
 </div>
+
+<script>
+// Cascade Dropdown for Location
+const provinceSelect = document.getElementById('province');
+const citySelect = document.getElementById('city');
+const districtSelect = document.getElementById('district');
+const subDistrictSelect = document.getElementById('sub_district');
+
+// Store initial values for edit mode
+const initialCityId = '{{ old("city_id", $vehicle->city_id) }}';
+const initialDistrictId = '{{ old("district_id", $vehicle->district_id) }}';
+const initialSubDistrictId = '{{ old("sub_district_id", $vehicle->sub_district_id) }}';
+
+// When province changes, load cities
+provinceSelect.addEventListener('change', function() {
+    const provinceId = this.value;
+    
+    // Reset dependent dropdowns
+    citySelect.innerHTML = '<option value="">Pilih Kota</option>';
+    districtSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+    subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
+    
+    if (!provinceId) return;
+    
+    // Fetch cities
+    fetch(`/api/locations/cities/${provinceId}`)
+        .then(response => response.json())
+        .then(response => {
+            if (response.status === 'success' && response.data) {
+                response.data.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.id;
+                    option.textContent = city.name;
+                    if (city.id == initialCityId) option.selected = true;
+                    citySelect.appendChild(option);
+                });
+                
+                // Trigger city change if initial value exists
+                if (initialCityId) {
+                    citySelect.dispatchEvent(new Event('change'));
+                }
+            }
+        })
+        .catch(error => console.error('Error loading cities:', error));
+});
+
+// When city changes, load districts
+citySelect.addEventListener('change', function() {
+    const cityId = this.value;
+    
+    // Reset dependent dropdowns
+    districtSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+    subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
+    
+    if (!cityId) return;
+    
+    // Fetch districts
+    fetch(`/api/locations/districts/${cityId}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district.id;
+                option.textContent = district.name;
+                if (district.id == initialDistrictId) option.selected = true;
+                districtSelect.appendChild(option);
+            });
+            
+            // Trigger district change if initial value exists
+            if (initialDistrictId) {
+                districtSelect.dispatchEvent(new Event('change'));
+            }
+        })
+        .catch(error => console.error('Error loading districts:', error));
+});
+
+// When district changes, load sub districts
+districtSelect.addEventListener('change', function() {
+    const districtId = this.value;
+    
+    // Reset dependent dropdown
+    subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
+    
+    if (!districtId) return;
+    
+    // Fetch sub districts
+    fetch(`/api/locations/sub-districts/${districtId}`)
+        .then(response => response.json())
+        .then(response => {
+            if (response.status === 'success' && response.data) {
+                response.data.forEach(subDistrict => {
+                    const option = document.createElement('option');
+                    option.value = subDistrict.id;
+                    option.textContent = subDistrict.name;
+                    if (subDistrict.id == initialSubDistrictId) option.selected = true;
+                    subDistrictSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => console.error('Error loading sub districts:', error));
+});
+
+// Trigger initial load on page load for edit mode
+if (provinceSelect.value) {
+    provinceSelect.dispatchEvent(new Event('change'));
+}
+</script>
 @endsection

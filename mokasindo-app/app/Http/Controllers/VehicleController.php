@@ -197,7 +197,7 @@ class VehicleController extends Controller
 
             DB::commit();
 
-            return redirect()->route('my-ads')->with('success', 'Kendaraan berhasil ditambahkan dan menunggu persetujuan admin!');
+            return redirect()->route('my.ads')->with('success', 'Kendaraan berhasil ditambahkan dan menunggu persetujuan admin!');
 
         } catch (QuotaExceededException $exception) {
             return back()
@@ -328,7 +328,7 @@ class VehicleController extends Controller
 
             DB::commit();
 
-            return redirect()->route('my-ads')->with('success', 'Kendaraan berhasil diupdate!');
+            return redirect()->route('my.ads')->with('success', 'Kendaraan berhasil diupdate!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -363,7 +363,7 @@ class VehicleController extends Controller
 
             DB::commit();
 
-            return redirect()->route('my-ads')->with('success', 'Kendaraan berhasil dihapus!');
+            return redirect()->route('my.ads')->with('success', 'Kendaraan berhasil dihapus!');
 
         } catch (\Exception $e) {
             DB::rollBack();

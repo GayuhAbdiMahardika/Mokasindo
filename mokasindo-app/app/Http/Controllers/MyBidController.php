@@ -12,7 +12,7 @@ class MyBidController extends Controller
     {
         $bids = Bid::where('user_id', Auth::id())
             ->with(['auction.vehicle.primaryImage'])
-            ->orderBy('amount', 'desc')
+            ->orderBy('bid_amount', 'desc')
             ->get()
             ->unique('auction_id');
 
