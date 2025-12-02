@@ -223,5 +223,108 @@ class MarketplaceSeeder extends Seeder
             ['user_id' => $member->id, 'vehicle_id' => $vehicle->id],
             []
         );
+
+        // Create additional vehicles and auctions for demo
+        $this->createAdditionalAuctions($owner, $admin, $city, $province, $district, $subDistrict);
+    }
+
+    private function createAdditionalAuctions($owner, $admin, $city, $province, $district, $subDistrict): void
+    {
+        $schedules = \App\Models\AuctionSchedule::where('is_active', true)->get();
+        
+        $vehiclesData = [
+            [
+                'license_plate' => 'B 5678 XY',
+                'brand' => 'Honda',
+                'model' => 'CR-V Turbo',
+                'year' => 2021,
+                'color' => 'Putih',
+                'mileage' => 25000,
+                'starting_price' => 380_000_000,
+                'status' => 'approved',
+                'auction_status' => 'scheduled',
+            ],
+            [
+                'license_plate' => 'B 9012 ZZ',
+                'brand' => 'BMW',
+                'model' => 'X3 xDrive',
+                'year' => 2020,
+                'color' => 'Biru',
+                'mileage' => 35000,
+                'starting_price' => 650_000_000,
+                'status' => 'approved',
+                'auction_status' => 'active',
+            ],
+            [
+                'license_plate' => 'B 3456 AA',
+                'brand' => 'Mercedes-Benz',
+                'model' => 'C200 AMG',
+                'year' => 2019,
+                'color' => 'Hitam',
+                'mileage' => 40000,
+                'starting_price' => 550_000_000,
+                'status' => 'approved',
+                'auction_status' => 'active',
+            ],
+            [
+                'license_plate' => 'B 7890 BB',
+                'brand' => 'Mazda',
+                'model' => 'CX-5 Elite',
+                'year' => 2022,
+                'color' => 'Merah',
+                'mileage' => 15000,
+                'starting_price' => 420_000_000,
+                'status' => 'approved',
+                'auction_status' => 'scheduled',
+            ],
+        ];
+
+        foreach ($vehiclesData as $index => $vData) {
+            $vehicle = Vehicle::updateOrCreate(
+                ['license_plate' => $vData['license_plate']],
+                [
+                    'user_id' => $owner->id,
+                    'category' => 'mobil',
+                    'brand' => $vData['brand'],
+                    'model' => $vData['model'],
+                    'year' => $vData['year'],
+                    'color' => $vData['color'],
+                    'mileage' => $vData['mileage'],
+                    'description' => 'Unit terawat, siap pakai.',
+                    'starting_price' => $vData['starting_price'],
+                    'transmission' => 'Automatic',
+                    'fuel_type' => 'Bensin',
+                    'engine_capacity' => 2000,
+                    'condition' => 'bekas',
+                    'province_id' => $province->id,
+                    'city_id' => $city->id,
+                    'district_id' => $district->id,
+                    'sub_district_id' => $subDistrict->id,
+                    'postal_code' => '12190',
+                    'status' => $vData['status'],
+                    'approved_at' => now()->subDays(1),
+                    'approved_by' => $admin->id,
+                ]
+            );
+
+            $schedule = $schedules->random();
+
+            Auction::updateOrCreate(
+                ['vehicle_id' => $vehicle->id],
+                [
+                    'auction_schedule_id' => $schedule->id,
+                    'starting_price' => $vehicle->starting_price,
+                    'current_price' => $vData['auction_status'] === 'active' ? $vehicle->starting_price + 10_000_000 : 0,
+                    'deposit_amount' => $vehicle->starting_price * 0.05,
+                    'deposit_percentage' => 5,
+                    'start_time' => $vData['auction_status'] === 'active' ? now()->subHours(2) : $schedule->start_date,
+                    'end_time' => $vData['auction_status'] === 'active' ? now()->addHours(6) : $schedule->end_date,
+                    'duration_hours' => 24,
+                    'status' => $vData['auction_status'],
+                    'total_bids' => $vData['auction_status'] === 'active' ? rand(1, 5) : 0,
+                    'total_participants' => $vData['auction_status'] === 'active' ? rand(1, 3) : 0,
+                ]
+            );
+        }
     }
 }

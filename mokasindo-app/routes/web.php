@@ -34,10 +34,10 @@ Route::get('/', function () {
 });
 
 // Group Etalase
-Route::prefix('etalase')->group(function () {
-    Route::get('/filters', [VehicleController::class, 'filters']);
-    Route::get('/vehicles', [VehicleController::class, 'index']);
-    Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
+Route::prefix('etalase')->name('etalase.')->group(function () {
+    Route::get('/filters', [VehicleController::class, 'filters'])->name('filters');
+    Route::get('/', [VehicleController::class, 'index'])->name('index');
+    Route::get('/{id}', [VehicleController::class, 'show'])->name('show');
 });
 
 // Group Member Area (Auth Required)

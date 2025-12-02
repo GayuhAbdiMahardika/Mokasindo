@@ -28,11 +28,10 @@ class AuctionSchedulesController extends Controller
             'description' => 'nullable|string',
             'location_id' => 'required|exists:cities,id',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'is_active' => 'nullable|boolean',
+            'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        $data['is_active'] = $request->has('is_active');
+        $data['is_active'] = $request->boolean('is_active');
 
         AuctionSchedule::create($data);
         return redirect()->route('admin.auction-schedules.index')->with('status', 'Schedule created');
@@ -51,14 +50,13 @@ class AuctionSchedulesController extends Controller
             'description' => 'nullable|string',
             'location_id' => 'required|exists:cities,id',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'is_active' => 'nullable|boolean',
+            'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        $data['is_active'] = $request->has('is_active');
+        $data['is_active'] = $request->boolean('is_active');
 
         $auctionSchedule->update($data);
-        return back()->with('status', 'Schedule updated');
+        return redirect()->route('admin.auction-schedules.index')->with('status', 'Schedule updated');
     }
 
     public function destroy(AuctionSchedule $auctionSchedule)

@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Auction;
-use App\Models\UserDeposit;
+use App\Models\Deposit;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -259,7 +260,7 @@ class DepositController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Deposit::where('user_id', auth()->id())->latest();
+        $query = Deposit::where('user_id', Auth::id())->latest();
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
@@ -271,16 +272,16 @@ class DepositController extends Controller
 
         $deposits = $query->paginate(20);
 
-        $totalTopup = Deposit::where('user_id', auth()->id())
+        $totalTopup = Deposit::where('user_id', Auth::id())
             ->where('type', 'topup')
             ->where('status', 'approved')
             ->sum('amount');
 
-        $usedDeposit = Deposit::where('user_id', auth()->id())
+        $usedDeposit = Deposit::where('user_id', Auth::id())
             ->where('type', 'deduction')
             ->sum('amount');
 
-        $totalTransactions = Deposit::where('user_id', auth()->id())->count();
+        $totalTransactions = Deposit::where('user_id', Auth::id())->count();
 
         return view('pages.deposits.index', compact('deposits', 'totalTopup', 'usedDeposit', 'totalTransactions'));
     }
@@ -307,7 +308,7 @@ class DepositController extends Controller
         DB::beginTransaction();
         try {
             $deposit = Deposit::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'amount' => $request->amount,
                 'type' => 'topup',
                 'status' => 'pending',
@@ -334,14 +335,15 @@ class DepositController extends Controller
     public function withdraw(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:50000|max:' . auth()->user()->deposit_balance,
+            'amount' => 'required|numeric|min:50000|max:' . Auth::user()->deposit_balance,
             'bank_account' => 'required|string',
             'bank_name' => 'required|string'
         ]);
 
         DB::beginTransaction();
         try {
-            $user = auth()->user();
+            /** @var User $user */
+            $user = Auth::user();
 
             $deposit = Deposit::create([
                 'user_id' => $user->id,

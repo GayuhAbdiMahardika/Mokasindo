@@ -67,31 +67,49 @@ class VehicleController extends Controller
             $query->latest('approved_at'); // Default: Terbaru
         }
 
+        // Get cities for filter dropdown
+        $cities = City::orderBy('name')->get();
+
         // Eksekusi (12 item per halaman)
-        return response()->json([
-            'status' => 'success',
-            'data' => $query->paginate(12)
-        ]);
+        $vehicles = $query->paginate(12);
+
+        // Return JSON for API requests, View for web requests
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $vehicles
+            ]);
+        }
+
+        return view('etalase.index', compact('vehicles', 'cities'));
     }
 
     // 2. GET DETAIL SATU MOBIL
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $vehicle = Vehicle::approved()
             ->with(['images', 'user', 'city', 'province', 'auction', 'district'])
             ->find($id);
 
         if (!$vehicle) {
-            return response()->json(['message' => 'Kendaraan tidak ditemukan atau belum tayang'], 404);
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Kendaraan tidak ditemukan atau belum tayang'], 404);
+            }
+            abort(404, 'Kendaraan tidak ditemukan atau belum tayang');
         }
 
         // Tambah views count
         $vehicle->incrementViews();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $vehicle
-        ]);
+        // Return JSON for API requests, View for web requests
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $vehicle
+            ]);
+        }
+
+        return view('etalase.show', compact('vehicle'));
     }
 
     // 3. GET DATA FILTERS (Untuk Dropdown di Frontend)

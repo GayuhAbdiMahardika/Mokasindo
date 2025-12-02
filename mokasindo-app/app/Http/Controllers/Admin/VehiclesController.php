@@ -29,7 +29,12 @@ class VehiclesController extends Controller
         }
 
         $vehicles = $query->paginate(15)->appends($request->query());
-        $schedules = AuctionSchedule::where('is_active', true)->get();
+        
+        // Get all active schedules for assignment dropdown
+        $schedules = AuctionSchedule::where('is_active', true)
+            ->where('end_date', '>', now()) // Only show schedules that haven't ended
+            ->orderBy('start_date')
+            ->get();
 
         return view('admin.vehicles.index', compact('vehicles', 'schedules'));
     }
@@ -134,28 +139,47 @@ class VehiclesController extends Controller
 
         $schedule = AuctionSchedule::find($request->schedule_id);
         $created = 0;
+        $skipped = 0;
 
-        $vehicles = Vehicle::whereIn('id', $request->ids)->get();
+        // Only get approved vehicles
+        $vehicles = Vehicle::whereIn('id', $request->ids)
+            ->where('status', 'approved')
+            ->get();
+
         foreach ($vehicles as $vehicle) {
             // skip if there's already a scheduled/active auction for this vehicle
             $exists = Auction::where('vehicle_id', $vehicle->id)
                 ->whereIn('status', ['scheduled', 'active'])->exists();
-            if ($exists) continue;
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
 
-            $auction = new Auction();
-            $auction->vehicle_id = $vehicle->id;
-            $auction->starting_price = $vehicle->starting_price;
-            $auction->current_price = 0;
-            $auction->deposit_amount = $vehicle->starting_price * 0.05;
-            $auction->deposit_percentage = 5.00;
-            $auction->start_time = $schedule->start_date;
-            $auction->end_time = $schedule->end_date;
-            $auction->status = 'scheduled';
-            $auction->save();
+            Auction::create([
+                'vehicle_id' => $vehicle->id,
+                'auction_schedule_id' => $schedule->id,
+                'starting_price' => $vehicle->starting_price,
+                'current_price' => 0,
+                'deposit_amount' => $vehicle->starting_price * 0.05,
+                'deposit_percentage' => 5.00,
+                'start_time' => $schedule->start_date,
+                'end_time' => $schedule->end_date,
+                'status' => 'scheduled',
+            ]);
 
             $created++;
         }
 
-        return back()->with('status', "Assigned schedule to {$created} vehicles");
+        $message = "Berhasil memasukkan {$created} kendaraan ke jadwal lelang.";
+        if ($skipped > 0) {
+            $message .= " ({$skipped} dilewati karena sudah ada di lelang aktif)";
+        }
+
+        $notApproved = count($request->ids) - $vehicles->count();
+        if ($notApproved > 0) {
+            $message .= " ({$notApproved} dilewati karena belum approved)";
+        }
+
+        return back()->with('status', $message);
     }
 }

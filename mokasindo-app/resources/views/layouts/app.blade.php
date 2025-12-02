@@ -43,6 +43,16 @@
                         Beranda
                     </a>
 
+                    <a href="{{ route('etalase.index') }}"
+                       class="font-medium transition px-2 py-1 {{ request()->is('etalase*') ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-700 hover:text-indigo-600' }}">
+                        Etalase
+                    </a>
+
+                    <a href="{{ route('auctions.index') }}"
+                       class="font-medium transition px-2 py-1 {{ request()->is('auctions*') ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-700 hover:text-indigo-600' }}">
+                        Lelang
+                    </a>
+
                     <a href="/about"
                        class="font-medium transition px-2 py-1 {{ request()->is('about*') ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-700 hover:text-indigo-600' }}">
                         Tentang

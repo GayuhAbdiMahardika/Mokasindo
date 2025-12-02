@@ -10,6 +10,22 @@
     </div>
 
     <div class="bg-white rounded-lg shadow p-6">
+        @if ($errors->any())
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <ul class="list-disc list-inside text-red-600 text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if (session('status'))
+            <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600 text-sm">
+                {{ session('status') }}
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('admin.auction-schedules.update', $schedule) }}">
             @csrf
             @method('PUT')

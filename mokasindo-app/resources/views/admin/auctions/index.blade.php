@@ -21,9 +21,9 @@
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-2">
                 <i class="fas fa-calendar-alt text-3xl opacity-80"></i>
-                <span class="text-sm opacity-80">Upcoming</span>
+                <span class="text-sm opacity-80">Scheduled</span>
             </div>
-            <p class="text-3xl font-bold">{{ $auctions->where('status', 'upcoming')->count() }}</p>
+            <p class="text-3xl font-bold">{{ $auctions->where('status', 'scheduled')->count() }}</p>
             <p class="text-sm opacity-90 mt-1">Scheduled auctions</p>
         </div>
 
@@ -64,9 +64,10 @@
             
             <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 <option value="">All Status</option>
-                <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
+                <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Scheduled</option>
                 <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                 <option value="ended" {{ request('status') == 'ended' ? 'selected' : '' }}>Ended</option>
+                <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Sold</option>
                 <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
             </select>
 
@@ -114,8 +115,8 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center">
-                                @if($auction->vehicle && $auction->vehicle->photos->count() > 0)
-                                <img src="{{ Storage::url($auction->vehicle->photos->first()->path) }}" 
+                                @if($auction->vehicle && $auction->vehicle->images && $auction->vehicle->images->count() > 0)
+                                <img src="{{ asset('storage/' . $auction->vehicle->images->first()->image_path) }}" 
                                      alt="{{ $auction->vehicle->brand }}" 
                                      class="w-16 h-16 rounded-lg object-cover mr-3">
                                 @else
@@ -160,9 +161,9 @@
                             @endif
                         </td>
                         <td class="px-6 py-4">
-                            @if($auction->status == 'upcoming')
+                            @if($auction->status == 'scheduled')
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    <i class="fas fa-clock mr-1"></i>Upcoming
+                                    <i class="fas fa-clock mr-1"></i>Scheduled
                                 </span>
                             @elseif($auction->status == 'active')
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -171,6 +172,10 @@
                             @elseif($auction->status == 'ended')
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                     <i class="fas fa-flag-checkered mr-1"></i>Ended
+                                </span>
+                            @elseif($auction->status == 'sold')
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    <i class="fas fa-check-circle mr-1"></i>Sold
                                 </span>
                             @else
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">

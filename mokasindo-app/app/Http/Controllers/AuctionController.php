@@ -72,7 +72,7 @@ class AuctionController extends Controller
             'vehicle.district',
             'vehicle.subDistrict',
             'bids' => function ($query) {
-                $query->orderBy('amount', 'desc')->limit(10);
+                $query->orderBy('bid_amount', 'desc')->limit(10);
             },
             'bids.user'
         ])->findOrFail($id);
@@ -102,13 +102,13 @@ class AuctionController extends Controller
         if (Auth::check()) {
             $userHighestBid = Bid::where('auction_id', $auction->id)
                 ->where('user_id', Auth::id())
-                ->orderBy('amount', 'desc')
+                ->orderBy('bid_amount', 'desc')
                 ->first();
         }
 
         // Check if user is winning
         $isWinning = false;
-        if ($userHighestBid && $auction->current_price == $userHighestBid->amount) {
+        if ($userHighestBid && $auction->current_price == $userHighestBid->bid_amount) {
             $isWinning = true;
         }
 
@@ -268,7 +268,7 @@ class AuctionController extends Controller
             $bid = Bid::create([
                 'auction_id' => $auction->id,
                 'user_id' => Auth::id(),
-                'amount' => $request->amount,
+                'bid_amount' => $request->amount,
                 'bid_time' => now(),
             ]);
 
@@ -316,7 +316,7 @@ class AuctionController extends Controller
     public function getData($id)
     {
         $auction = Auction::with(['bids' => function ($query) {
-            $query->with('user')->orderBy('amount', 'desc')->limit(10);
+            $query->with('user')->orderBy('bid_amount', 'desc')->limit(10);
         }])->findOrFail($id);
 
         return response()->json([
@@ -329,7 +329,7 @@ class AuctionController extends Controller
             'bids' => $auction->bids->map(function ($bid) {
                 return [
                     'user_name' => substr($bid->user->name, 0, 3) . '***', // Hide full name
-                    'amount' => $bid->amount,
+                    'amount' => $bid->bid_amount,
                     'bid_time' => $bid->bid_time->diffForHumans(),
                 ];
             }),
@@ -353,17 +353,17 @@ class AuctionController extends Controller
 
             // Get highest bid
             $winningBid = Bid::where('auction_id', $auction->id)
-                ->orderBy('amount', 'desc')
+                ->orderBy('bid_amount', 'desc')
                 ->first();
 
             if ($winningBid) {
                 // Check if reserve price is met
-                if ($auction->reserve_price && $winningBid->amount < $auction->reserve_price) {
+                if ($auction->reserve_price && $winningBid->bid_amount < $auction->reserve_price) {
                     // Reserve not met - no winner
                     $auction->update([
                         'status' => 'ended',
                         'winner_id' => null,
-                        'final_price' => $winningBid->amount,
+                        'final_price' => $winningBid->bid_amount,
                     ]);
 
                     // TODO: Refund all deposits
@@ -372,7 +372,7 @@ class AuctionController extends Controller
                     $auction->update([
                         'status' => 'ended',
                         'winner_id' => $winningBid->user_id,
-                        'final_price' => $winningBid->amount,
+                        'final_price' => $winningBid->bid_amount,
                     ]);
 
                     // Update vehicle status
@@ -439,10 +439,10 @@ class AuctionController extends Controller
         }, 'bids.user'])->findOrFail($id);
 
         $userBid = null;
-        if (auth()->check()) {
+        if (Auth::check()) {
             $userBid = $auction->bids()
-                ->where('user_id', auth()->id())
-                ->orderBy('amount', 'desc')
+                ->where('user_id', Auth::id())
+                ->orderBy('bid_amount', 'desc')
                 ->first();
         }
 
@@ -454,14 +454,14 @@ class AuctionController extends Controller
                 return [
                     'id' => $bid->id,
                     'user_name' => $bid->user->name,
-                    'amount' => $bid->amount,
+                    'amount' => $bid->bid_amount,
                     'time' => $bid->created_at->diffForHumans(),
-                    'is_current_user' => auth()->check() && $bid->user_id === auth()->id()
+                    'is_current_user' => Auth::check() && $bid->user_id === Auth::id()
                 ];
             }),
             'user_bid' => $userBid ? [
-                'amount' => $userBid->amount,
-                'is_highest' => $userBid->amount >= $auction->current_price
+                'amount' => $userBid->bid_amount,
+                'is_highest' => $userBid->bid_amount >= $auction->current_price
             ] : null
         ]);
     }

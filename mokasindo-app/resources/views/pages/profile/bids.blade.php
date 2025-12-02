@@ -48,7 +48,7 @@
                     @empty
                         <div class="p-10 text-center">
                             <p class="text-gray-500">Anda belum mengikuti lelang apapun.</p>
-                            <a href="/etalase/vehicles" class="text-indigo-600 font-bold hover:underline text-sm mt-2 inline-block">Cari Mobil Lelang &rarr;</a>
+                            <a href="{{ route('etalase.index') }}" class="text-indigo-600 font-bold hover:underline text-sm mt-2 inline-block">Cari Mobil Lelang &rarr;</a>
                         </div>
                     @endforelse
                 </div>

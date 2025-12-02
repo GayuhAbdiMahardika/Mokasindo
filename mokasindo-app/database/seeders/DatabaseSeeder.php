@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             RoleQuotaSeeder::class,
             UserQuotaOverrideSeeder::class,
             UserSubscriptionSeeder::class,
+            AuctionScheduleSeeder::class,
             MarketplaceSeeder::class,
         ]);
     }
