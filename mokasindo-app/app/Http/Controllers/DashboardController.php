@@ -45,12 +45,23 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Active Auctions (vehicles yang sedang dilelang)
-        $active_auctions = Auction::whereHas('vehicle', function($query) use ($user) {
+        // Active Auctions (vehicles yang sedang dilelang milik user)
+        $my_active_auctions = Auction::whereHas('vehicle', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->where('status', 'active')
             ->with(['vehicle.primaryImage', 'bids'])
+            ->get();
+
+        // Auctions in User's Area (lelang aktif di kota user)
+        $area_auctions = Auction::where('status', 'active')
+            ->whereHas('vehicle', function($query) use ($user) {
+                $query->where('city_id', $user->city_id)
+                      ->where('user_id', '!=', $user->id); // Exclude user's own vehicles
+            })
+            ->with(['vehicle.primaryImage', 'vehicle.city', 'bids'])
+            ->orderBy('end_time', 'asc')
+            ->take(6)
             ->get();
 
         return view('pages.dashboard.index', compact(
@@ -58,7 +69,8 @@ class DashboardController extends Controller
             'recent_vehicles',
             'recent_bids',
             'recent_payments',
-            'active_auctions'
+            'my_active_auctions',
+            'area_auctions'
         ));
     }
 }

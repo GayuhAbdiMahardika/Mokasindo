@@ -428,4 +428,73 @@ class AuctionController extends Controller
 
         return back()->with('success', 'Auction cancelled successfully');
     }
+
+    /**
+     * Get bids data for real-time updates (API)
+     */
+    public function getBidsData($id)
+    {
+        $auction = Auction::with(['bids' => function($query) {
+            $query->latest()->limit(10);
+        }, 'bids.user'])->findOrFail($id);
+
+        $userBid = null;
+        if (auth()->check()) {
+            $userBid = $auction->bids()
+                ->where('user_id', auth()->id())
+                ->orderBy('amount', 'desc')
+                ->first();
+        }
+
+        return response()->json([
+            'current_price' => $auction->current_price,
+            'bid_count' => $auction->bids()->count(),
+            'highest_bidder' => $auction->bids()->latest()->first()?->user->name ?? 'Belum ada',
+            'bids' => $auction->bids->map(function($bid) {
+                return [
+                    'id' => $bid->id,
+                    'user_name' => $bid->user->name,
+                    'amount' => $bid->amount,
+                    'time' => $bid->created_at->diffForHumans(),
+                    'is_current_user' => auth()->check() && $bid->user_id === auth()->id()
+                ];
+            }),
+            'user_bid' => $userBid ? [
+                'amount' => $userBid->amount,
+                'is_highest' => $userBid->amount >= $auction->current_price
+            ] : null
+        ]);
+    }
+
+    /**
+     * Get auction status data for real-time updates (API)
+     */
+    public function getStatusData($id)
+    {
+        $auction = Auction::findOrFail($id);
+
+        $timeRemaining = null;
+        if ($auction->status === 'active') {
+            $now = now();
+            $endTime = $auction->end_time;
+            $diff = $now->diffInSeconds($endTime, false);
+            
+            if ($diff > 0) {
+                $hours = floor($diff / 3600);
+                $minutes = floor(($diff % 3600) / 60);
+                $seconds = $diff % 60;
+                $timeRemaining = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+            } else {
+                $timeRemaining = '00:00:00';
+            }
+        }
+
+        return response()->json([
+            'status' => $auction->status,
+            'current_price' => $auction->current_price,
+            'time_remaining' => $timeRemaining,
+            'end_time' => $auction->end_time->toIso8601String(),
+            'bid_count' => $auction->bids()->count()
+        ]);
+    }
 }

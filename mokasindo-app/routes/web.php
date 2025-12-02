@@ -86,16 +86,32 @@ Route::prefix('auctions')->name('auctions.')->group(function () {
         Route::post('/{id}/bid', [AuctionController::class, 'placeBid'])->name('bid');
         Route::post('/{id}/cancel', [AuctionController::class, 'cancel'])->name('cancel');
         Route::post('/{id}/end', [AuctionController::class, 'end'])->name('end');
+        
+        // API endpoints for real-time updates
+        Route::get('/{id}/bids-data', [AuctionController::class, 'getBidsData'])->name('bids-data');
+        Route::get('/{id}/status-data', [AuctionController::class, 'getStatusData'])->name('status-data');
     });
+});
+
+// Notifications Routes
+Route::prefix('notifications')->name('notifications.')->middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+    Route::post('/{id}/read', [App\Http\Controllers\NotificationController::class, 'read'])->name('read');
+    Route::post('/read-all', [App\Http\Controllers\NotificationController::class, 'readAll'])->name('read-all');
+    Route::delete('/{id}', [App\Http\Controllers\NotificationController::class, 'delete'])->name('delete');
+    Route::get('/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unread-count');
 });
 
 // Deposit Routes (Deposit 5% sebelum bid)
 Route::prefix('deposits')->name('deposits.')->middleware('auth')->group(function () {
+    Route::get('/', [DepositController::class, 'index'])->name('index');
     Route::get('/create', [DepositController::class, 'create'])->name('create');
+    Route::post('/store', [DepositController::class, 'store'])->name('store');
     Route::get('/{auctionId}', [DepositController::class, 'show'])->name('show');
     Route::post('/{auctionId}/pay', [DepositController::class, 'pay'])->name('pay');
     Route::get('/payment/{depositId}', [DepositController::class, 'payment'])->name('payment');
     Route::post('/confirm/{depositId}', [DepositController::class, 'confirm'])->name('confirm');
+    Route::post('/withdraw', [DepositController::class, 'withdraw'])->name('withdraw');
     Route::post('/webhook', [DepositController::class, 'webhook'])->name('webhook')->withoutMiddleware('auth');
 });
 
@@ -332,6 +348,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('payments/{payment}/verify', [App\Http\Controllers\Admin\PaymentsController::class, 'verify'])->name('payments.verify');
     Route::post('payments/{payment}/reject', [App\Http\Controllers\Admin\PaymentsController::class, 'reject'])->name('payments.reject');
     Route::post('payments/{payment}/refund', [App\Http\Controllers\Admin\PaymentsController::class, 'refund'])->name('payments.refund');
+
+    // Deposits Management
+    Route::get('deposits', [App\Http\Controllers\Admin\DepositsController::class, 'index'])->name('deposits.index');
+    Route::post('deposits/{deposit}/approve', [App\Http\Controllers\Admin\DepositsController::class, 'approve'])->name('deposits.approve');
+    Route::post('deposits/{deposit}/reject', [App\Http\Controllers\Admin\DepositsController::class, 'reject'])->name('deposits.reject');
+    Route::get('deposits/{deposit}/proof', [App\Http\Controllers\Admin\DepositsController::class, 'getProof'])->name('deposits.proof');
+
+    // Reports & Analytics
+    Route::get('reports', [App\Http\Controllers\Admin\ReportsController::class, 'index'])->name('reports.index');
     Route::get('payments/{payment}/invoice', [App\Http\Controllers\Admin\PaymentsController::class, 'invoice'])->name('payments.invoice');
     Route::get('payments/webhook-logs', [App\Http\Controllers\Admin\PaymentsController::class, 'webhookLogs'])->name('payments.webhook-logs');
 

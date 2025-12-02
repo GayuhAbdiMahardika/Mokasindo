@@ -199,8 +199,82 @@
         </div>
     </div>
 
+    <!-- Active Auctions in My Area -->
+    @if($area_auctions->count() > 0)
+    <div class="bg-white rounded-lg shadow overflow-hidden mt-8">
+        <div class="px-6 py-4 border-b bg-gray-50 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-gray-800">
+                <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>Active Auctions Near You
+                @if(auth()->user()->city)
+                    <span class="text-sm font-normal text-gray-600">in {{ auth()->user()->city->name }}</span>
+                @endif
+            </h3>
+            <a href="{{ route('auctions.index') }}" class="text-sm text-blue-600 hover:text-blue-800">Browse All →</a>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($area_auctions as $auction)
+                <div class="border rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer" onclick="window.location='{{ route('auctions.show', $auction->id) }}'">
+                    @if($auction->vehicle->primaryImage)
+                    <img src="{{ asset('storage/' . $auction->vehicle->primaryImage->image_path) }}" 
+                         alt="{{ $auction->vehicle->brand }} {{ $auction->vehicle->model }}" 
+                         class="w-full h-40 object-cover">
+                    @else
+                    <div class="w-full h-40 bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-car text-gray-400 text-4xl"></i>
+                    </div>
+                    @endif
+                    <div class="p-4">
+                        <h4 class="font-bold text-gray-800 mb-1">{{ $auction->vehicle->brand }} {{ $auction->vehicle->model }}</h4>
+                        <p class="text-sm text-gray-600 mb-2">
+                            <i class="fas fa-calendar mr-1"></i>{{ $auction->vehicle->year }}
+                            <span class="mx-1">•</span>
+                            <i class="fas fa-map-marker-alt mr-1"></i>{{ $auction->vehicle->city->name ?? 'N/A' }}
+                        </p>
+                        <div class="space-y-1 mb-3">
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Starting Bid:</span>
+                                <span class="font-semibold text-gray-800">
+                                    Rp {{ number_format($auction->starting_price, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Current Bid:</span>
+                                <span class="font-bold text-green-600">
+                                    Rp {{ number_format($auction->current_price, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Total Bids:</span>
+                                <span class="font-semibold text-blue-600">{{ $auction->bids->count() }}</span>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-gray-500">
+                                    <i class="far fa-clock mr-1"></i>
+                                    Ends: {{ $auction->end_time->format('d M Y, H:i') }}
+                                </span>
+                                @php
+                                    $timeLeft = now()->diffInHours($auction->end_time, false);
+                                @endphp
+                                @if($timeLeft > 0 && $timeLeft < 24)
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full font-semibold">
+                                        <i class="fas fa-fire"></i> {{ round($timeLeft) }}h left
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Active Auctions for My Vehicles -->
-    @if($active_auctions->count() > 0)
+    @if($my_active_auctions->count() > 0)
     <div class="bg-white rounded-lg shadow overflow-hidden mt-8">
         <div class="px-6 py-4 border-b bg-gray-50">
             <h3 class="text-lg font-bold text-gray-800">
@@ -209,7 +283,7 @@
         </div>
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach($active_auctions as $auction)
+                @foreach($my_active_auctions as $auction)
                 <div class="border rounded-lg overflow-hidden hover:shadow-lg transition">
                     @if($auction->vehicle->primaryImage)
                     <img src="{{ asset('storage/' . $auction->vehicle->primaryImage->image_path) }}" 

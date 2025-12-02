@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Auction;
-use App\Models\Deposit;
+use App\Models\UserDeposit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -251,6 +251,118 @@ class DepositController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to process refund');
+        }
+    }
+
+    /**
+     * Display deposit history
+     */
+    public function index(Request $request)
+    {
+        $query = Deposit::where('user_id', auth()->id())->latest();
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $deposits = $query->paginate(20);
+
+        $totalTopup = Deposit::where('user_id', auth()->id())
+            ->where('type', 'topup')
+            ->where('status', 'approved')
+            ->sum('amount');
+
+        $usedDeposit = Deposit::where('user_id', auth()->id())
+            ->where('type', 'deduction')
+            ->sum('amount');
+
+        $totalTransactions = Deposit::where('user_id', auth()->id())->count();
+
+        return view('pages.deposits.index', compact('deposits', 'totalTopup', 'usedDeposit', 'totalTransactions'));
+    }
+
+    /**
+     * Show create deposit form
+     */
+    public function create()
+    {
+        return view('pages.deposits.create');
+    }
+
+    /**
+     * Store new deposit topup
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:50000',
+            'payment_method' => 'required|in:bank_transfer,ewallet,qris,credit_card',
+            'notes' => 'nullable|string|max:500'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $deposit = Deposit::create([
+                'user_id' => auth()->id(),
+                'amount' => $request->amount,
+                'type' => 'topup',
+                'status' => 'pending',
+                'payment_method' => $request->payment_method,
+                'description' => 'Top up saldo deposit',
+                'notes' => $request->notes,
+                'transaction_code' => 'DEP-' . strtoupper(uniqid())
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('deposits.payment', $deposit->id)
+                ->with('success', 'Silakan lanjutkan pembayaran');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal membuat deposit: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Withdraw deposit balance
+     */
+    public function withdraw(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:50000|max:' . auth()->user()->deposit_balance,
+            'bank_account' => 'required|string',
+            'bank_name' => 'required|string'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $user = auth()->user();
+
+            $deposit = Deposit::create([
+                'user_id' => $user->id,
+                'amount' => $request->amount,
+                'type' => 'withdrawal',
+                'status' => 'pending',
+                'description' => 'Penarikan saldo deposit',
+                'notes' => "Bank: {$request->bank_name} - Rekening: {$request->bank_account}",
+                'transaction_code' => 'WD-' . strtoupper(uniqid())
+            ]);
+
+            $user->decrement('deposit_balance', $request->amount);
+
+            DB::commit();
+
+            return redirect()->route('deposits.index')
+                ->with('success', 'Permintaan penarikan berhasil. Dana akan diproses dalam 1-3 hari kerja.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memproses penarikan: ' . $e->getMessage());
         }
     }
 }

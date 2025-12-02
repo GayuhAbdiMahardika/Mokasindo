@@ -59,11 +59,17 @@
                     <a href="{{ route('admin.payments.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.payments.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-money-bill-wave mr-2"></i> Payments
                     </a>
+                    <a href="{{ route('admin.deposits.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.deposits.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-wallet mr-2"></i> Deposits
+                    </a>
                     <a href="{{ route('admin.subscription-plans.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.subscription-plans.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-layer-group mr-2"></i> Subscription Plans
                     </a>
                     <a href="{{ route('admin.user-subscriptions.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.user-subscriptions.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-users-cog mr-2"></i> Subscriptions
+                    </a>
+                    <a href="{{ route('admin.reports.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.reports.*') ? 'bg-gray-800' : '' }}">
+                        <i class="fas fa-chart-bar mr-2"></i> Reports & Analytics
                     </a>
                 </div>
 

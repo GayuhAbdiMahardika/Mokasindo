@@ -58,6 +58,21 @@
                     </button>
 
                     @auth
+                        <!-- Notifications Bell -->
+                        <div class="relative mr-4">
+                            <a href="{{ route('notifications.index') }}" class="relative">
+                                <i class="fas fa-bell text-2xl text-gray-700 hover:text-indigo-600"></i>
+                                @php
+                                    $unreadCount = \App\Models\Notification::where('user_id', auth()->id())->whereNull('read_at')->count();
+                                @endphp
+                                @if($unreadCount > 0)
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                                </span>
+                                @endif
+                            </a>
+                        </div>
+
                         <!-- User Menu Dropdown -->
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" class="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 font-medium">
