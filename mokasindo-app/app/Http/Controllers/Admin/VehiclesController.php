@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Vehicle;
 use App\Models\Auction;
 use App\Models\AuctionSchedule;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 
 class VehiclesController extends Controller
@@ -146,6 +147,8 @@ class VehiclesController extends Controller
             ->where('status', 'approved')
             ->get();
 
+        $depositPercentage = Setting::get('deposit_percentage', 5);
+
         foreach ($vehicles as $vehicle) {
             // skip if there's already a scheduled/active auction for this vehicle
             $exists = Auction::where('vehicle_id', $vehicle->id)
@@ -160,8 +163,8 @@ class VehiclesController extends Controller
                 'auction_schedule_id' => $schedule->id,
                 'starting_price' => $vehicle->starting_price,
                 'current_price' => 0,
-                'deposit_amount' => $vehicle->starting_price * 0.05,
-                'deposit_percentage' => 5.00,
+                'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
+                'deposit_percentage' => $depositPercentage,
                 'start_time' => $schedule->start_date,
                 'end_time' => $schedule->end_date,
                 'status' => 'scheduled',

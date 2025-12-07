@@ -11,7 +11,7 @@ class MyAdController extends Controller
     public function index()
     {
         $vehicles = Vehicle::where('user_id', Auth::id())
-            ->with(['primaryImage', 'city'])
+            ->with(['primaryImage'])
             ->latest()
             ->paginate(10);
 

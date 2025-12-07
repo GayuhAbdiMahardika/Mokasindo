@@ -10,7 +10,12 @@ use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Midtrans\Snap;
+use Midtrans\Config as MidtransConfig;
+use Midtrans\Transaction as MidtransTransaction;
 
 class AuctionController extends Controller
 {
@@ -19,7 +24,7 @@ class AuctionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Auction::with(['vehicle.primaryImage', 'vehicle.city', 'vehicle.province'])
+        $query = Auction::with(['vehicle.primaryImage'])
             ->where('status', 'active')
             ->where('start_time', '<=', now())
             ->where('end_time', '>', now());
@@ -32,9 +37,9 @@ class AuctionController extends Controller
         }
 
         // Filter by city
-        if ($request->filled('city_id')) {
-            $query->whereHas('vehicle', function ($q) use ($request) {
-                $q->where('city_id', $request->city_id);
+            if ($request->filled('city')) {
+                $query->whereHas('vehicle', function($q) use ($request) {
+                    $q->where('city', 'like', "%{$request->city}%");
             });
         }
 
@@ -67,10 +72,6 @@ class AuctionController extends Controller
     {
         $auction = Auction::with([
             'vehicle.images',
-            'vehicle.city',
-            'vehicle.province',
-            'vehicle.district',
-            'vehicle.subDistrict',
             'bids' => function ($query) {
                 $query->orderBy('bid_amount', 'desc')->limit(10);
             },
@@ -82,14 +83,7 @@ class AuctionController extends Controller
             abort(404, 'Auction not found or has ended');
         }
 
-        // Check if user has paid deposit
-        $hasDeposit = false;
-        if (Auth::check()) {
-            $hasDeposit = Deposit::where('user_id', Auth::id())
-                ->where('auction_id', $auction->id)
-                ->where('status', 'paid')
-                ->exists();
-        }
+            $hasDeposit = false; // Removed unused deposit check
 
         // Get min bid increment from settings
         $minIncrement = Setting::where('key', 'min_bid_increment')->value('value') ?? 100000;
@@ -99,10 +93,17 @@ class AuctionController extends Controller
 
         // Get user's highest bid
         $userHighestBid = null;
+        $pendingDeposit = null;
         if (Auth::check()) {
             $userHighestBid = Bid::where('auction_id', $auction->id)
                 ->where('user_id', Auth::id())
                 ->orderBy('bid_amount', 'desc')
+                ->first();
+
+            $pendingDeposit = Deposit::where('auction_id', $auction->id)
+                ->where('user_id', Auth::id())
+                ->whereIn('status', ['pending'])
+                ->orderByDesc('id')
                 ->first();
         }
 
@@ -114,10 +115,10 @@ class AuctionController extends Controller
 
         return view('pages.auctions.show', compact(
             'auction',
-            'hasDeposit',
             'nextMinBid',
             'userHighestBid',
-            'isWinning'
+            'isWinning',
+            'pendingDeposit'
         ));
     }
 
@@ -143,9 +144,9 @@ class AuctionController extends Controller
         }
 
         // Get min and max auction duration from settings
-        $minDuration = Setting::where('key', 'min_auction_duration')->value('value') ?? 1;
-        $maxDuration = Setting::where('key', 'max_auction_duration')->value('value') ?? 7;
-        $depositPercentage = Setting::where('key', 'deposit_percentage')->value('value') ?? 5;
+        $minDuration = Setting::get('min_auction_duration', 1);
+        $maxDuration = Setting::get('max_auction_duration', 7);
+        $depositPercentage = Setting::get('deposit_percentage', 5);
 
         return view('pages.auctions.create', compact('vehicle', 'minDuration', 'maxDuration', 'depositPercentage'));
     }
@@ -175,7 +176,7 @@ class AuctionController extends Controller
         $endTime = $startTime->copy()->addDays($request->duration_days);
 
         // Get deposit percentage from settings
-        $depositPercentage = Setting::where('key', 'deposit_percentage')->value('value') ?? 5;
+        $depositPercentage = Setting::get('deposit_percentage', 5);
         $depositAmount = ($request->starting_price * $depositPercentage) / 100;
 
         $auction = Auction::create([
@@ -198,6 +199,11 @@ class AuctionController extends Controller
      */
     public function placeBid(Request $request, $id)
     {
+        // Normalize amount to plain integer (strip thousand separators/commas)
+        $rawAmount = is_string($request->amount) ? $request->amount : (string) $request->amount;
+        $normalized = (int) preg_replace('/[^0-9]/', '', $rawAmount);
+        $request->merge(['amount' => $normalized]);
+
         $request->validate([
             'amount' => 'required|numeric|min:0',
         ]);
@@ -206,37 +212,37 @@ class AuctionController extends Controller
 
         // Check if auction is active
         if ($auction->status !== 'active') {
-            return response()->json(['error' => 'Auction is not active'], 400);
+            return $request->wantsJson()
+                ? response()->json(['error' => 'Auction is not active'], 400)
+                : back()->with('error', 'Lelang tidak aktif');
         }
 
         // Check if auction has ended
         if ($auction->end_time <= now()) {
-            return response()->json(['error' => 'Auction has ended'], 400);
+            return $request->wantsJson()
+                ? response()->json(['error' => 'Auction has ended'], 400)
+                : back()->with('error', 'Lelang sudah berakhir');
         }
 
         // Check if auction has started
         if ($auction->start_time > now()) {
-            return response()->json(['error' => 'Auction has not started yet'], 400);
+            return $request->wantsJson()
+                ? response()->json(['error' => 'Auction has not started yet'], 400)
+                : back()->with('error', 'Lelang belum dimulai');
         }
 
         // Check if user is authenticated
         if (!Auth::check()) {
-            return response()->json(['error' => 'You must be logged in to bid'], 401);
+            return $request->wantsJson()
+                ? response()->json(['error' => 'You must be logged in to bid'], 401)
+                : redirect()->route('login')->with('error', 'Silakan login untuk memasang bid');
         }
 
         // Check if user is not the vehicle owner
         if ($auction->vehicle->user_id === Auth::id()) {
-            return response()->json(['error' => 'You cannot bid on your own vehicle'], 400);
-        }
-
-        // Check if user has paid deposit
-        $hasDeposit = Deposit::where('user_id', Auth::id())
-            ->where('auction_id', $auction->id)
-            ->where('status', 'paid')
-            ->exists();
-
-        if (!$hasDeposit) {
-            return response()->json(['error' => 'You must pay deposit first'], 400);
+            return $request->wantsJson()
+                ? response()->json(['error' => 'You cannot bid on your own vehicle'], 400)
+                : back()->with('error', 'Anda tidak bisa bid pada kendaraan sendiri');
         }
 
         // Get min bid increment
@@ -245,9 +251,10 @@ class AuctionController extends Controller
 
         // Validate bid amount
         if ($request->amount < $minBid) {
-            return response()->json([
-                'error' => 'Bid must be at least Rp ' . number_format($minBid, 0, ',', '.')
-            ], 400);
+            $msg = 'Bid minimal Rp ' . number_format($minBid, 0, ',', '.');
+            return $request->wantsJson()
+                ? response()->json(['error' => $msg], 400)
+                : back()->with('error', $msg)->withInput();
         }
 
         try {
@@ -259,15 +266,92 @@ class AuctionController extends Controller
             // Double check current price (race condition prevention)
             if ($request->amount <= $auction->current_price) {
                 DB::rollBack();
-                return response()->json([
-                    'error' => 'Your bid is too low. Current price is Rp ' . number_format($auction->current_price, 0, ',', '.')
-                ], 400);
+                $msg = 'Bid terlalu rendah. Harga saat ini Rp ' . number_format($auction->current_price, 0, ',', '.');
+                return $request->wantsJson()
+                    ? response()->json(['error' => $msg], 400)
+                    : back()->with('error', $msg)->withInput();
             }
 
-            // Create bid
+            // Calculate deposit amount based on setting (default 5%)
+            $depositPercentage = Setting::get('deposit_percentage', 5);
+            $depositAmount = (int) ceil($request->amount * $depositPercentage / 100);
+
+            // Configure Midtrans (ensure keys are present)
+            if (empty(config('services.midtrans.server_key'))) {
+                throw new \RuntimeException('Midtrans server key belum dikonfigurasi');
+            }
+            $this->configureMidtrans();
+
+            $orderId = 'BIDDEP-' . strtoupper(Str::random(12));
+
+            // Create deposit record (pending)
+            $deposit = Deposit::create([
+                'auction_id' => $auction->id,
+                'user_id' => Auth::id(),
+                'amount' => $depositAmount,
+                'status' => 'pending',
+                'type' => 'bid_deposit',
+                'payment_method' => 'midtrans',
+                'order_number' => $orderId,
+                'transaction_code' => $orderId,
+                'payment_url' => null,
+            ]);
+
+            // Prepare Midtrans Snap transaction
+            $user = Auth::user();
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $orderId,
+                    'gross_amount' => $depositAmount,
+                ],
+                'callbacks' => [
+                    'finish' => route('midtrans.finish'),
+                    'unfinish' => route('midtrans.unfinish'),
+                    'error' => route('midtrans.error'),
+                ],
+                'customer_details' => [
+                    'first_name' => $user->name,
+                    'email' => $user->email,
+                ],
+                'item_details' => [
+                    [
+                        'id' => 'bid-deposit-' . $auction->id,
+                        'price' => $depositAmount,
+                        'quantity' => 1,
+                        'name' => 'Bid Deposit ' . ($depositPercentage) . '%',
+                    ],
+                ],
+            ];
+
+            try {
+                $snap = Snap::createTransaction($params);
+            } catch (\Exception $e) {
+                Log::error('Midtrans Snap createTransaction failed', [
+                    'order_id' => $orderId,
+                    'auction_id' => $auction->id,
+                    'user_id' => Auth::id(),
+                    'amount' => $depositAmount,
+                    'error' => $e->getMessage(),
+                ]);
+                throw $e;
+            }
+
+            $deposit->update([
+                'snap_token' => $snap->token ?? null,
+                'snap_redirect_url' => $snap->redirect_url ?? null,
+                'payment_url' => $snap->redirect_url ?? null,
+            ]);
+
+            // Remember previous highest bid to refund after placing new one
+            $previousHighest = Bid::where('auction_id', $auction->id)
+                ->orderBy('bid_amount', 'desc')
+                ->first();
+
+            // Create bid (ties to deposit)
             $bid = Bid::create([
                 'auction_id' => $auction->id,
                 'user_id' => Auth::id(),
+                'deposit_id' => $deposit->id,
                 'bid_amount' => $request->amount,
                 'bid_time' => now(),
             ]);
@@ -277,6 +361,29 @@ class AuctionController extends Controller
                 'current_price' => $request->amount,
                 'bid_count' => $auction->bid_count + 1,
             ]);
+
+            // Refund previous highest deposit (logical flag only; integrate gateway refund as needed)
+            if ($previousHighest && $previousHighest->deposit) {
+                $prevDeposit = $previousHighest->deposit;
+
+                // Attempt Midtrans refund for paid/pending deposits
+                if ($prevDeposit->payment_method === 'midtrans' && $prevDeposit->order_number) {
+                    try {
+                        MidtransTransaction::refund($prevDeposit->order_number, [
+                            'refund_key' => 'outbid-' . Str::random(6),
+                            'reason' => 'Outbid refund',
+                        ]);
+                    } catch (\Exception $e) {
+                        // swallow and still mark refunded logically
+                    }
+                }
+                $depositPercentage = Setting::get('deposit_percentage', 5);
+                $prevDeposit->update([
+                    'refund_status' => 'refunded',
+                    'refunded_at' => now(),
+                    'status' => $prevDeposit->status === 'paid' ? 'refunded' : $prevDeposit->status,
+                ]);
+            }
 
             // Check if auction is about to end (auto-extend logic)
             $extendMinutes = Setting::where('key', 'auction_extend_minutes')->value('value') ?? 5;
@@ -289,25 +396,51 @@ class AuctionController extends Controller
 
             DB::commit();
 
-            // TODO: Send notifications
-            // - Notify previous highest bidder (outbid)
-            // - Notify auction owner (new bid)
-            // - Broadcast to WebSocket (real-time update)
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Bid placed successfully! Complete deposit to confirm.',
+                    'payment_url' => $snap->redirect_url ?? null,
+                    'data' => [
+                        'current_price' => $auction->current_price,
+                        'bid_count' => $auction->bid_count,
+                        'end_time' => $auction->end_time->toIso8601String(),
+                        'your_bid' => $request->amount,
+                    ]
+                ]);
+            }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Bid placed successfully!',
-                'data' => [
-                    'current_price' => $auction->current_price,
-                    'bid_count' => $auction->bid_count,
-                    'end_time' => $auction->end_time->toIso8601String(),
-                    'your_bid' => $request->amount,
-                ]
-            ]);
+            // Redirect user to Midtrans payment page for deposit
+            if (!empty($snap->redirect_url)) {
+                return redirect($snap->redirect_url)->with('success', 'Bid berhasil dipasang, selesaikan deposit Anda.');
+            }
+
+            return back()->with('success', 'Bid berhasil dipasang.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Failed to place bid. Please try again.'], 500);
+            Log::error('Bid placement failed', [
+                'auction_id' => $id,
+                'user_id' => Auth::id(),
+                'message' => $e->getMessage(),
+            ]);
+
+            $errorMessage = 'Gagal memasang bid, coba lagi.';
+            if (!app()->environment('production')) {
+                $errorMessage .= ' (' . $e->getMessage() . ')';
+            }
+
+            return $request->wantsJson()
+                ? response()->json(['error' => $errorMessage], 500)
+                : back()->with('error', $errorMessage);
         }
+    }
+
+    private function configureMidtrans(): void
+    {
+        MidtransConfig::$serverKey = config('services.midtrans.server_key');
+        MidtransConfig::$isProduction = (bool) config('services.midtrans.is_production', false);
+        MidtransConfig::$isSanitized = true;
+        MidtransConfig::$is3ds = (bool) config('services.midtrans.enable_3ds', true);
     }
 
     /**

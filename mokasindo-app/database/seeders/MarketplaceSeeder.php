@@ -5,10 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use App\Models\User;
-use App\Models\Province;
-use App\Models\City;
-use App\Models\District;
-use App\Models\SubDistrict;
 use App\Models\Vehicle;
 use App\Models\VehicleImage;
 use App\Models\Auction;
@@ -33,14 +29,10 @@ class MarketplaceSeeder extends Seeder
             return;
         }
 
-        $province = Province::where('name', 'DKI Jakarta')->first() ?? Province::first();
-        $city = City::where('name', 'Jakarta Selatan')->first() ?? City::first();
-        $district = District::where('name', 'Kebayoran Baru')->first() ?? District::first();
-        $subDistrict = SubDistrict::where('name', 'Senayan')->first() ?? SubDistrict::first();
-
-        if (!$province || !$city || !$district || !$subDistrict) {
-            return;
-        }
+        $province = 'DKI Jakarta';
+        $city = 'Jakarta Selatan';
+        $district = 'Kebayoran Baru';
+        $subDistrict = 'Senayan';
 
         $vehicle = Vehicle::updateOrCreate(
             ['license_plate' => 'B 1234 MK'],
@@ -58,10 +50,10 @@ class MarketplaceSeeder extends Seeder
                 'fuel_type' => 'Diesel',
                 'engine_capacity' => 2400,
                 'condition' => 'bekas',
-                'province_id' => $province->id,
-                'city_id' => $city->id,
-                'district_id' => $district->id,
-                'sub_district_id' => $subDistrict->id,
+                'province' => $province,
+                'city' => $city,
+                'district' => $district,
+                'sub_district' => $subDistrict,
                 'postal_code' => '12190',
                 'latitude' => -6.224500,
                 'longitude' => 106.808100,
@@ -93,7 +85,7 @@ class MarketplaceSeeder extends Seeder
             ['title' => 'Jakarta Premium Auction'],
             [
                 'description' => 'Lelang kendaraan premium mingguan',
-                'location_id' => $city->id,
+                'location' => $city,
                 'start_date' => now()->subDays(2),
                 'end_date' => now()->addDay(),
                 'is_active' => true,

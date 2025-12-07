@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Blog & Artikel - Mokasindo')
+@section('title', __('blog.title_meta'))
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
     {{-- Header --}}
     <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 class="text-3xl md:text-4xl font-bold">Blog & Artikel</h1>
-            <p class="mt-2 text-blue-100">Informasi terbaru seputar lelang mobil dan motor</p>
+            <h1 class="text-3xl md:text-4xl font-bold">{{ __('blog.title') }}</h1>
+            <p class="mt-2 text-blue-100">{{ __('blog.subtitle') }}</p>
         </div>
     </div>
 
@@ -40,7 +40,7 @@
                             
                             <div class="mt-4 flex items-center text-sm text-gray-500">
                                 <i class="fas fa-calendar-alt mr-2"></i>
-                                {{ $page->updated_at->format('d M Y') }}
+                                {{ $page->updated_at->locale(app()->getLocale())->translatedFormat('d M Y') }}
                             </div>
                         </div>
                     </a>
@@ -54,8 +54,8 @@
         @else
             <div class="text-center py-16">
                 <i class="fas fa-newspaper text-6xl text-gray-300 mb-4"></i>
-                <h3 class="text-xl font-medium text-gray-600">Belum ada artikel</h3>
-                <p class="text-gray-500 mt-2">Artikel dan informasi terbaru akan segera hadir.</p>
+                <h3 class="text-xl font-medium text-gray-600">{{ __('blog.empty.title') }}</h3>
+                <p class="text-gray-500 mt-2">{{ __('blog.empty.subtitle') }}</p>
             </div>
         @endif
     </div>

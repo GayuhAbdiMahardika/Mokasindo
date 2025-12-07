@@ -13,19 +13,14 @@ use Illuminate\Support\Facades\Cache;
 
 class LocationController extends Controller
 {
+    private string $baseUrl = 'https://kanglerian.my.id/api-wilayah-indonesia/api';
+
     /**
      * Get all provinces
      */
     public function provinces()
     {
-        $provinces = Cache::remember('provinces', 3600, function () {
-            return Province::orderBy('name')->get(['id', 'code', 'name']);
-        });
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $provinces
-        ]);
+        return $this->proxy("{$this->baseUrl}/provinces.json", 'provinces');
     }
 
     /**
@@ -33,16 +28,7 @@ class LocationController extends Controller
      */
     public function cities($provinceId)
     {
-        $cities = Cache::remember("cities_{$provinceId}", 3600, function () use ($provinceId) {
-            return City::where('province_id', $provinceId)
-                ->orderBy('name')
-                ->get(['id', 'province_id', 'code', 'name', 'type']);
-        });
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $cities
-        ]);
+        return $this->proxy("{$this->baseUrl}/regencies/{$provinceId}.json", "cities_{$provinceId}");
     }
 
     /**
@@ -50,16 +36,7 @@ class LocationController extends Controller
      */
     public function districts($cityId)
     {
-        $districts = Cache::remember("districts_{$cityId}", 3600, function () use ($cityId) {
-            return District::where('city_id', $cityId)
-                ->orderBy('name')
-                ->get(['id', 'city_id', 'code', 'name']);
-        });
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $districts
-        ]);
+        return $this->proxy("{$this->baseUrl}/districts/{$cityId}.json", "districts_{$cityId}");
     }
 
     /**
@@ -67,16 +44,39 @@ class LocationController extends Controller
      */
     public function subDistricts($districtId)
     {
-        $subDistricts = Cache::remember("sub_districts_{$districtId}", 3600, function () use ($districtId) {
-            return SubDistrict::where('district_id', $districtId)
-                ->orderBy('name')
-                ->get(['id', 'district_id', 'code', 'name', 'postal_code']);
-        });
+        return $this->proxy("{$this->baseUrl}/villages/{$districtId}.json", "subdistricts_{$districtId}");
+    }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $subDistricts
-        ]);
+    private function proxy(string $url, string $cacheKey)
+    {
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            return response()->json(['status' => 'success', 'data' => $cached]);
+        }
+
+        try {
+            $response = Http::timeout(10)->get($url);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal memuat data wilayah',
+                ], 502);
+            }
+
+            $data = $response->json();
+            Cache::put($cacheKey, $data, now()->addDay());
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Layanan wilayah tidak tersedia',
+            ], 503);
+        }
     }
 
     /**

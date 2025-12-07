@@ -28,7 +28,7 @@
 
         {{-- Last Updated --}}
         <div class="mt-6 text-center text-sm text-gray-500">
-            <p>Terakhir diperbarui: {{ $page->updated_at->format('d M Y, H:i') }}</p>
+            <p>{{ __('blog.updated_at', ['date' => $page->updated_at->format('d M Y, H:i')]) }}</p>
         </div>
     </div>
 </div>

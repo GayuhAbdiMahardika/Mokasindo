@@ -10,7 +10,6 @@ use App\Models\Payment;
 use App\Models\Deposit;
 use App\Models\JobApplication;
 use App\Models\Inquiry;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller

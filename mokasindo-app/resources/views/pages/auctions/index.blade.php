@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Lelang Aktif - Mokasindo')
+@section('title', __('auctions.title_meta'))
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Lelang Aktif</h1>
-        <p class="text-gray-600">Ikuti lelang kendaraan bekas berkualitas dengan harga terbaik</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ __('auctions.title') }}</h1>
+        <p class="text-gray-600">{{ __('auctions.subtitle') }}</p>
     </div>
 
     <!-- Filters -->
@@ -15,42 +15,37 @@
         <form method="GET" action="{{ route('auctions.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Category Filter -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('auctions.filters.category') }}</label>
                 <select name="category" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Semua Kategori</option>
-                    <option value="mobil" {{ request('category') == 'mobil' ? 'selected' : '' }}>Mobil</option>
-                    <option value="motor" {{ request('category') == 'motor' ? 'selected' : '' }}>Motor</option>
+                    <option value="">{{ __('auctions.filters.all_categories') }}</option>
+                    <option value="mobil" {{ request('category') == 'mobil' ? 'selected' : '' }}>{{ __('auctions.filters.car') }}</option>
+                    <option value="motor" {{ request('category') == 'motor' ? 'selected' : '' }}>{{ __('auctions.filters.motorcycle') }}</option>
                 </select>
             </div>
 
             <!-- City Filter -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Kota</label>
-                <select name="city_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Semua Kota</option>
-                    @foreach(\App\Models\City::orderBy('name')->get() as $city)
-                        <option value="{{ $city->id }}" {{ request('city_id') == $city->id ? 'selected' : '' }}>
-                            {{ $city->name }}
-                        </option>
-                    @endforeach
-                </select>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('auctions.filters.city') }}</label>
+                <input type="text" name="city" value="{{ request('city') }}"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="{{ __('auctions.filters.city_placeholder') }}">
             </div>
 
             <!-- Sort -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Urutkan</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('auctions.filters.sort') }}</label>
                 <select name="sort" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="ending_soon" {{ request('sort') == 'ending_soon' ? 'selected' : '' }}>Segera Berakhir</option>
-                    <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Terbaru</option>
-                    <option value="highest_bid" {{ request('sort') == 'highest_bid' ? 'selected' : '' }}>Bid Tertinggi</option>
-                    <option value="lowest_price" {{ request('sort') == 'lowest_price' ? 'selected' : '' }}>Harga Terendah</option>
+                    <option value="ending_soon" {{ request('sort') == 'ending_soon' ? 'selected' : '' }}>{{ __('auctions.sort.ending_soon') }}</option>
+                    <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>{{ __('auctions.sort.newest') }}</option>
+                    <option value="highest_bid" {{ request('sort') == 'highest_bid' ? 'selected' : '' }}>{{ __('auctions.sort.highest_bid') }}</option>
+                    <option value="lowest_price" {{ request('sort') == 'lowest_price' ? 'selected' : '' }}>{{ __('auctions.sort.lowest_price') }}</option>
                 </select>
             </div>
 
             <!-- Submit Button -->
             <div class="flex items-end">
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-150">
-                    Terapkan Filter
+                    {{ __('auctions.filters.apply') }}
                 </button>
             </div>
         </form>
@@ -62,8 +57,8 @@
             <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">Tidak Ada Lelang Aktif</h3>
-            <p class="text-gray-600">Belum ada lelang yang sedang berlangsung saat ini.</p>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ __('auctions.empty.title') }}</h3>
+            <p class="text-gray-600">{{ __('auctions.empty.subtitle') }}</p>
         </div>
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -103,7 +98,7 @@
                         </h3>
                         <p class="text-sm text-gray-600 mb-3">
                             <i class="fas fa-map-marker-alt mr-1"></i>
-                            {{ $auction->vehicle->city->name ?? 'Unknown' }}, {{ $auction->vehicle->province->name ?? '' }}
+                            {{ $auction->vehicle->city ?? 'Unknown' }}{{ $auction->vehicle->province ? ', ' . $auction->vehicle->province : '' }}
                         </p>
 
                         <!-- Vehicle Info -->
@@ -117,21 +112,21 @@
                         <!-- Price Info -->
                         <div class="border-t pt-3">
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm text-gray-600">Bid Saat Ini:</span>
+                                <span class="text-sm text-gray-600">{{ __('auctions.card.current_bid') }}</span>
                                 <span class="text-xl font-bold text-blue-600">
                                     Rp {{ number_format($auction->current_price, 0, ',', '.') }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center text-sm text-gray-600">
-                                <span><i class="fas fa-gavel mr-1"></i> {{ $auction->bid_count }} bid</span>
-                                <span><i class="fas fa-users mr-1"></i> {{ $auction->bids->unique('user_id')->count() }} peserta</span>
+                                <span><i class="fas fa-gavel mr-1"></i> {{ $auction->bid_count }} {{ __('auctions.card.bid_label') }}</span>
+                                <span><i class="fas fa-users mr-1"></i> {{ $auction->bids->unique('user_id')->count() }} {{ __('auctions.card.participant_label') }}</span>
                             </div>
                         </div>
 
                         <!-- Action Button -->
                         <a href="{{ route('auctions.show', $auction->id) }}" 
                            class="mt-4 block w-full bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-2 px-4 rounded-md transition duration-150">
-                            Ikut Lelang
+                            {{ __('auctions.card.cta') }}
                         </a>
                     </div>
                 </div>
@@ -155,7 +150,7 @@ function updateCountdowns() {
         const diff = endTime - now;
 
         if (diff <= 0) {
-            element.textContent = 'Berakhir';
+            element.textContent = '{{ __('auctions.countdown.ended') }}';
             element.parentElement.classList.remove('bg-red-600');
             element.parentElement.classList.add('bg-gray-600');
             return;
@@ -167,7 +162,7 @@ function updateCountdowns() {
 
         if (hours > 24) {
             const days = Math.floor(hours / 24);
-            element.textContent = `${days} hari lagi`;
+            element.textContent = `${days} {{ __('auctions.countdown.days') }}`;
         } else if (hours > 0) {
             element.textContent = `${hours}j ${minutes}m`;
         } else {

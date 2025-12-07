@@ -5,23 +5,23 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <div class="text-center">
                 <div class="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
-                    <span class="text-sm font-medium">🚗 Platform Lelang Terpercaya Indonesia</span>
+                    <span class="text-sm font-medium">{{ __('landing.badge') }}</span>
                 </div>
 
                 <h1 class="text-5xl md:text-6xl font-bold mb-6">
-                    Lelang Mobil & Motor<br>Bekas Terpercaya
+                    {!! nl2br(e(__('landing.hero_title'))) !!}
                 </h1>
 
                 <p class="text-xl md:text-2xl text-indigo-100 mb-8 max-w-3xl mx-auto">
-                    Temukan kendaraan impian Anda dengan harga terbaik melalui sistem lelang yang aman dan transparan
+                    {{ __('landing.hero_subtitle') }}
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="#" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition shadow-lg">
-                        Mulai Lelang
+                        {{ __('landing.cta.start') }}
                     </a>
                     <a href="#" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white/10 transition">
-                        Lihat Kendaraan
+                        {{ __('landing.cta.browse') }}
                     </a>
                 </div>
 
@@ -37,10 +37,10 @@
                 type="text" 
                 name="q" 
                 class="w-full px-4 py-3 text-gray-700 leading-tight focus:outline-none" 
-                placeholder="Cari kendaraan (cth: Avanza, Honda Jazz)..."
+                placeholder="{{ __('landing.search_placeholder') }}"
             >
             <button type="submit" class="bg-blue-600 text-white px-6 py-3 font-semibold hover:bg-blue-700 transition duration-300">
-                Cari
+                {{ __('landing.search_button') }}
             </button>
         </div>
         
@@ -52,22 +52,22 @@
     </form>
     
     <div id="location-status" class="mt-2 text-xs text-center text-white opacity-0 transition-opacity">
-        Mencari di area: <span id="current-area" class="font-bold text-yellow-300">Semua Area</span>
+        {{ __('landing.search_location_prefix') }} <span id="current-area" class="font-bold text-yellow-300">{{ __('landing.search_location_default') }}</span>
     </div>
 </div>
 
                 <div class="grid grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto">
                     <div>
                         <div class="text-4xl font-bold mb-2">1000+</div>
-                        <div class="text-indigo-200">Kendaraan Terjual</div>
+                        <div class="text-indigo-200">{{ __('landing.stats.sold') }}</div>
                     </div>
                     <div>
                         <div class="text-4xl font-bold mb-2">5000+</div>
-                        <div class="text-indigo-200">Member Aktif</div>
+                        <div class="text-indigo-200">{{ __('landing.stats.members') }}</div>
                     </div>
                     <div>
                         <div class="text-4xl font-bold mb-2">100%</div>
-                        <div class="text-indigo-200">Aman & Terpercaya</div>
+                        <div class="text-indigo-200">{{ __('landing.stats.trusted') }}</div>
                     </div>
                 </div>
             </div>
@@ -83,8 +83,8 @@
     <section class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Mengapa Mokasindo?</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">Platform lelang kendaraan bekas yang memberikan pengalaman terbaik untuk pembeli dan penjual</p>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">{{ __('landing.why_title') }}</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">{{ __('landing.why_subtitle') }}</p>
             </div>
 
             <div class="grid md:grid-cols-3 gap-8">
@@ -94,8 +94,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Aman & Terpercaya</h3>
-                    <p class="text-gray-600">Sistem deposit dan pembayaran yang aman dengan jaminan transaksi transparan</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.why.safe_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.why.safe_desc') }}</p>
                 </div>
 
                 <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition">
@@ -104,8 +104,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Proses Cepat</h3>
-                    <p class="text-gray-600">Lelang real-time dengan notifikasi instan melalui Telegram, Email & WhatsApp</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.why.fast_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.why.fast_desc') }}</p>
                 </div>
 
                 <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition">
@@ -114,8 +114,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Harga Kompetitif</h3>
-                    <p class="text-gray-600">Dapatkan kendaraan dengan harga terbaik melalui sistem lelang yang fair</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.why.price_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.why.price_desc') }}</p>
                 </div>
             </div>
         </div>
@@ -124,33 +124,33 @@
     <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Cara Kerja</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">Mudah dan sederhana, ikuti 4 langkah berikut</p>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">{{ __('landing.how_title') }}</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">{{ __('landing.how_subtitle') }}</p>
             </div>
 
             <div class="grid md:grid-cols-4 gap-8">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Daftar & Verifikasi</h3>
-                    <p class="text-gray-600">Buat akun dan lengkapi data untuk mulai lelang</p>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ __('landing.how.step1_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.how.step1_desc') }}</p>
                 </div>
 
                 <div class="text-center">
                     <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Pilih Kendaraan</h3>
-                    <p class="text-gray-600">Cari dan pilih kendaraan yang Anda inginkan</p>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ __('landing.how.step2_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.how.step2_desc') }}</p>
                 </div>
 
                 <div class="text-center">
                     <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Ikut Lelang</h3>
-                    <p class="text-gray-600">Bayar deposit 5% dan mulai bid real-time</p>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ __('landing.how.step3_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.how.step3_desc') }}</p>
                 </div>
 
                 <div class="text-center">
                     <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">4</div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Bayar & Ambil</h3>
-                    <p class="text-gray-600">Lunasi dalam 24 jam dan kendaraan siap dikirim</p>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ __('landing.how.step4_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.how.step4_desc') }}</p>
                 </div>
             </div>
         </div>
@@ -158,11 +158,11 @@
 
     <section class="py-20 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-4xl font-bold text-white mb-6">Siap Memulai Lelang?</h2>
-            <p class="text-xl text-indigo-100 mb-8">Daftar sekarang dan dapatkan akses ke ribuan kendaraan berkualitas</p>
+            <h2 class="text-4xl font-bold text-white mb-6">{{ __('landing.cta_ready_title') }}</h2>
+            <p class="text-xl text-indigo-100 mb-8">{{ __('landing.cta_ready_subtitle') }}</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="/register" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition shadow-lg">
-                    Daftar Gratis
+                    {{ __('landing.cta_ready_button') }}
                 </a>
                 {{-- <a href="{{ route('company.about') }}" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white/10 transition">
                     Pelajari Lebih Lanjut
@@ -173,20 +173,20 @@
     <div id="locationModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-900 bg-opacity-75 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
         <div class="p-4 border-b flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800">Konfirmasi Lokasi Anda</h3>
+            <h3 class="text-lg font-bold text-gray-800">{{ __('landing.location.confirm_title') }}</h3>
             <button onclick="closeLocationModal()" class="text-gray-500 hover:text-gray-700">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
         <div class="p-4">
             <div id="map" class="w-full h-64 bg-gray-200 rounded mb-4"></div>
-            <p class="text-sm text-gray-600 mb-2">Lokasi terdeteksi:</p>
-            <p id="address-preview" class="font-semibold text-gray-800 mb-4">Sedang memuat...</p>
+            <p class="text-sm text-gray-600 mb-2">{{ __('landing.location.detected') }}</p>
+            <p id="address-preview" class="font-semibold text-gray-800 mb-4">{{ __('landing.location.loading') }}</p>
         </div>
         <div class="p-4 border-t bg-gray-50 flex justify-end">
-            <button onclick="closeLocationModal()" class="mr-3 px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+            <button onclick="closeLocationModal()" class="mr-3 px-4 py-2 text-gray-600 hover:text-gray-800">{{ __('landing.location.cancel') }}</button>
             <button onclick="saveLocation()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold">
-                Konfirmasi Lokasi
+                {{ __('landing.location.confirm') }}
             </button>
         </div>
     </div>
@@ -238,17 +238,17 @@
                     reverseGeocode(lat, lng);
                 },
                 () => {
-                    alert("Gagal mendeteksi lokasi. Pastikan GPS aktif.");
+                    alert("{{ __('landing.location.detect_fail') }}");
                 }
             );
         } else {
-            alert("Browser Anda tidak mendukung Geolocation.");
+            alert("{{ __('landing.location.unsupported') }}");
         }
     }
 
     // Fungsi Reverse Geocoding (Koordinat -> Alamat) menggunakan Nominatim (Gratis)
     function reverseGeocode(lat, lng) {
-        document.getElementById('address-preview').innerText = "Sedang memuat alamat...";
+        document.getElementById('address-preview').innerText = "{{ __('landing.location.loading') }}";
         
         // Menggunakan API Nominatim (Gratis dari OpenStreetMap)
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
@@ -264,18 +264,18 @@
                     currentLocation.district = data.address.district || ''; // Kadang kecamatan masuk sini
                     currentLocation.subdistrict = data.address.village || data.address.suburb || '';
                 } else {
-                    document.getElementById('address-preview').innerText = "Alamat tidak ditemukan";
+                    document.getElementById('address-preview').innerText = "{{ __('landing.location.none') }}";
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('address-preview').innerText = "Gagal memuat alamat";
+                document.getElementById('address-preview').innerText = "{{ __('landing.location.error') }}";
             });
     }
 
     function saveLocation() {
         localStorage.setItem('user_location', JSON.stringify(currentLocation));
-        const label = currentLocation.subdistrict || currentLocation.city || 'Lokasi Tersimpan';
+        const label = currentLocation.subdistrict || currentLocation.city || '{{ __('landing.location.saved') }}';
         document.getElementById('user-location-label').innerText = label;
         updateSearchInputs();
         closeLocationModal();

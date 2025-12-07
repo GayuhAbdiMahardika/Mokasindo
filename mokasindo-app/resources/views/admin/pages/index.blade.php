@@ -1,16 +1,16 @@
 @extends('admin.layout')
 
-@section('title', 'Pages Management')
-@section('page-title', 'Dynamic Pages')
+@section('title', __('admin.pages_management.title'))
+@section('page-title', __('admin.pages_management.page_title'))
 
 @section('content')
 <div class="mb-6 flex justify-between items-center">
     <div>
-        <h3 class="text-2xl font-bold text-gray-900">Dynamic Pages</h3>
-        <p class="text-gray-600">Manage website content pages (Terms, Privacy, etc.)</p>
+        <h3 class="text-2xl font-bold text-gray-900">{{ __('admin.pages_management.heading') }}</h3>
+        <p class="text-gray-600">{{ __('admin.pages_management.subtitle') }}</p>
     </div>
     <a href="{{ route('admin.pages.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-        <i class="fas fa-plus mr-2"></i>Create Page
+        <i class="fas fa-plus mr-2"></i>{{ __('admin.pages_management.create') }}
     </a>
 </div>
 
@@ -18,11 +18,11 @@
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slug</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Updated</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.pages_management.table.title') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.pages_management.table.slug') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.pages_management.table.status') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.pages_management.table.updated') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.pages_management.table.actions') }}</th>
             </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -39,18 +39,18 @@
                         <form action="{{ route('admin.pages.toggle-publish', $page) }}" method="POST" class="inline">
                             @csrf
                             @if($page->is_published)
-                                <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition cursor-pointer" title="Klik untuk unpublish">
-                                    <i class="fas fa-check-circle mr-1"></i>Published
+                                <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition cursor-pointer" title="{{ __('admin.pages_management.tooltip.unpublish') }}">
+                                    <i class="fas fa-check-circle mr-1"></i>{{ __('admin.pages_management.status.published') }}
                                 </button>
                             @else
-                                <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition cursor-pointer" title="Klik untuk publish">
-                                    <i class="fas fa-file-alt mr-1"></i>Draft
+                                <button type="submit" class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition cursor-pointer" title="{{ __('admin.pages_management.tooltip.publish') }}">
+                                    <i class="fas fa-file-alt mr-1"></i>{{ __('admin.pages_management.status.draft') }}
                                 </button>
                             @endif
                         </form>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $page->updated_at->format('d M Y') }}
+                        {{ $page->updated_at->locale(app()->getLocale())->translatedFormat('d M Y') }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-2">
@@ -58,11 +58,11 @@
                             <form action="{{ route('admin.pages.toggle-publish', $page) }}" method="POST" class="inline">
                                 @csrf
                                 @if($page->is_published)
-                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900" title="Unpublish">
+                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900" title="{{ __('admin.pages_management.tooltip.unpublish') }}">
                                         <i class="fas fa-eye-slash"></i>
                                     </button>
                                 @else
-                                    <button type="submit" class="text-green-600 hover:text-green-900" title="Publish">
+                                    <button type="submit" class="text-green-600 hover:text-green-900" title="{{ __('admin.pages_management.tooltip.publish') }}">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 @endif
@@ -70,26 +70,26 @@
                             
                             {{-- View Public Page --}}
                             @if($page->is_published)
-                                <a href="/page/{{ $page->slug }}" target="_blank" class="text-gray-600 hover:text-gray-900" title="View Page">
+                                <a href="/page/{{ $page->slug }}" target="_blank" class="text-gray-600 hover:text-gray-900" title="{{ __('admin.pages_management.view_page') }}">
                                     <i class="fas fa-external-link-alt"></i>
                                 </a>
                             @endif
                             
                             {{-- Edit --}}
-                            <a href="{{ route('admin.pages.edit', $page) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
+                            <a href="{{ route('admin.pages.edit', $page) }}" class="text-blue-600 hover:text-blue-900" title="{{ __('admin.pages_management.edit') }}">
                                 <i class="fas fa-edit"></i>
                             </a>
                             
                             {{-- Revisions --}}
-                            <a href="{{ route('admin.pages.revisions', $page) }}" class="text-purple-600 hover:text-purple-900" title="Revisions">
+                            <a href="{{ route('admin.pages.revisions', $page) }}" class="text-purple-600 hover:text-purple-900" title="{{ __('admin.pages_management.revisions') }}">
                                 <i class="fas fa-history"></i>
                             </a>
                             
                             {{-- Delete --}}
-                            <form action="{{ route('admin.pages.destroy', $page) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                            <form action="{{ route('admin.pages.destroy', $page) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('admin.pages_management.confirm_delete') }}')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">
+                                <button type="submit" class="text-red-600 hover:text-red-900" title="{{ __('admin.pages_management.delete') }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
@@ -99,7 +99,7 @@
             @empty
                 <tr>
                     <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                        No pages found. <a href="{{ route('admin.pages.create') }}" class="text-blue-600 hover:text-blue-800">Create one now</a>
+                        {{ __('admin.pages_management.empty') }} <a href="{{ route('admin.pages.create') }}" class="text-blue-600 hover:text-blue-800">{{ __('admin.pages_management.create_now') }}</a>
                     </td>
                 </tr>
             @endforelse

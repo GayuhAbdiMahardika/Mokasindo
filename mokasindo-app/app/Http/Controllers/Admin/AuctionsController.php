@@ -12,9 +12,35 @@ class AuctionsController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Auction::with('vehicle.user')->latest();
-        if ($request->filled('status')) $query->where('status', $request->status);
+        $query = Auction::with(['vehicle.user', 'schedule'])->latest();
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Schedule filter
+        if ($request->filled('schedule')) {
+            $query->where('auction_schedule_id', $request->schedule);
+        }
+
+        // Search by vehicle brand/model/year or owner name
+        if ($request->filled('search')) {
+            $term = $request->search;
+            $query->where(function ($q) use ($term) {
+                $q->whereHas('vehicle', function ($vehicle) use ($term) {
+                    $vehicle->where('brand', 'like', "%{$term}%")
+                        ->orWhere('model', 'like', "%{$term}%")
+                        ->orWhere('year', 'like', "%{$term}%");
+                })->orWhereHas('vehicle.user', function ($user) use ($term) {
+                    $user->where('name', 'like', "%{$term}%")
+                        ->orWhere('email', 'like', "%{$term}%");
+                });
+            });
+        }
+
         $auctions = $query->paginate(20)->appends($request->query());
+
         return view('admin.auctions.index', compact('auctions'));
     }
 

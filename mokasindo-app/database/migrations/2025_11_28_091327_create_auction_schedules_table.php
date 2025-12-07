@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->foreignId('location_id')->constrained('cities'); // Relasi ke kota
+            $table->string('location');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->boolean('is_active')->default(true);

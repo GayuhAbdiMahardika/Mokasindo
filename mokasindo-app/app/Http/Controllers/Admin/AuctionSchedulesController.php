@@ -16,9 +16,7 @@ class AuctionSchedulesController extends Controller
 
     public function create()
     {
-        // provide cities list for location select
-        $cities = \App\Models\City::orderBy('name')->get();
-        return view('admin.auction_schedules.create', compact('cities'));
+        return view('admin.auction_schedules.create');
     }
 
     public function store(Request $request)
@@ -26,7 +24,7 @@ class AuctionSchedulesController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'location_id' => 'required|exists:cities,id',
+            'location' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
@@ -39,8 +37,7 @@ class AuctionSchedulesController extends Controller
 
     public function edit(AuctionSchedule $auctionSchedule)
     {
-        $cities = \App\Models\City::orderBy('name')->get();
-        return view('admin.auction_schedules.edit', ['schedule' => $auctionSchedule, 'cities' => $cities]);
+        return view('admin.auction_schedules.edit', ['schedule' => $auctionSchedule]);
     }
 
     public function update(Request $request, AuctionSchedule $auctionSchedule)
@@ -48,7 +45,7 @@ class AuctionSchedulesController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'location_id' => 'required|exists:cities,id',
+            'location' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);

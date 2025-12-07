@@ -1,14 +1,14 @@
 @extends('admin.layout')
 
-@section('title', 'Dashboard')
+@section('title', __('admin.dashboard.title'))
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <p class="text-gray-600 mt-1">Welcome back, {{ auth()->user()->name }}</p>
+            <h1 class="text-3xl font-bold text-gray-800">{{ __('admin.dashboard.title') }}</h1>
+            <p class="text-gray-600 mt-1">{{ __('admin.dashboard.welcome', ['name' => auth()->user()->name]) }}</p>
         </div>
         <div class="text-right">
             <p id="local-date" class="text-sm text-gray-500">&nbsp;</p>
@@ -22,10 +22,10 @@
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 mb-1">Total Users</p>
+                    <p class="text-sm text-gray-600 mb-1">{{ __('admin.dashboard.total_users') }}</p>
                     <h3 class="text-3xl font-bold text-gray-800">{{ number_format($stats['total_users']) }}</h3>
                     <p class="text-xs text-green-600 mt-1">
-                        <i class="fas fa-arrow-up"></i> +{{ $stats['new_users_this_month'] }} this month
+                        <i class="fas fa-arrow-up"></i> +{{ $stats['new_users_this_month'] }} {{ __('admin.dashboard.new_users_this_month') }}
                     </p>
                 </div>
                 <div class="text-blue-500">
@@ -38,10 +38,10 @@
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 mb-1">Total Vehicles</p>
+                    <p class="text-sm text-gray-600 mb-1">{{ __('admin.dashboard.total_vehicles') }}</p>
                     <h3 class="text-3xl font-bold text-gray-800">{{ number_format($stats['total_vehicles']) }}</h3>
                     <p class="text-xs text-yellow-600 mt-1">
-                        <i class="fas fa-clock"></i> {{ $stats['pending_vehicles'] }} pending approval
+                        <i class="fas fa-clock"></i> {{ $stats['pending_vehicles'] }} {{ __('admin.dashboard.pending_approval') }}
                     </p>
                 </div>
                 <div class="text-green-500">
@@ -54,10 +54,10 @@
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 mb-1">Active Auctions</p>
+                    <p class="text-sm text-gray-600 mb-1">{{ __('admin.dashboard.active_auctions') }}</p>
                     <h3 class="text-3xl font-bold text-gray-800">{{ number_format($stats['active_auctions']) }}</h3>
                     <p class="text-xs text-gray-500 mt-1">
-                        {{ number_format($stats['total_auctions']) }} total auctions
+                        {{ number_format($stats['total_auctions']) }} {{ __('admin.dashboard.total_auctions') }}
                     </p>
                 </div>
                 <div class="text-purple-500">
@@ -70,10 +70,10 @@
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 mb-1">Total Revenue</p>
+                    <p class="text-sm text-gray-600 mb-1">{{ __('admin.dashboard.total_revenue') }}</p>
                     <h3 class="text-3xl font-bold text-gray-800">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</h3>
                     <p class="text-xs text-gray-500 mt-1">
-                        All time revenue
+                        {{ __('admin.dashboard.all_time_revenue') }}
                     </p>
                 </div>
                 <div class="text-yellow-500">
@@ -88,24 +88,24 @@
         <!-- Quick Actions -->
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">
-                <i class="fas fa-bolt text-yellow-500 mr-2"></i>Quick Actions
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i>{{ __('admin.dashboard.quick_actions') }}
             </h3>
             <div class="space-y-2">
                 <a href="{{ route('admin.vacancies.create') }}" class="block px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
                     <i class="fas fa-briefcase text-blue-600 mr-2"></i>
-                    <span class="text-sm font-medium">Post New Job</span>
+                    <span class="text-sm font-medium">{{ __('admin.dashboard.post_new_job') }}</span>
                 </a>
                 <a href="{{ route('admin.pages.create') }}" class="block px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition">
                     <i class="fas fa-file-alt text-green-600 mr-2"></i>
-                    <span class="text-sm font-medium">Create Page</span>
+                    <span class="text-sm font-medium">{{ __('admin.dashboard.create_page') }}</span>
                 </a>
                 <a href="{{ route('admin.teams.create') }}" class="block px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition">
                     <i class="fas fa-user-plus text-purple-600 mr-2"></i>
-                    <span class="text-sm font-medium">Add Team Member</span>
+                    <span class="text-sm font-medium">{{ __('admin.dashboard.add_team_member') }}</span>
                 </a>
                 <a href="{{ route('admin.faqs.create') }}" class="block px-4 py-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition">
                     <i class="fas fa-question-circle text-orange-600 mr-2"></i>
-                    <span class="text-sm font-medium">Add FAQ</span>
+                    <span class="text-sm font-medium">{{ __('admin.dashboard.add_faq') }}</span>
                 </a>
             </div>
         </div>
@@ -113,14 +113,14 @@
         <!-- Pending Items -->
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">
-                <i class="fas fa-clock text-orange-500 mr-2"></i>Pending Items
+                <i class="fas fa-clock text-orange-500 mr-2"></i>{{ __('admin.dashboard.pending_items') }}
             </h3>
             <div class="space-y-3">
                 <a href="#" class="block">
                     <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition">
                         <div>
-                            <p class="text-sm font-medium text-gray-800">Pending Vehicles</p>
-                            <p class="text-xs text-gray-500">Awaiting approval</p>
+                            <p class="text-sm font-medium text-gray-800">{{ __('admin.dashboard.pending_vehicles') }}</p>
+                            <p class="text-xs text-gray-500">{{ __('admin.dashboard.awaiting_approval') }}</p>
                         </div>
                         <span class="bg-yellow-500 text-white text-sm font-bold px-3 py-1 rounded-full">
                             {{ $stats['pending_vehicles'] }}
@@ -130,8 +130,8 @@
                 <a href="#" class="block">
                     <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
                         <div>
-                            <p class="text-sm font-medium text-gray-800">Pending Deposits</p>
-                            <p class="text-xs text-gray-500">Awaiting verification</p>
+                            <p class="text-sm font-medium text-gray-800">{{ __('admin.dashboard.pending_deposits') }}</p>
+                            <p class="text-xs text-gray-500">{{ __('admin.dashboard.awaiting_verification') }}</p>
                         </div>
                         <span class="bg-blue-500 text-white text-sm font-bold px-3 py-1 rounded-full">
                             {{ $stats['pending_deposits'] }}
@@ -141,8 +141,8 @@
                 <a href="{{ route('admin.inquiries.index') }}" class="block">
                     <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg hover:bg-red-100 transition">
                         <div>
-                            <p class="text-sm font-medium text-gray-800">New Inquiries</p>
-                            <p class="text-xs text-gray-500">Customer support</p>
+                            <p class="text-sm font-medium text-gray-800">{{ __('admin.dashboard.new_inquiries') }}</p>
+                            <p class="text-xs text-gray-500">{{ __('admin.dashboard.customer_support') }}</p>
                         </div>
                         <span class="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
                             {{ $stats['new_inquiries'] }}
@@ -152,8 +152,8 @@
                 <a href="#" class="block">
                     <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition">
                         <div>
-                            <p class="text-sm font-medium text-gray-800">New Applications</p>
-                            <p class="text-xs text-gray-500">Job applicants</p>
+                            <p class="text-sm font-medium text-gray-800">{{ __('admin.dashboard.new_applications') }}</p>
+                            <p class="text-xs text-gray-500">{{ __('admin.dashboard.job_applicants') }}</p>
                         </div>
                         <span class="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full">
                             {{ $stats['new_applications'] }}
@@ -166,23 +166,23 @@
         <!-- System Info -->
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">
-                <i class="fas fa-info-circle text-blue-500 mr-2"></i>System Info
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>{{ __('admin.dashboard.system_info') }}
             </h3>
             <div class="space-y-3 text-sm">
                 <div class="flex justify-between py-2 border-b">
-                    <span class="text-gray-600">Laravel Version</span>
+                    <span class="text-gray-600">{{ __('admin.dashboard.laravel_version') }}</span>
                     <span class="font-medium">{{ app()->version() }}</span>
                 </div>
                 <div class="flex justify-between py-2 border-b">
-                    <span class="text-gray-600">PHP Version</span>
+                    <span class="text-gray-600">{{ __('admin.dashboard.php_version') }}</span>
                     <span class="font-medium">{{ PHP_VERSION }}</span>
                 </div>
                 <div class="flex justify-between py-2 border-b">
-                    <span class="text-gray-600">Environment</span>
+                    <span class="text-gray-600">{{ __('admin.dashboard.environment') }}</span>
                     <span class="font-medium">{{ config('app.env') }}</span>
                 </div>
                 <div class="flex justify-between py-2">
-                    <span class="text-gray-600">Timezone</span>
+                    <span class="text-gray-600">{{ __('admin.dashboard.timezone') }}</span>
                     <span class="font-medium">{{ config('app.timezone') }}</span>
                 </div>
             </div>
@@ -192,26 +192,26 @@
     <!-- Today KPIs -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
-            <p class="text-sm text-gray-600 mb-1">Transactions Today</p>
+            <p class="text-sm text-gray-600 mb-1">{{ __('admin.dashboard.transactions_today') }}</p>
             <h3 class="text-2xl font-bold text-gray-800">{{ number_format($transactions_today) }}</h3>
-            <p class="text-xs text-gray-500 mt-1">Successful revenue today: <strong>Rp {{ number_format($revenue_today,0,',','.') }}</strong></p>
+            <p class="text-xs text-gray-500 mt-1">{{ __('admin.dashboard.revenue_today_label') }} <strong>Rp {{ number_format($revenue_today,0,',','.') }}</strong></p>
         </div>
 
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-teal-500">
-            <p class="text-sm text-gray-600 mb-1">Revenue Today</p>
+            <p class="text-sm text-gray-600 mb-1">{{ __('admin.dashboard.revenue_today') }}</p>
             <h3 class="text-2xl font-bold text-gray-800">Rp {{ number_format($revenue_today,0,',','.') }}</h3>
-            <p class="text-xs text-gray-500 mt-1">Transactions: {{ number_format($transactions_today) }}</p>
+            <p class="text-xs text-gray-500 mt-1">{{ __('admin.dashboard.transactions_count') }} {{ number_format($transactions_today) }}</p>
         </div>
     </div>
 
     <!-- Charts: 7-day trends -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Revenue (Last 7 days)</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('admin.dashboard.revenue_last7') }}</h3>
             <canvas id="revenueChart" height="160"></canvas>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">New Users (Last 7 days)</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{{ __('admin.dashboard.users_last7') }}</h3>
             <canvas id="usersChart" height="160"></canvas>
         </div>
     </div>
@@ -222,7 +222,7 @@
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="px-6 py-4 border-b bg-gray-50">
                 <h3 class="text-lg font-bold text-gray-800">
-                    <i class="fas fa-users text-blue-500 mr-2"></i>Recent Users
+                    <i class="fas fa-users text-blue-500 mr-2"></i>{{ __('admin.dashboard.recent_users') }}
                 </h3>
             </div>
             <div class="p-6">
@@ -240,13 +240,13 @@
                         </div>
                         <div class="text-right">
                             <span class="text-xs px-2 py-1 rounded-full {{ $user->role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ ucfirst($user->role) }}
+                                {{ __('roles.' . $user->role) }}
                             </span>
                             <p class="text-xs text-gray-400 mt-1">{{ $user->created_at->diffForHumans() }}</p>
                         </div>
                     </div>
                     @empty
-                    <p class="text-gray-500 text-center py-4">No users yet</p>
+                    <p class="text-gray-500 text-center py-4">{{ __('admin.dashboard.no_users') }}</p>
                     @endforelse
                 </div>
             </div>
@@ -256,7 +256,7 @@
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="px-6 py-4 border-b bg-gray-50">
                 <h3 class="text-lg font-bold text-gray-800">
-                    <i class="fas fa-car text-green-500 mr-2"></i>Recent Vehicles
+                    <i class="fas fa-car text-green-500 mr-2"></i>{{ __('admin.dashboard.recent_vehicles') }}
                 </h3>
             </div>
             <div class="p-6">
@@ -278,7 +278,7 @@
                         </div>
                     </div>
                     @empty
-                    <p class="text-gray-500 text-center py-4">No vehicles yet</p>
+                    <p class="text-gray-500 text-center py-4">{{ __('admin.dashboard.no_vehicles') }}</p>
                     @endforelse
                 </div>
             </div>
@@ -289,18 +289,18 @@
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="px-6 py-4 border-b bg-gray-50">
             <h3 class="text-lg font-bold text-gray-800">
-                <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i>Recent Payments
+                <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i>{{ __('admin.dashboard.recent_payments') }}
             </h3>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.user') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.amount') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.type') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.status') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.date') }}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -310,13 +310,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             Rp {{ number_format($payment->amount, 0, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ ucfirst($payment->type) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ __('payments.type.' . $payment->type) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 text-xs rounded-full
                                 {{ $payment->status === 'success' ? 'bg-green-100 text-green-800' : '' }}
                                 {{ $payment->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
                                 {{ $payment->status === 'failed' ? 'bg-red-100 text-red-800' : '' }}">
-                                {{ ucfirst($payment->status) }}
+                                {{ __('payments.status.' . $payment->status) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -325,7 +325,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No payments yet</td>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">{{ __('admin.dashboard.no_payments') }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -338,18 +338,18 @@
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="px-6 py-4 border-b bg-gray-50">
             <h3 class="text-lg font-bold text-gray-800">
-                <i class="fas fa-hourglass-half text-orange-500 mr-2"></i>Pending Deposits (Requires Action)
+                <i class="fas fa-hourglass-half text-orange-500 mr-2"></i>{{ __('admin.dashboard.pending_deposits_action') }}
             </h3>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.user') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.amount') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.bank') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.date') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('admin.dashboard.action') }}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -365,7 +365,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">
-                                <i class="fas fa-check-circle mr-1"></i>Review
+                                <i class="fas fa-check-circle mr-1"></i>{{ __('admin.dashboard.review') }}
                             </a>
                         </td>
                     </tr>
@@ -414,7 +414,7 @@
             data: {
                 labels: labels7,
                 datasets: [{
-                    label: 'Revenue (Rp)',
+                    label: '{{ __('admin.dashboard.revenue_label') }}',
                     data: revenueLast7,
                     backgroundColor: 'rgba(250, 204, 21, 0.08)',
                     borderColor: 'rgba(250, 204, 21, 1)',
@@ -454,7 +454,7 @@
             data: {
                 labels: labels7,
                 datasets: [{
-                    label: 'New Users',
+                    label: '{{ __('admin.dashboard.new_users_label') }}',
                     data: usersLast7,
                     backgroundColor: 'rgba(59,130,246,0.8)',
                     borderColor: 'rgba(59,130,246,1)',

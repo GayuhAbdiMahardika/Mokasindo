@@ -29,7 +29,7 @@ class DashboardController extends Controller
 
         // Recent Activities
         $recent_vehicles = Vehicle::where('user_id', $user->id)
-            ->with(['primaryImage', 'city'])
+            ->with(['primaryImage'])
             ->latest()
             ->take(3)
             ->get();
@@ -54,12 +54,12 @@ class DashboardController extends Controller
             ->get();
 
         // Auctions in User's Area (lelang aktif di kota user)
-        $area_auctions = Auction::where('status', 'active')
-            ->whereHas('vehicle', function($query) use ($user) {
-                $query->where('city_id', $user->city_id)
-                      ->where('user_id', '!=', $user->id); // Exclude user's own vehicles
-            })
-            ->with(['vehicle.primaryImage', 'vehicle.city', 'bids'])
+                $area_auctions = Auction::where('status', 'active')
+                        ->whereHas('vehicle', function($query) use ($user) {
+                                        $query->where('city', $user->city)
+                                            ->where('user_id', '!=', $user->id); // Exclude user's own vehicles
+                        })
+                        ->with(['vehicle.primaryImage', 'bids'])
             ->orderBy('end_time', 'asc')
             ->take(6)
             ->get();

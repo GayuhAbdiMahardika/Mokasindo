@@ -92,8 +92,8 @@
         </form>
     </div>
 
-    <!-- Deposits Table -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    <!-- Deposits Table (Topup/Withdrawal) -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-10">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -200,6 +200,93 @@
         @if($deposits->hasPages())
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
             {{ $deposits->links() }}
+        </div>
+        @endif
+    </div>
+
+    <!-- Bid Deposits (Auction) -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">Bid Deposits</h2>
+                <p class="text-sm text-gray-500">Deposit 5% dari proses bidding (via Midtrans)</p>
+            </div>
+            <div class="text-sm text-gray-500">Page {{ $bidDeposits->currentPage() }} / {{ $bidDeposits->lastPage() }}</div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auction</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($bidDeposits as $deposit)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {{ optional($deposit->created_at)->format('d M Y, H:i') }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="bg-indigo-100 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                                    <span class="text-indigo-600 font-bold">{{ $deposit->user ? substr($deposit->user->name, 0, 1) : '?' }}</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">{{ $deposit->user->name ?? 'Unknown User' }}</p>
+                                    <p class="text-sm text-gray-500">{{ $deposit->user->email ?? '-' }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            @if($deposit->auction)
+                                <a href="{{ route('auctions.show', $deposit->auction_id) }}" class="text-indigo-600 hover:underline" target="_blank">#{{ $deposit->auction_id }}</a>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-sm font-mono text-gray-900">{{ $deposit->order_number }}</td>
+                        <td class="px-6 py-4">
+                            <p class="text-lg font-bold text-gray-900">Rp {{ number_format($deposit->amount, 0, ',', '.') }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ $deposit->payment_method ? ucwords(str_replace('_', ' ', $deposit->payment_method)) : '-' }}
+                        </td>
+                        <td class="px-6 py-4">
+                            @php
+                                $status = $deposit->status;
+                                $badge = [
+                                    'paid' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'label' => 'Paid'],
+                                    'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'label' => 'Pending'],
+                                    'failed' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'label' => 'Failed'],
+                                    'expired' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => 'Expired'],
+                                    'refunded' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'label' => 'Refunded'],
+                                    'challenge' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'label' => 'Challenge'],
+                                ][$status] ?? ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => ucfirst($status ?? 'unknown')];
+                            @endphp
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $badge['bg'] }} {{ $badge['text'] }}">{{ $badge['label'] }}</span>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-2 text-gray-300"></i>
+                            <p>No bid deposits found</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($bidDeposits->hasPages())
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            {{ $bidDeposits->links() }}
         </div>
         @endif
     </div>

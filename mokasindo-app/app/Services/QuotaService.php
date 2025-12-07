@@ -3,80 +3,60 @@
 namespace App\Services;
 
 use App\Exceptions\QuotaExceededException;
-use App\Models\RoleQuota;
 use App\Models\User;
-use App\Models\UserQuotaOverride;
-use App\Models\Vehicle;
 
 class QuotaService
 {
     /**
-     * Ensure user is still allowed to publish/create a listing.
+     * Enforce current business rule: anggota max 2 listings per week; member/admin/owner unlimited.
      */
     public function ensureCanCreateListing(User $user): void
     {
-        if ($this->shouldBypass($user)) {
+        if ($this->isUnlimited($user)) {
             return;
         }
 
-        $remaining = $this->remainingListings($user);
+        if (!$user->isAnggota()) {
+            return;
+        }
 
-        if ($remaining !== null && $remaining <= 0) {
-            throw new QuotaExceededException('Batas maksimum iklan untuk akun Anda telah tercapai.');
+        $this->refreshWeeklyCounter($user);
+
+        if ($user->weekly_post_count >= 2) {
+            throw new QuotaExceededException('Akun Anggota hanya dapat membuat 2 listing per minggu. Upgrade ke Member untuk posting tanpa batas.');
         }
     }
 
     /**
-     * Remaining slots the user can use before hitting the limit.
+     * Record a successful listing creation for anggota users.
      */
-    public function remainingListings(User $user): ?int
+    public function recordListingCreation(User $user): void
     {
-        $limit = $this->listingLimit($user);
-
-        if ($limit === null) {
-            return null; // Unlimited
+        if (!$user->isAnggota()) {
+            return;
         }
 
-        return max(0, $limit - $this->activeListingCount($user));
+        $this->refreshWeeklyCounter($user);
+
+        $user->increment('weekly_post_count');
+
+        if ($user->last_post_reset === null) {
+            $user->forceFill(['last_post_reset' => now()])->save();
+        }
     }
 
-    /**
-     * Determine per-user listing limit (override > role quota > config default or unlimited).
-     */
-    public function listingLimit(User $user): ?int
+    private function refreshWeeklyCounter(User $user): void
     {
-        $override = UserQuotaOverride::where('user_id', $user->id)->value('post_limit');
-        if ($override !== null) {
-            return (int) $override;
+        if ($user->last_post_reset === null || $user->last_post_reset->diffInDays(now()) >= 7) {
+            $user->forceFill([
+                'weekly_post_count' => 0,
+                'last_post_reset' => now(),
+            ])->save();
         }
-
-        $roleLimit = RoleQuota::where('role', $user->role)->value('post_limit');
-        if ($roleLimit !== null) {
-            return (int) $roleLimit;
-        }
-
-        return config('quotas.default_limit');
     }
 
-    /**
-     * Count listings considered active for quota purposes.
-     */
-    public function activeListingCount(User $user): int
+    private function isUnlimited(User $user): bool
     {
-        $statuses = config('quotas.counted_statuses', []);
-
-        $query = Vehicle::where('user_id', $user->id);
-
-        if (!empty($statuses)) {
-            $query->whereIn('status', $statuses);
-        }
-
-        return (int) $query->count();
-    }
-
-    protected function shouldBypass(User $user): bool
-    {
-        $bypassRoles = config('quotas.bypass_roles', []);
-        return in_array($user->role, $bypassRoles, true);
+        return $user->isMember() || $user->isAdmin() || $user->isOwner();
     }
 }

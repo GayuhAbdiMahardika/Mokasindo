@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\UserSubscription;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,13 +23,14 @@ class User extends Authenticatable
         'email',
         'password',
         'telegram_chat_id',
+        'telegram_username',
         'role',
         'phone',
         'address',
-        'province_id',
-        'city_id',
-        'district_id',
-        'sub_district_id',
+        'province',
+        'city',
+        'district',
+        'sub_district',
         'postal_code',
         'avatar',
         'is_active',
@@ -100,30 +102,22 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class);
     }
 
+    public function subscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    public function latestSubscription()
+    {
+        return $this->hasOne(UserSubscription::class)->latestOfMany();
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class);
     }
 
-    public function province()
-    {
-        return $this->belongsTo(Province::class);
-    }
-
-    public function city()
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function district()
-    {
-        return $this->belongsTo(District::class);
-    }
-
-    public function subDistrict()
-    {
-        return $this->belongsTo(SubDistrict::class);
-    }
+    // Location is stored as text from external API; no DB relations.
 
     // Helper Methods
     public function isMember()

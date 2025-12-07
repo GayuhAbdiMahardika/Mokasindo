@@ -15,6 +15,12 @@
                     <p class="text-sm text-gray-500 mt-1">Perbarui foto dan alamat lengkap Anda.</p>
                 </div>
 
+                @php
+                    $botUsername = config('services.telegram.bot_username');
+                    $telegramConnected = !empty($user->telegram_chat_id);
+                @endphp
+
+
                 @if(session('success'))
                     <div class="px-6 pt-6">
                         <div class="bg-green-50 text-green-800 px-4 py-3 rounded-lg text-sm flex items-center gap-2 border border-green-100">
@@ -75,8 +81,26 @@
                         </div>
 
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp</label>
-                            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5" placeholder="0812...">
+                            <div class="flex flex-col md:flex-row md:items-center md:gap-4">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
+                                    <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5" placeholder="0812...">
+                                </div>
+                                <div class="pt-3 md:pt-7 flex items-center gap-2">
+                                    <i class="fab fa-telegram text-sky-500"></i>
+                                    @if($telegramConnected)
+                                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">Terhubung</span>
+                                        <span class="text-xs text-gray-500">Chat ID: {{ $user->telegram_chat_id }}</span>
+                                    @elseif($botUsername)
+                                        <a href="https://t.me/{{ $botUsername }}?start=user_{{ $user->id }}" target="_blank"
+                                           class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-sky-500 hover:bg-sky-600 rounded-lg shadow-sm">
+                                            <i class="fab fa-telegram-plane"></i> Connect Telegram
+                                        </a>
+                                    @else
+                                        <span class="text-xs text-gray-500">Set TELEGRAM_BOT_USERNAME di .env</span>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-span-2 pt-4 border-t border-gray-50">
@@ -85,34 +109,34 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
-                                    <select name="province_id" id="province_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 bg-white">
-                                        <option value="" disabled selected>Pilih Provinsi</option>
+                                    <select id="provinceSelect" name="province" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 bg-white">
+                                        <option value="">Pilih Provinsi</option>
                                     </select>
-                                    @error('province_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    @error('province') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Kota/Kabupaten</label>
-                                    <select name="city_id" id="city_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 bg-white">
-                                        <option value="" disabled selected>Pilih Kota/Kabupaten</option>
+                                    <select id="citySelect" name="city" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 bg-white">
+                                        <option value="">Pilih Kota/Kabupaten</option>
                                     </select>
-                                    @error('city_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    @error('city') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
-                                    <select name="district_id" id="district_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 bg-white">
-                                        <option value="" disabled selected>Pilih Kecamatan</option>
+                                    <select id="districtSelect" name="district" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 bg-white">
+                                        <option value="">Pilih Kecamatan</option>
                                     </select>
-                                    @error('district_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    @error('district') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Kelurahan</label>
-                                    <select name="sub_district_id" id="sub_district_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 bg-white">
-                                        <option value="" disabled selected>Pilih Kelurahan</option>
+                                    <select id="subDistrictSelect" name="sub_district" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2.5 bg-white">
+                                        <option value="">Pilih Kelurahan</option>
                                     </select>
-                                    @error('sub_district_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    @error('sub_district') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div>
@@ -156,134 +180,106 @@
         }
     }
 
-    // 2. Load Wilayah Indonesia (Provinsi -> Kota -> Kecamatan -> Kelurahan)
-    document.addEventListener('DOMContentLoaded', function () {
-        const provinceSelect = document.getElementById('province_id');
-        const citySelect = document.getElementById('city_id');
-        const districtSelect = document.getElementById('district_id');
-        const subDistrictSelect = document.getElementById('sub_district_id');
+    // Lokasi sekarang diisi bebas; bisa ditambah integrasi fetch API eksternal di frontend jika diperlukan.
+</script>
+<script>
+    (function() {
+        const apiBase = '/api/locations';
+        const provinceSelect = document.getElementById('provinceSelect');
+        const citySelect = document.getElementById('citySelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const subDistrictSelect = document.getElementById('subDistrictSelect');
 
-        // Data dari Database (Untuk edit mode)
-        const oldProvince = @json(old('province_id', $user->province_id));
-        const oldCity = @json(old('city_id', $user->city_id));
-        const oldDistrict = @json(old('district_id', $user->district_id));
-        const oldSubDistrict = @json(old('sub_district_id', $user->sub_district_id));
+        const existing = {
+            province: @json(old('province', $user->province)),
+            city: @json(old('city', $user->city)),
+            district: @json(old('district', $user->district)),
+            sub_district: @json(old('sub_district', $user->sub_district)),
+        };
 
-        function getId(p){ return p.id ?? p.code ?? p.kode ?? p.province_id ?? p.kd ?? p.name ?? ''; }
-        function getName(p){ return p.name ?? p.province ?? p.nama ?? String(p); }
-
-        function setLoading(select, text){
-            if(!select) return;
-            select.innerHTML = `<option value="" disabled selected>${text}</option>`;
+        function setOptions(select, items, placeholder) {
+            select.innerHTML = `<option value="">${placeholder}</option>`;
+            items.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.textContent = item.name;
+                select.appendChild(opt);
+            });
         }
 
-        function clearSelect(select, placeholder){
-            if(!select) return;
-            select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+        function findAndSelect(select, id) {
+            if (!id) return;
+            const opt = Array.from(select.options).find(o => o.value == id);
+            if (opt) select.value = opt.value;
         }
 
-        // LOAD PROVINCES
-        if(provinceSelect){
-            setLoading(provinceSelect, 'Memuat provinsi...');
-            fetch('https://kanglerian.my.id/api-wilayah-indonesia/api/provinces.json')
-                .then(r => r.json())
-                .then(provinces => {
-                    provinces.sort((a,b) => getName(a).localeCompare(getName(b), 'id'));
-                    provinceSelect.innerHTML = '<option value="" disabled selected>Pilih Provinsi</option>';
-                    
-                    provinces.forEach(p => {
-                        const id = getId(p);
-                        const name = getName(p);
-                        const opt = document.createElement('option');
-                        opt.value = id;
-                        opt.textContent = name;
-                        // Auto-select jika ada data user
-                        if(oldProvince && String(oldProvince) === String(id)) opt.selected = true;
-                        provinceSelect.appendChild(opt);
-                    });
-
-                    if(oldProvince && citySelect){
-                        loadRegencies(String(oldProvince));
-                    }
-                })
-                .catch(err => setLoading(provinceSelect, 'Gagal memuat'));
+        async function fetchJson(url) {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Failed to load');
+            const data = await res.json();
+            return data.data || [];
         }
 
-        // LOAD CITIES
-        function loadRegencies(provinceId){
-            if(!citySelect) return;
-            clearSelect(citySelect, 'Memuat kota...');
-            
-            fetch(`https://kanglerian.my.id/api-wilayah-indonesia/api/regencies/${provinceId}.json`)
-                .then(r => r.json())
-                .then(regencies => {
-                    regencies.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
-                    citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
-                    
-                    regencies.forEach(r => {
-                        const opt = document.createElement('option');
-                        opt.value = r.id ?? r.kabupaten_id ?? r.code ?? r.name;
-                        opt.textContent = r.name ?? r.title ?? String(r);
-                        if(oldCity && String(oldCity) === String(opt.value)) opt.selected = true;
-                        citySelect.appendChild(opt);
-                    });
-
-                    if(oldCity){
-                        loadDistricts(String(oldCity));
-                    }
-                });
+        async function loadProvinces() {
+            const provinces = await fetchJson(`${apiBase}/provinces`);
+            setOptions(provinceSelect, provinces, 'Pilih Provinsi');
+            findAndSelect(provinceSelect, existing.province);
+            if (provinceSelect.value) await loadCities();
         }
 
-        // LOAD DISTRICTS
-        function loadDistricts(cityId){
-            if(!districtSelect) return;
-            clearSelect(districtSelect, 'Memuat kecamatan...');
-
-            fetch(`https://kanglerian.my.id/api-wilayah-indonesia/api/districts/${cityId}.json`)
-                .then(r => r.json())
-                .then(districts => {
-                    districts.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
-                    districtSelect.innerHTML = '<option value="" disabled selected>Pilih Kecamatan</option>';
-                    
-                    districts.forEach(d => {
-                        const opt = document.createElement('option');
-                        opt.value = d.id ?? d.district_id ?? d.code ?? d.name;
-                        opt.textContent = d.name ?? d.title ?? String(d);
-                        if(oldDistrict && String(oldDistrict) === String(opt.value)) opt.selected = true;
-                        districtSelect.appendChild(opt);
-                    });
-
-                    if(oldDistrict){
-                        loadVillages(String(oldDistrict));
-                    }
-                });
+        async function loadCities() {
+            const provinceId = provinceSelect.value;
+            setOptions(citySelect, [], 'Memuat...');
+            setOptions(districtSelect, [], 'Pilih Kecamatan');
+            setOptions(subDistrictSelect, [], 'Pilih Kelurahan');
+            if (!provinceId) return;
+            const cities = await fetchJson(`${apiBase}/cities/${provinceId}`);
+            setOptions(citySelect, cities, 'Pilih Kota/Kabupaten');
+            findAndSelect(citySelect, existing.city);
+            if (citySelect.value) await loadDistricts();
         }
 
-        // LOAD VILLAGES
-        function loadVillages(districtId){
-            if(!subDistrictSelect) return;
-            clearSelect(subDistrictSelect, 'Memuat kelurahan...');
-
-            fetch(`https://kanglerian.my.id/api-wilayah-indonesia/api/villages/${districtId}.json`)
-                .then(r => r.json())
-                .then(villages => {
-                    villages.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
-                    subDistrictSelect.innerHTML = '<option value="" disabled selected>Pilih Kelurahan</option>';
-                    
-                    villages.forEach(v => {
-                        const opt = document.createElement('option');
-                        opt.value = v.id ?? v.village_id ?? v.code ?? v.name;
-                        opt.textContent = v.name ?? v.title ?? String(v);
-                        if(oldSubDistrict && String(oldSubDistrict) === String(opt.value)) opt.selected = true;
-                        subDistrictSelect.appendChild(opt);
-                    });
-                });
+        async function loadDistricts() {
+            const cityId = citySelect.value;
+            setOptions(districtSelect, [], 'Memuat...');
+            setOptions(subDistrictSelect, [], 'Pilih Kelurahan');
+            if (!cityId) return;
+            const districts = await fetchJson(`${apiBase}/districts/${cityId}`);
+            setOptions(districtSelect, districts, 'Pilih Kecamatan');
+            findAndSelect(districtSelect, existing.district);
+            if (districtSelect.value) await loadSubDistricts();
         }
 
-        // Event Listeners (Change)
-        provinceSelect?.addEventListener('change', function(){ loadRegencies(this.value); });
-        citySelect?.addEventListener('change', function(){ loadDistricts(this.value); });
-        districtSelect?.addEventListener('change', function(){ loadVillages(this.value); });
-    });
+        async function loadSubDistricts() {
+            const districtId = districtSelect.value;
+            setOptions(subDistrictSelect, [], 'Memuat...');
+            if (!districtId) return;
+            const subs = await fetchJson(`${apiBase}/sub-districts/${districtId}`);
+            setOptions(subDistrictSelect, subs, 'Pilih Kelurahan');
+            findAndSelect(subDistrictSelect, existing.sub_district);
+        }
+
+        provinceSelect.addEventListener('change', () => {
+            citySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+            districtSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
+            loadCities();
+        });
+
+        citySelect.addEventListener('change', () => {
+            districtSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
+            loadDistricts();
+        });
+
+        districtSelect.addEventListener('change', () => {
+            subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
+            loadSubDistricts();
+        });
+
+        loadProvinces().catch(() => {
+            provinceSelect.innerHTML = '<option value="">Gagal memuat provinsi</option>';
+        });
+    })();
 </script>
 @endsection

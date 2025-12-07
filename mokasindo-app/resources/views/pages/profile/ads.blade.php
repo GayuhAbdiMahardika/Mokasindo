@@ -43,7 +43,7 @@
                                     <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
                                         <span>Dibuat: {{ $vehicle->created_at->format('d M Y') }}</span>
                                         <span>&bull;</span>
-                                        <span>{{ $vehicle->city->name ?? 'Lokasi -' }}</span>
+                                        <span>{{ $vehicle->city ?? 'Lokasi -' }}</span>
                                     </div>
                                 </div>
                                 

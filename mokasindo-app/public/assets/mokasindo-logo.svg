@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Mokasindo">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="104" height="104" rx="18" fill="#0f172a"/>
+  <path fill="url(#grad)" d="M78 28a4 4 0 0 0-2.8 1.2L59 45.4 46.6 33a4 4 0 0 0-5.6 0l-7 7a4 4 0 0 0 0 5.6L46.4 58 33 71.4a4 4 0 0 0 0 5.6l7 7a4 4 0 0 0 5.6 0L59 72.6 71.4 85a4 4 0 0 0 5.6 0l7-7a4 4 0 0 0 0-5.6L71.6 58 84 45.6a4 4 0 0 0 0-5.6l-7-7A4 4 0 0 0 78 28Z"/>
+  <rect x="20" y="86" width="80" height="8" rx="4" fill="#1e293b"/>
+</svg>

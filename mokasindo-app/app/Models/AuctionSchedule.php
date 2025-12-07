@@ -13,7 +13,7 @@ class AuctionSchedule extends Model
     protected $fillable = [
         'title',
         'description',
-        'location_id',
+        'location',
         'start_date',
         'end_date',
         'is_active',
@@ -29,11 +29,6 @@ class AuctionSchedule extends Model
     public function auctions()
     {
         return $this->hasMany(Auction::class);
-    }
-
-    public function location()
-    {
-        return $this->belongsTo(City::class, 'location_id');
     }
 
     // Helpers

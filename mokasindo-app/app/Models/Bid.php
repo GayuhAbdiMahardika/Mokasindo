@@ -12,6 +12,7 @@ class Bid extends Model
     protected $fillable = [
         'auction_id',
         'user_id',
+        'deposit_id',
         'bid_amount',
         'previous_amount',
         'is_winner',
@@ -36,5 +37,10 @@ class Bid extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function deposit()
+    {
+        return $this->belongsTo(Deposit::class);
     }
 }

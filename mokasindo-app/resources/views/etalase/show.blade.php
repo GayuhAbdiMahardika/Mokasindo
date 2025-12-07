@@ -208,7 +208,7 @@
                     <div class="flex items-start">
                         <i class="fas fa-map-marker-alt text-indigo-500 mt-1 mr-3"></i>
                         <div>
-                            <p class="text-gray-700">{{ $vehicle->city->name ?? 'N/A' }}</p>
+                            <p class="text-gray-700">{{ $vehicle->city ?? 'N/A' }}</p>
                             <p class="text-sm text-gray-500">{{ $vehicle->province->name ?? '' }}</p>
                             @if($vehicle->address)
                                 <p class="text-sm text-gray-500 mt-1">{{ $vehicle->address }}</p>

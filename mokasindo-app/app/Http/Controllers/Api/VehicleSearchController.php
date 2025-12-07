@@ -16,10 +16,10 @@ class VehicleSearchController extends Controller
         $request->validate([
             'q' => 'nullable|string|max:255',
             'category' => 'nullable|in:motor,mobil',
-            'province_id' => 'nullable|integer|exists:provinces,id',
-            'city_id' => 'nullable|integer|exists:cities,id',
-            'district_id' => 'nullable|integer|exists:districts,id',
-            'sub_district_id' => 'nullable|integer|exists:sub_districts,id',
+            'province' => 'nullable|string|max:100',
+            'city' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'sub_district' => 'nullable|string|max:100',
             'lat' => 'nullable|numeric|between:-90,90',
             'lng' => 'nullable|numeric|between:-180,180',
             'radius' => 'nullable|numeric|min:1|max:500',
@@ -32,7 +32,7 @@ class VehicleSearchController extends Controller
         ]);
 
         $query = Vehicle::approved()
-            ->with(['primaryImage', 'province', 'city', 'district', 'subDistrict', 'auction']);
+            ->with(['primaryImage', 'auction']);
 
         // Keyword search
         if ($request->filled('q')) {
@@ -50,17 +50,17 @@ class VehicleSearchController extends Controller
         }
 
         // Location filters
-        if ($request->filled('province_id')) {
-            $query->where('province_id', $request->province_id);
+        if ($request->filled('province')) {
+            $query->where('province', 'like', "%{$request->province}%");
         }
-        if ($request->filled('city_id')) {
-            $query->where('city_id', $request->city_id);
+        if ($request->filled('city')) {
+            $query->where('city', 'like', "%{$request->city}%");
         }
-        if ($request->filled('district_id')) {
-            $query->where('district_id', $request->district_id);
+        if ($request->filled('district')) {
+            $query->where('district', 'like', "%{$request->district}%");
         }
-        if ($request->filled('sub_district_id')) {
-            $query->where('sub_district_id', $request->sub_district_id);
+        if ($request->filled('sub_district')) {
+            $query->where('sub_district', 'like', "%{$request->sub_district}%");
         }
 
         // Price range filter
@@ -131,10 +131,10 @@ class VehicleSearchController extends Controller
                 'latitude' => $vehicle->latitude,
                 'longitude' => $vehicle->longitude,
                 'location' => [
-                    'province' => $vehicle->province?->name,
-                    'city' => $vehicle->city?->name,
-                    'district' => $vehicle->district?->name,
-                    'sub_district' => $vehicle->subDistrict?->name,
+                    'province' => $vehicle->province,
+                    'city' => $vehicle->city,
+                    'district' => $vehicle->district,
+                    'sub_district' => $vehicle->sub_district,
                 ],
                 'images' => $vehicle->primaryImage ? [$vehicle->primaryImage] : [],
                 'auction' => $vehicle->auction,
@@ -177,7 +177,7 @@ class VehicleSearchController extends Controller
         $limit = $request->input('limit', 20);
 
         $vehicles = Vehicle::approved()
-            ->with(['primaryImage', 'province', 'city'])
+            ->with(['primaryImage'])
             ->nearby($lat, $lng, $radius)
             ->limit($limit)
             ->get();
@@ -193,8 +193,8 @@ class VehicleSearchController extends Controller
                 'longitude' => $vehicle->longitude,
                 'distance_km' => round($vehicle->distance_km, 2),
                 'location' => [
-                    'province' => $vehicle->province?->name,
-                    'city' => $vehicle->city?->name,
+                    'province' => $vehicle->province,
+                    'city' => $vehicle->city,
                 ],
                 'image' => $vehicle->primaryImage?->image_path,
             ];
@@ -212,7 +212,7 @@ class VehicleSearchController extends Controller
     public function showOnMap($id)
     {
         $vehicle = Vehicle::approved()
-            ->with(['images', 'province', 'city', 'district', 'subDistrict'])
+            ->with(['images'])
             ->find($id);
 
         if (!$vehicle) {
@@ -234,10 +234,10 @@ class VehicleSearchController extends Controller
                 'longitude' => $vehicle->longitude,
                 'full_address' => $vehicle->full_address,
                 'location' => [
-                    'province' => $vehicle->province?->name,
-                    'city' => $vehicle->city?->name,
-                    'district' => $vehicle->district?->name,
-                    'sub_district' => $vehicle->subDistrict?->name,
+                    'province' => $vehicle->province,
+                    'city' => $vehicle->city,
+                    'district' => $vehicle->district,
+                    'sub_district' => $vehicle->sub_district,
                     'postal_code' => $vehicle->postal_code,
                 ],
                 'images' => $vehicle->images,
