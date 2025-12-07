@@ -12,6 +12,7 @@ class Deposit extends Model
     protected $fillable = [
         'auction_id',
         'user_id',
+        'bid_id',
         'amount',
         'status',
         'type',
@@ -19,6 +20,8 @@ class Deposit extends Model
         'payment_reference',
         'order_number',
         'transaction_code',
+        'snap_token',
+        'snap_redirect_url',
         'payment_url',
         'payment_proof',
         'account_name',
@@ -55,6 +58,11 @@ class Deposit extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function bid()
+    {
+        return $this->belongsTo(Bid::class);
     }
 
     public function payment()

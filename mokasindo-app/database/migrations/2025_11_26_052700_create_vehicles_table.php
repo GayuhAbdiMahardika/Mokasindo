@@ -27,10 +27,10 @@ return new class extends Migration
             $table->string('fuel_type')->nullable(); // bensin/diesel/listrik
             $table->integer('engine_capacity')->nullable(); // cc
             $table->string('condition')->default('bekas'); // bekas/baru
-            $table->foreignId('province_id')->nullable()->constrained('provinces')->nullOnDelete();
-            $table->foreignId('city_id')->nullable()->constrained('cities')->nullOnDelete();
-            $table->foreignId('district_id')->nullable()->constrained('districts')->nullOnDelete();
-            $table->foreignId('sub_district_id')->nullable()->constrained('sub_districts')->nullOnDelete();
+            $table->string('province', 100)->nullable();
+            $table->string('city', 100)->nullable();
+            $table->string('district', 100)->nullable();
+            $table->string('sub_district', 100)->nullable();
             $table->string('postal_code', 10)->nullable();
             $table->enum('status', ['draft', 'pending', 'approved', 'rejected', 'sold'])->default('draft');
             $table->text('rejection_reason')->nullable();
@@ -41,7 +41,7 @@ return new class extends Migration
             $table->softDeletes();
             
             $table->index(['category', 'brand', 'status']);
-            $table->index(['province_id', 'city_id']);
+            $table->index(['province', 'city']);
         });
     }
 

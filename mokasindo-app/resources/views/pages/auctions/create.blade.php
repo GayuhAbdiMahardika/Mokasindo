@@ -23,7 +23,7 @@
                 <div>
                     <h3 class="font-bold text-lg">{{ $vehicle->brand }} {{ $vehicle->model }}</h3>
                     <p class="text-gray-600">{{ $vehicle->year }} • {{ number_format($vehicle->mileage ?? 0) }} km</p>
-                    <p class="text-gray-600">{{ $vehicle->city->name ?? '' }}</p>
+                    <p class="text-gray-600">{{ $vehicle->city ?? '' }}</p>
                     <p class="text-sm text-gray-500 mt-2">Harga Awal: Rp {{ number_format($vehicle->starting_price, 0, ',', '.') }}</p>
                 </div>
             </div>

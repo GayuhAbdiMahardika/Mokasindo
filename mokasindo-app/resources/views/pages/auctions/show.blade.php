@@ -67,14 +67,6 @@
                         <p class="font-semibold text-gray-900">{{ number_format($auction->vehicle->mileage ?? 0) }} km</p>
                     </div>
                     <div class="border-b pb-3">
-                        <span class="text-sm text-gray-600">Kapasitas Mesin</span>
-                        <p class="font-semibold text-gray-900">{{ $auction->vehicle->engine_capacity ?? 'N/A' }} cc</p>
-                    </div>
-                    <div class="border-b pb-3">
-                        <span class="text-sm text-gray-600">Plat Nomor</span>
-                        <p class="font-semibold text-gray-900">{{ $auction->vehicle->license_plate ?? 'N/A' }}</p>
-                    </div>
-                    <div class="border-b pb-3">
                         <span class="text-sm text-gray-600">Kondisi</span>
                         <p class="font-semibold text-gray-900">{{ ucfirst($auction->vehicle->condition ?? 'Bekas') }}</p>
                     </div>
@@ -83,11 +75,16 @@
                 <!-- Location -->
                 <div class="mt-4 pt-4 border-t">
                     <span class="text-sm text-gray-600">Lokasi</span>
+                    @php
+                        $parts = array_filter([
+                            $auction->vehicle->district ?? null,
+                            $auction->vehicle->city ?? null,
+                            $auction->vehicle->province ?? null,
+                        ]);
+                    @endphp
                     <p class="font-semibold text-gray-900">
                         <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
-                        {{ $auction->vehicle->district->name ?? '' }}, 
-                        {{ $auction->vehicle->city->name ?? '' }}, 
-                        {{ $auction->vehicle->province->name ?? '' }}
+                        {{ implode(', ', $parts) }}
                         {{ $auction->vehicle->postal_code ? '(' . $auction->vehicle->postal_code . ')' : '' }}
                     </p>
                 </div>
@@ -133,65 +130,63 @@
                                 <i class="fas fa-trophy text-yellow-500 mr-2"></i>
                                 Anda Sedang Menang!
                             </p>
-                            <p class="text-sm text-green-700 mt-1">Bid Anda: Rp {{ number_format($userHighestBid->amount, 0, ',', '.') }}</p>
+                            <p class="text-sm text-green-700 mt-1">Bid Anda: Rp {{ number_format($userHighestBid->bid_amount, 0, ',', '.') }}</p>
                         </div>
                     @elseif($userHighestBid)
                         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                             <p class="text-yellow-800 font-semibold">Anda Ter-outbid!</p>
-                            <p class="text-sm text-yellow-700 mt-1">Bid Anda: Rp {{ number_format($userHighestBid->amount, 0, ',', '.') }}</p>
+                            <p class="text-sm text-yellow-700 mt-1">Bid Anda: Rp {{ number_format($userHighestBid->bid_amount, 0, ',', '.') }}</p>
                         </div>
                     @endif
 
-                    <!-- Deposit Warning -->
-                    @if(!$hasDeposit)
-                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-                            <p class="text-orange-800 font-semibold mb-2">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
-                                Deposit Diperlukan
-                            </p>
-                            <p class="text-sm text-orange-700 mb-3">
-                                Bayar deposit 5% (Rp {{ number_format($auction->deposit_amount, 0, ',', '.') }}) untuk ikut bid.
-                            </p>
-                            <a href="{{ route('deposits.show', $auction->id) }}" 
-                               class="block w-full bg-orange-600 hover:bg-orange-700 text-white text-center font-medium py-2 px-4 rounded-md transition duration-150">
-                                Bayar Deposit
+                    <!-- Bid Form (no upfront deposit required) -->
+                    @if(session('success'))
+                        <div class="bg-green-50 border border-green-200 text-green-800 text-sm px-4 py-3 rounded mb-3">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if(session('error'))
+                        <div class="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3 rounded mb-3">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+                    @if($errors->any())
+                        <div class="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3 rounded mb-3">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <p class="text-blue-800 text-sm mb-2">
+                            Setiap bid menahan deposit {{ $auction->deposit_percentage ?? 5 }}% dari nominal bid. Jika Anda tersalip, deposit Anda dikembalikan. Lengkapi pembayaran deposit agar bid tercatat.
+                        </p>
+                        @if($pendingDeposit && $pendingDeposit->payment_url)
+                            <a href="{{ $pendingDeposit->payment_url }}" class="inline-flex items-center text-blue-700 underline text-sm font-semibold">
+                                Lanjutkan pembayaran deposit yang tertunda
                             </a>
-                        </div>
-                    @else
-                        <!-- Bid Form -->
-                        <form id="bidForm" class="mb-4">
-                            @csrf
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Masukkan Bid Anda (Min: Rp {{ number_format($nextMinBid, 0, ',', '.') }})
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-2.5 text-gray-500">Rp</span>
-                                <input type="text" 
-                                       id="bidAmount" 
-                                       name="amount"
-                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="{{ number_format($nextMinBid, 0, ',', '.') }}"
-                                       required>
-                            </div>
-                            <button type="submit" 
-                                    id="bidButton"
-                                    class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                <i class="fas fa-gavel mr-2"></i> Pasang Bid
-                            </button>
-                        </form>
+                        @endif
+                    </div>
 
-                        <!-- Quick Bid Buttons -->
-                        <div class="grid grid-cols-2 gap-2 mb-4">
-                            <button onclick="quickBid({{ $nextMinBid }})" 
-                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 rounded text-sm transition">
-                                +Rp {{ number_format(100000, 0, ',', '.') }}
-                            </button>
-                            <button onclick="quickBid({{ $nextMinBid + 500000 }})" 
-                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 rounded text-sm transition">
-                                +Rp {{ number_format(500000, 0, ',', '.') }}
-                            </button>
+                    <form id="bidForm" class="mb-4" method="POST" action="{{ route('auctions.bid', $auction->id) }}">
+                        @csrf
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Masukkan Bid Anda (Min: Rp {{ number_format($nextMinBid, 0, ',', '.') }})
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-500">Rp</span>
+                            <input type="text" 
+                                id="bidAmount" 
+                                name="amount"
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                value="{{ number_format($nextMinBid, 0, ',', '.') }}"
+                                required>
                         </div>
-                    @endif
+                        <button type="submit" 
+                                id="bidButton"
+                                class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            <i class="fas fa-gavel mr-2"></i> Pasang Bid
+                        </button>
+                    </form>
+
                 @else
                     <div class="bg-gray-50 rounded-lg p-4 mb-4">
                         <p class="text-gray-700 mb-3 text-center">Silakan login untuk ikut lelang</p>
@@ -212,7 +207,7 @@
                                     {{ substr($bid->user->name, 0, 3) }}***
                                 </span>
                                 <span class="font-semibold text-gray-900">
-                                    Rp {{ number_format($bid->amount, 0, ',', '.') }}
+                                    Rp {{ number_format($bid->bid_amount, 0, ',', '.') }}
                                 </span>
                             </div>
                         @empty
@@ -280,54 +275,8 @@ document.getElementById('bidAmount')?.addEventListener('input', function(e) {
     }
 });
 
-// Quick bid
-function quickBid(amount) {
-    document.getElementById('bidAmount').value = formatNumber(amount);
-}
 
-// Submit bid
-document.getElementById('bidForm')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const button = document.getElementById('bidButton');
-    const amountInput = document.getElementById('bidAmount');
-    const amount = parseNumber(amountInput.value);
-
-    // Disable button
-    button.setAttribute('disabled', 'true');
-    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
-
-    try {
-        const response = await fetch('{{ route("auctions.bid", $auction->id) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ amount: amount })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            // Success
-            alert('Bid berhasil! Anda sekarang bid tertinggi.');
-            updateAuctionData();
-            amountInput.value = '';
-        } else {
-            // Error
-            alert(data.error || 'Gagal memasang bid. Silakan coba lagi.');
-        }
-    } catch (error) {
-        alert('Terjadi kesalahan. Silakan coba lagi.');
-        console.error(error);
-    } finally {
-        // Re-enable button
-        button.removeAttribute('disabled');
-        button.innerHTML = '<i class="fas fa-gavel mr-2"></i> Pasang Bid';
-    }
-});
+// Submit handling now uses standard form POST; no JS interception required
 
 // Update auction data (polling)
 async function updateAuctionData() {

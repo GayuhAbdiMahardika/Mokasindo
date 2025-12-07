@@ -28,7 +28,7 @@
                         @foreach($bids as $bid)
                         <tr>
                             <td class="py-2">{{ $bid->user->name ?? '—' }}</td>
-                            <td class="py-2">Rp {{ number_format($bid->amount,0,',','.') }}</td>
+                            <td class="py-2">Rp {{ number_format($bid->bid_amount,0,',','.') }}</td>
                             <td class="py-2 text-xs text-gray-500">{{ $bid->created_at->format('d M Y H:i:s') }}</td>
                         </tr>
                         @endforeach

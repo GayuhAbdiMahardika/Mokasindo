@@ -40,4 +40,17 @@ return [
         'geocoding_api_key' => env('GOOGLE_MAPS_GEOCODING_API_KEY', env('GOOGLE_MAPS_API_KEY')),
     ],
 
+    'midtrans' => [
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+        'merchant_id' => env('MIDTRANS_MERCHANT_ID'),
+        'is_production' => env('MIDTRANS_PRODUCTION', false),
+        'enable_3ds' => env('MIDTRANS_ENABLE_3DS', true),
+    ],
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME'),
+    ],
+
 ];

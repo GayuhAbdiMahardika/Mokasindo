@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\VehicleSearchController;
+use App\Http\Controllers\TelegramController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,3 +32,6 @@ Route::prefix('vehicles')->group(function () {
     Route::get('/nearby', [VehicleSearchController::class, 'nearby']);
     Route::get('/{id}/map', [VehicleSearchController::class, 'showOnMap']);
 });
+
+// Telegram webhook (no auth, hit by Telegram servers)
+Route::post('/telegram/webhook', [TelegramController::class, 'webhook'])->name('telegram.webhook');

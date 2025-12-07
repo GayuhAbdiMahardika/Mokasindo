@@ -25,10 +25,10 @@ class Vehicle extends Model
         'fuel_type',
         'engine_capacity',
         'condition',
-        'province_id',
-        'city_id',
-        'district_id',
-        'sub_district_id',
+        'province',
+        'city',
+        'district',
+        'sub_district',
         'postal_code',
         'latitude',
         'longitude',
@@ -72,25 +72,7 @@ class Vehicle extends Model
         return $this->hasOne(Auction::class);
     }
 
-    public function province()
-    {
-        return $this->belongsTo(Province::class);
-    }
-
-    public function city()
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function district()
-    {
-        return $this->belongsTo(District::class);
-    }
-
-    public function subDistrict()
-    {
-        return $this->belongsTo(SubDistrict::class);
-    }
+    // Location fields are stored as plain text from external API; no DB relations.
 
     public function approvedBy()
     {

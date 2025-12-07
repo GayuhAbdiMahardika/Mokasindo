@@ -36,7 +36,7 @@
                                 <div class="grid grid-cols-2 gap-4 mt-3">
                                     <div>
                                         <p class="text-xs text-gray-500">Tawaran Anda</p>
-                                        <p class="text-indigo-600 font-bold">Rp {{ number_format($bid->amount, 0, ',', '.') }}</p>
+                                        <p class="text-indigo-600 font-bold">Rp {{ number_format($bid->bid_amount, 0, ',', '.') }}</p>
                                     </div>
                                     <div>
                                         <p class="text-xs text-gray-500">Posisi Saat Ini</p>

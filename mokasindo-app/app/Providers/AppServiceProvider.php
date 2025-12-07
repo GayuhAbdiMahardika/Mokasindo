@@ -2,39 +2,34 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
-use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
-use App\Listeners\SendNewUserTelegramNotification;
+use App\Services\AuctionStatusService;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
-class EventServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     /**
-     * The event to listener mappings for the application.
-     *
-     * @var array<class-string, array<int, class-string>>
+     * Register any application services.
      */
-    protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-            SendNewUserTelegramNotification::class,
-        ],
-    ];
-
-    /**
-     * Register any events for your application.
-     */
-    public function boot(): void
+    public function register(): void
     {
         //
     }
 
     /**
-     * Determine if events and listeners should be automatically discovered.
+     * Bootstrap any application services.
      */
-    public function shouldDiscoverEvents(): bool
+    public function boot(): void
     {
-        return false;
+        // Sync auction status without relying on cron. Throttled to once per minute.
+        Cache::remember('auction_status_last_sync', 60, function () {
+            App::make(AuctionStatusService::class)->sync();
+            return now();
+        });
+
+        View::share('availableLocales', ['id' => 'ID', 'en' => 'EN']);
+        View::share('currentLocale', App::getLocale());
     }
 }

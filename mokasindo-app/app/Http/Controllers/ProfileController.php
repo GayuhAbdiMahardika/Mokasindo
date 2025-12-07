@@ -23,6 +23,11 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
+            'province' => 'nullable|string|max:100',
+            'city' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'sub_district' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:10',
             'address' => 'nullable|string|max:500',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);

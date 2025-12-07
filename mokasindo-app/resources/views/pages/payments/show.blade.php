@@ -46,7 +46,7 @@
                     </div>
                     <p class="text-sm text-gray-600 mt-2">
                         <i class="fas fa-map-marker-alt mr-1"></i>
-                        {{ $auction->vehicle->city->name ?? '' }}, {{ $auction->vehicle->province->name ?? '' }}
+                        {{ $auction->vehicle->city ?? '' }}, {{ $auction->vehicle->province ?? '' }}
                     </p>
                 </div>
             </div>

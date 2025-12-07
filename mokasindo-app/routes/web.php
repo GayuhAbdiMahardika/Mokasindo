@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Page;
 use App\Models\User;
 use App\Services\TelegramService;          // Tambahan dari GitHub
+use App\Http\Controllers\CompanyRegistrationController;
 
 // Controllers
 use App\Http\Controllers\AuctionController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\Admin\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +34,14 @@ use App\Http\Controllers\WishlistController;
 Route::get('/', function () {
     return view('landing');
 });
+
+// Locale switcher
+Route::get('/locale/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'id'])) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('locale.switch');
 
 // Group Etalase
 Route::prefix('etalase')->name('etalase.')->group(function () {
@@ -101,6 +111,11 @@ Route::prefix('notifications')->name('notifications.')->middleware('auth')->grou
     Route::delete('/{id}', [App\Http\Controllers\NotificationController::class, 'delete'])->name('delete');
     Route::get('/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unread-count');
 });
+
+// Midtrans client return URLs (after payment page redirect)
+Route::get('/midtrans/finish', [DepositController::class, 'midtransReturn'])->name('midtrans.finish');
+Route::get('/midtrans/unfinish', [DepositController::class, 'midtransReturn'])->name('midtrans.unfinish');
+Route::get('/midtrans/error', [DepositController::class, 'midtransReturn'])->name('midtrans.error');
 
 // Deposit Routes (Deposit 5% sebelum bid)
 Route::prefix('deposits')->name('deposits.')->middleware('auth')->group(function () {
@@ -227,36 +242,9 @@ Route::get('/force-login', function () {
             </p>";
 });
 
-// Tampilkan form register perusahaan
-Route::get('/register', function () {
-    return view('pages.company.register');
-})->name('register.form');
-
-// Terima form register (sederhana)
-Route::post('/register', function (Request $request) {
-    $rules = [
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
-        'phone' => 'required|string|max:50',
-        'password' => 'required|confirmed|min:6',
-        'province_id' => 'required',
-        'city_id' => 'required',
-        'district_id' => 'required',
-        'sub_district_id' => 'required',
-        'postal_code' => 'required',
-        'address' => 'required',
-    ];
-
-    $validator = Validator::make($request->all(), $rules);
-
-    if ($validator->fails()) {
-        return redirect('/register')->withErrors($validator)->withInput();
-    }
-
-    // TODO: simpan data user/ perusahaan sesuai kebutuhan aplikasi
-    // Untuk sementara redirect kembali dengan pesan sukses
-    return redirect('/register')->with('status', 'Registrasi berhasil (demo).');
-})->name('company.register');
+// Registrasi perusahaan/user publik
+Route::get('/register', [CompanyRegistrationController::class, 'create'])->name('register.form');
+Route::post('/register', [CompanyRegistrationController::class, 'store'])->name('company.register');
 
 // Login: tampilkan form login
 Route::get('/login', function () {
@@ -361,6 +349,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('payments/{payment}/verify', [App\Http\Controllers\Admin\PaymentsController::class, 'verify'])->name('payments.verify');
     Route::post('payments/{payment}/reject', [App\Http\Controllers\Admin\PaymentsController::class, 'reject'])->name('payments.reject');
     Route::post('payments/{payment}/refund', [App\Http\Controllers\Admin\PaymentsController::class, 'refund'])->name('payments.refund');
+
+    // Platform Settings
+    Route::get('settings', [SettingsController::class, 'edit'])->name('settings.edit');
+    Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
 
     // Deposits Management
     Route::get('deposits', [App\Http\Controllers\Admin\DepositsController::class, 'index'])->name('deposits.index');

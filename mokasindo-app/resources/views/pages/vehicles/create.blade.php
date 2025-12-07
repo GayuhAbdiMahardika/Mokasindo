@@ -5,8 +5,8 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Jual Kendaraan Anda</h1>
-            <p class="mt-2 text-gray-600">Isi form di bawah ini untuk menjual kendaraan Anda melalui lelang</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('vehicles.create.title') }}</h1>
+            <p class="mt-2 text-gray-600">{{ __('vehicles.create.subtitle') }}</p>
         </div>
 
         <!-- Alert Messages -->
@@ -38,46 +38,46 @@
 
             <!-- Informasi Dasar -->
             <div class="border-b pb-6">
-                <h2 class="text-xl font-semibold mb-4">Informasi Dasar</h2>
+                <h2 class="text-xl font-semibold mb-4">{{ __('vehicles.create.basic_info') }}</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Title -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Judul Iklan *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.title') }}</label>
                         <input type="text" name="title" value="{{ old('title') }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="Contoh: Toyota Avanza 2020 Veloz 1.5 AT">
+                            placeholder="{{ __('vehicles.create.placeholders.title') }}">
                     </div>
 
                     <!-- Type -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Kendaraan *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.type') }}</label>
                         <select name="type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Pilih Jenis</option>
-                            <option value="mobil" {{ old('type') == 'mobil' ? 'selected' : '' }}>Mobil</option>
-                            <option value="motor" {{ old('type') == 'motor' ? 'selected' : '' }}>Motor</option>
+                            <option value="">{{ __('vehicles.create.placeholders.type') }}</option>
+                            <option value="mobil" {{ old('type') == 'mobil' ? 'selected' : '' }}>{{ __('vehicles.create.options.car') }}</option>
+                            <option value="motor" {{ old('type') == 'motor' ? 'selected' : '' }}>{{ __('vehicles.create.options.motorcycle') }}</option>
                         </select>
                     </div>
 
                     <!-- Brand -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Merek *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.brand') }}</label>
                         <input type="text" name="brand" value="{{ old('brand') }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: Toyota, Honda">
+                            placeholder="{{ __('vehicles.create.placeholders.brand') }}">
                     </div>
 
                     <!-- Model -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Model *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.model') }}</label>
                         <input type="text" name="model" value="{{ old('model') }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: Avanza, Beat">
+                            placeholder="{{ __('vehicles.create.placeholders.model') }}">
                     </div>
 
                     <!-- Year -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tahun *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.year') }}</label>
                         <input type="number" name="year" value="{{ old('year') }}" required min="1900" max="{{ date('Y') + 1 }}"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                             placeholder="{{ date('Y') }}">
@@ -85,150 +85,149 @@
 
                     <!-- Condition -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kondisi *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.condition') }}</label>
                         <select name="condition" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Pilih Kondisi</option>
-                            <option value="baru" {{ old('condition') == 'baru' ? 'selected' : '' }}>Baru</option>
-                            <option value="bekas" {{ old('condition') == 'bekas' ? 'selected' : '' }}>Bekas</option>
+                            <option value="">{{ __('vehicles.create.placeholders.condition') }}</option>
+                            <option value="baru" {{ old('condition') == 'baru' ? 'selected' : '' }}>{{ __('vehicles.create.options.new') }}</option>
+                            <option value="bekas" {{ old('condition') == 'bekas' ? 'selected' : '' }}>{{ __('vehicles.create.options.used') }}</option>
                         </select>
                     </div>
 
                     <!-- Mileage -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kilometer (KM) *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.mileage') }}</label>
                         <input type="number" name="mileage" value="{{ old('mileage') }}" required min="0"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: 50000">
+                            placeholder="{{ __('vehicles.create.placeholders.mileage') }}">
                     </div>
                 </div>
             </div>
 
             <!-- Spesifikasi -->
             <div class="border-b pb-6">
-                <h2 class="text-xl font-semibold mb-4">Spesifikasi</h2>
+                <h2 class="text-xl font-semibold mb-4">{{ __('vehicles.create.specs') }}</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Transmission -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Transmisi *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.transmission') }}</label>
                         <select name="transmission" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Pilih Transmisi</option>
-                            <option value="manual" {{ old('transmission') == 'manual' ? 'selected' : '' }}>Manual</option>
-                            <option value="automatic" {{ old('transmission') == 'automatic' ? 'selected' : '' }}>Automatic</option>
-                            <option value="semi-automatic" {{ old('transmission') == 'semi-automatic' ? 'selected' : '' }}>Semi-Automatic</option>
+                            <option value="">{{ __('vehicles.create.placeholders.transmission') }}</option>
+                            <option value="manual" {{ old('transmission') == 'manual' ? 'selected' : '' }}>{{ __('vehicles.create.options.manual') }}</option>
+                            <option value="automatic" {{ old('transmission') == 'automatic' ? 'selected' : '' }}>{{ __('vehicles.create.options.automatic') }}</option>
+                            <option value="semi-automatic" {{ old('transmission') == 'semi-automatic' ? 'selected' : '' }}>{{ __('vehicles.create.options.semi_automatic') }}</option>
                         </select>
                     </div>
 
                     <!-- Fuel Type -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Bahan Bakar *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.fuel_type') }}</label>
                         <select name="fuel_type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Pilih Bahan Bakar</option>
-                            <option value="bensin" {{ old('fuel_type') == 'bensin' ? 'selected' : '' }}>Bensin</option>
-                            <option value="diesel" {{ old('fuel_type') == 'diesel' ? 'selected' : '' }}>Diesel</option>
-                            <option value="listrik" {{ old('fuel_type') == 'listrik' ? 'selected' : '' }}>Listrik</option>
-                            <option value="hybrid" {{ old('fuel_type') == 'hybrid' ? 'selected' : '' }}>Hybrid</option>
+                            <option value="">{{ __('vehicles.create.placeholders.fuel_type') }}</option>
+                            <option value="bensin" {{ old('fuel_type') == 'bensin' ? 'selected' : '' }}>{{ __('vehicles.create.options.petrol') }}</option>
+                            <option value="diesel" {{ old('fuel_type') == 'diesel' ? 'selected' : '' }}>{{ __('vehicles.create.options.diesel') }}</option>
+                            <option value="listrik" {{ old('fuel_type') == 'listrik' ? 'selected' : '' }}>{{ __('vehicles.create.options.electric') }}</option>
+                            <option value="hybrid" {{ old('fuel_type') == 'hybrid' ? 'selected' : '' }}>{{ __('vehicles.create.options.hybrid') }}</option>
                         </select>
                     </div>
 
                     <!-- Color -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Warna *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.color') }}</label>
                         <input type="text" name="color" value="{{ old('color') }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: Hitam, Putih">
+                            placeholder="{{ __('vehicles.create.placeholders.color') }}">
                     </div>
 
                     <!-- Starting Price -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Harga Awal (Rp) *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.starting_price') }}</label>
                         <input type="number" name="starting_price" value="{{ old('starting_price') }}" required min="0"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: 150000000">
+                            placeholder="{{ __('vehicles.create.placeholders.starting_price') }}">
                     </div>
                 </div>
             </div>
 
             <!-- Lokasi -->
             <div class="border-b pb-6">
-                <h2 class="text-xl font-semibold mb-4">Lokasi</h2>
+                <h2 class="text-xl font-semibold mb-4">{{ __('vehicles.create.location') }}</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Province -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Provinsi *</label>
-                        <select name="province_id" id="province" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Pilih Provinsi</option>
-                            @foreach($provinces as $province)
-                                <option value="{{ $province->id }}" {{ old('province_id') == $province->id ? 'selected' : '' }}>
-                                    {{ $province->name }}
-                                </option>
-                            @endforeach
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.province') }}</label>
+                        <select id="province" name="province" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">{{ __('vehicles.create.placeholders.province') }}</option>
                         </select>
                     </div>
 
                     <!-- City -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kota/Kabupaten *</label>
-                        <select name="city_id" id="city" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Pilih Kota</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.city') }}</label>
+                        <select id="city" name="city" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">{{ __('vehicles.create.placeholders.city') }}</option>
                         </select>
                     </div>
 
                     <!-- District -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kecamatan</label>
-                        <select name="district_id" id="district" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Pilih Kecamatan</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.district') }}</label>
+                        <select id="district" name="district"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">{{ __('vehicles.create.placeholders.district') }}</option>
                         </select>
                     </div>
 
                     <!-- Sub District -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kelurahan/Desa</label>
-                        <select name="sub_district_id" id="sub_district" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Pilih Kelurahan</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.sub_district') }}</label>
+                        <select id="sub_district" name="sub_district"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">{{ __('vehicles.create.placeholders.sub_district') }}</option>
                         </select>
                     </div>
 
                     <!-- Address -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Alamat Lengkap *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('vehicles.create.fields.address') }}</label>
                         <textarea name="address" rows="3" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Jalan, nomor rumah, RT/RW, dll">{{ old('address') }}</textarea>
+                            placeholder="{{ __('vehicles.create.placeholders.address') }}">{{ old('address') }}</textarea>
                     </div>
                 </div>
             </div>
 
             <!-- Deskripsi -->
             <div class="border-b pb-6">
-                <h2 class="text-xl font-semibold mb-4">Deskripsi</h2>
+                <h2 class="text-xl font-semibold mb-4">{{ __('vehicles.create.description') }}</h2>
                 <textarea name="description" rows="6" required
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Ceritakan tentang kendaraan Anda, kondisi, kelengkapan, dll">{{ old('description') }}</textarea>
+                    placeholder="{{ __('vehicles.create.placeholders.description') }}">{{ old('description') }}</textarea>
             </div>
 
             <!-- Upload Foto -->
             <div class="border-b pb-6">
-                <h2 class="text-xl font-semibold mb-4">Foto Kendaraan *</h2>
-                <p class="text-sm text-gray-600 mb-4">Upload minimal 1 foto, maksimal 10 foto (JPEG/PNG, max 2MB per file)</p>
+                <h2 class="text-xl font-semibold mb-4">{{ __('vehicles.create.photos.title') }}</h2>
+                <p class="text-sm text-gray-600 mb-4">{{ __('vehicles.create.photos.helper') }}</p>
                 
                 <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/jpg" required
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 
-                <p class="text-xs text-gray-500 mt-2">Foto pertama akan menjadi foto utama</p>
+                <p class="text-xs text-gray-500 mt-2">{{ __('vehicles.create.photos.note') }}</p>
             </div>
 
             <!-- Submit Button -->
             <div class="flex gap-4">
                 <button type="submit" 
                     class="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition">
-                    Submit untuk Direview
+                    {{ __('vehicles.create.actions.submit') }}
                 </button>
                 <a href="{{ route('my.ads') }}" 
                     class="px-6 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition">
-                    Batal
+                    {{ __('vehicles.create.actions.cancel') }}
                 </a>
             </div>
         </form>
@@ -236,88 +235,144 @@
 </div>
 
 <script>
-// Cascade Dropdown for Location
-const provinceSelect = document.getElementById('province');
-const citySelect = document.getElementById('city');
-const districtSelect = document.getElementById('district');
-const subDistrictSelect = document.getElementById('sub_district');
+document.addEventListener('DOMContentLoaded', () => {
+    const API_BASE = 'https://kanglerian.my.id/api-wilayah-indonesia/api';
 
-// When province changes, load cities
-provinceSelect.addEventListener('change', function() {
-    const provinceId = this.value;
-    
-    // Reset dependent dropdowns
-    citySelect.innerHTML = '<option value="">Pilih Kota</option>';
-    districtSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
-    subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
-    
-    if (!provinceId) return;
-    
-    // Fetch cities
-    fetch(`/api/locations/cities/${provinceId}`)
-        .then(response => response.json())
-        .then(response => {
-            if (response.status === 'success' && response.data) {
-                response.data.forEach(city => {
-                    const option = document.createElement('option');
-                    option.value = city.id;
-                    option.textContent = city.name;
-                    citySelect.appendChild(option);
-                });
+    const provinceSelect = document.getElementById('province');
+    const citySelect = document.getElementById('city');
+    const districtSelect = document.getElementById('district');
+    const subDistrictSelect = document.getElementById('sub_district');
+
+    const placeholders = {
+        province: @json(__('vehicles.create.placeholders.province')),
+        city: @json(__('vehicles.create.placeholders.city')),
+        district: @json(__('vehicles.create.placeholders.district')),
+        subDistrict: @json(__('vehicles.create.placeholders.sub_district'))
+    };
+
+    const oldProvince = @json(old('province'));
+    const oldCity = @json(old('city'));
+    const oldDistrict = @json(old('district'));
+    const oldSubDistrict = @json(old('sub_district'));
+
+    const setOptions = (select, items, placeholder) => {
+        select.innerHTML = `<option value="">${placeholder}</option>`;
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.name;
+            option.dataset.id = item.id;
+            option.textContent = item.name;
+            select.appendChild(option);
+        });
+    };
+
+    const resetBelow = (startSelect) => {
+        if (startSelect === provinceSelect) {
+            setOptions(citySelect, [], placeholders.city);
+            setOptions(districtSelect, [], placeholders.district);
+            setOptions(subDistrictSelect, [], placeholders.subDistrict);
+        } else if (startSelect === citySelect) {
+            setOptions(districtSelect, [], placeholders.district);
+            setOptions(subDistrictSelect, [], placeholders.subDistrict);
+        } else if (startSelect === districtSelect) {
+            setOptions(subDistrictSelect, [], placeholders.subDistrict);
+        }
+    };
+
+    const loadProvinces = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/provinces.json`);
+            const data = await res.json();
+            setOptions(provinceSelect, data, placeholders.province);
+
+            if (oldProvince) {
+                const match = Array.from(provinceSelect.options).find(opt => opt.value === oldProvince);
+                if (match) {
+                    match.selected = true;
+                    await loadCities(match.dataset.id, oldCity);
+                }
             }
-        })
-        .catch(error => console.error('Error loading cities:', error));
+        } catch (err) {
+            console.error('Gagal memuat provinsi:', err);
+        }
+    };
+
+    const loadCities = async (provinceId, preselectName = '') => {
+        resetBelow(provinceSelect);
+        if (!provinceId) return;
+        try {
+            const res = await fetch(`${API_BASE}/regencies/${provinceId}.json`);
+            const data = await res.json();
+            setOptions(citySelect, data, placeholders.city);
+
+            if (preselectName) {
+                const match = Array.from(citySelect.options).find(opt => opt.value === preselectName);
+                if (match) {
+                    match.selected = true;
+                    await loadDistricts(match.dataset.id, oldDistrict);
+                }
+            }
+        } catch (err) {
+            console.error('Gagal memuat kota/kabupaten:', err);
+        }
+    };
+
+    const loadDistricts = async (cityId, preselectName = '') => {
+        resetBelow(citySelect);
+        if (!cityId) return;
+        try {
+            const res = await fetch(`${API_BASE}/districts/${cityId}.json`);
+            const data = await res.json();
+            setOptions(districtSelect, data, placeholders.district);
+
+            if (preselectName) {
+                const match = Array.from(districtSelect.options).find(opt => opt.value === preselectName);
+                if (match) {
+                    match.selected = true;
+                    await loadSubDistricts(match.dataset.id, oldSubDistrict);
+                }
+            }
+        } catch (err) {
+            console.error('Gagal memuat kecamatan:', err);
+        }
+    };
+
+    const loadSubDistricts = async (districtId, preselectName = '') => {
+        resetBelow(districtSelect);
+        if (!districtId) return;
+        try {
+            const res = await fetch(`${API_BASE}/villages/${districtId}.json`);
+            const data = await res.json();
+            setOptions(subDistrictSelect, data, placeholders.subDistrict);
+
+            if (preselectName) {
+                const match = Array.from(subDistrictSelect.options).find(opt => opt.value === preselectName);
+                if (match) {
+                    match.selected = true;
+                }
+            }
+        } catch (err) {
+            console.error('Gagal memuat kelurahan:', err);
+        }
+    };
+
+    provinceSelect.addEventListener('change', async (e) => {
+        const selectedId = e.target.selectedOptions[0]?.dataset.id || '';
+        await loadCities(selectedId);
+    });
+
+    citySelect.addEventListener('change', async (e) => {
+        const selectedId = e.target.selectedOptions[0]?.dataset.id || '';
+        await loadDistricts(selectedId);
+    });
+
+    districtSelect.addEventListener('change', async (e) => {
+        const selectedId = e.target.selectedOptions[0]?.dataset.id || '';
+        await loadSubDistricts(selectedId);
+    });
+
+    loadProvinces();
 });
 
-// When city changes, load districts
-citySelect.addEventListener('change', function() {
-    const cityId = this.value;
-    
-    // Reset dependent dropdowns
-    districtSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
-    subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
-    
-    if (!cityId) return;
-    
-    // Fetch districts
-    fetch(`/api/locations/districts/${cityId}`)
-        .then(response => response.json())
-        .then(response => {
-            if (response.status === 'success' && response.data) {
-                response.data.forEach(district => {
-                    const option = document.createElement('option');
-                    option.value = district.id;
-                    option.textContent = district.name;
-                    districtSelect.appendChild(option);
-                });
-            }
-        })
-        .catch(error => console.error('Error loading districts:', error));
-});
-
-// When district changes, load sub districts
-districtSelect.addEventListener('change', function() {
-    const districtId = this.value;
-    
-    // Reset dependent dropdown
-    subDistrictSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
-    
-    if (!districtId) return;
-    
-    // Fetch sub districts
-    fetch(`/api/locations/sub-districts/${districtId}`)
-        .then(response => response.json())
-        .then(response => {
-            if (response.status === 'success' && response.data) {
-                response.data.forEach(subDistrict => {
-                    const option = document.createElement('option');
-                    option.value = subDistrict.id;
-                    option.textContent = subDistrict.name;
-                    subDistrictSelect.appendChild(option);
-                });
-            }
-        })
-        .catch(error => console.error('Error loading sub districts:', error));
-});
-</script>
+ </script>
 @endsection

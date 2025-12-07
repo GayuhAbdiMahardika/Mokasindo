@@ -15,10 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            ProvinceSeeder::class,
-            CitySeeder::class,
-            DistrictSeeder::class,
-            SubDistrictSeeder::class,
+            // Wilayah tables removed; locations now fetched from external API at runtime
             SettingSeeder::class,
             AdminSeeder::class,
             CompanySeeder::class,
@@ -32,6 +29,7 @@ class DatabaseSeeder extends Seeder
             UserSubscriptionSeeder::class,
             AuctionScheduleSeeder::class,
             MarketplaceSeeder::class,
+            DummyDataSeeder::class,
         ]);
     }
 }

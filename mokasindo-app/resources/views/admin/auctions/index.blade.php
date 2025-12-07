@@ -1,18 +1,18 @@
 @extends('admin.layout')
 
-@section('title', 'Auctions Management')
+@section('title', __('admin.auctions.title'))
 
 @section('content')
 <div class="p-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Auctions Management</h1>
-            <p class="text-gray-600 mt-1">Monitor and manage all auction activities</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('admin.auctions.heading') }}</h1>
+            <p class="text-gray-600 mt-1">{{ __('admin.auctions.subtitle') }}</p>
         </div>
         <button onclick="window.location.href='{{ route('admin.auction-schedules.create') }}'" 
                 class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
-            <i class="fas fa-plus mr-2"></i>Create Schedule
+            <i class="fas fa-plus mr-2"></i>{{ __('admin.auctions.create_schedule') }}
         </button>
     </div>
 
@@ -21,37 +21,37 @@
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-2">
                 <i class="fas fa-calendar-alt text-3xl opacity-80"></i>
-                <span class="text-sm opacity-80">Scheduled</span>
+                <span class="text-sm opacity-80">{{ __('admin.auctions.stats.scheduled') }}</span>
             </div>
             <p class="text-3xl font-bold">{{ $auctions->where('status', 'scheduled')->count() }}</p>
-            <p class="text-sm opacity-90 mt-1">Scheduled auctions</p>
+            <p class="text-sm opacity-90 mt-1">{{ __('admin.auctions.stats.scheduled_desc') }}</p>
         </div>
 
         <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-2">
                 <i class="fas fa-play-circle text-3xl opacity-80"></i>
-                <span class="text-sm opacity-80">Active</span>
+                <span class="text-sm opacity-80">{{ __('admin.auctions.stats.active') }}</span>
             </div>
             <p class="text-3xl font-bold">{{ $auctions->where('status', 'active')->count() }}</p>
-            <p class="text-sm opacity-90 mt-1">Currently running</p>
+            <p class="text-sm opacity-90 mt-1">{{ __('admin.auctions.stats.active_desc') }}</p>
         </div>
 
         <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-2">
                 <i class="fas fa-hourglass-half text-3xl opacity-80"></i>
-                <span class="text-sm opacity-80">Ending Soon</span>
+                <span class="text-sm opacity-80">{{ __('admin.auctions.stats.ending_soon') }}</span>
             </div>
             <p class="text-3xl font-bold">{{ $auctions->where('status', 'active')->filter(fn($a) => $a->end_time && $a->end_time->diffInHours(now()) < 2)->count() }}</p>
-            <p class="text-sm opacity-90 mt-1">< 2 hours left</p>
+            <p class="text-sm opacity-90 mt-1">{{ __('admin.auctions.stats.ending_soon_desc') }}</p>
         </div>
 
         <div class="bg-gradient-to-br from-gray-500 to-gray-600 rounded-lg shadow-lg p-6 text-white">
             <div class="flex items-center justify-between mb-2">
                 <i class="fas fa-flag-checkered text-3xl opacity-80"></i>
-                <span class="text-sm opacity-80">Ended Today</span>
+                <span class="text-sm opacity-80">{{ __('admin.auctions.stats.ended_today') }}</span>
             </div>
             <p class="text-3xl font-bold">{{ $auctions->where('status', 'ended')->filter(fn($a) => $a->end_time && $a->end_time->isToday())->count() }}</p>
-            <p class="text-sm opacity-90 mt-1">Completed today</p>
+            <p class="text-sm opacity-90 mt-1">{{ __('admin.auctions.stats.ended_today_desc') }}</p>
         </div>
     </div>
 
@@ -59,32 +59,32 @@
     <div class="bg-white rounded-lg shadow mb-6 p-4">
         <form method="GET" action="{{ route('admin.auctions.index') }}" class="flex flex-wrap gap-4">
             <input type="text" name="search" value="{{ request('search') }}" 
-                   placeholder="Search by vehicle or owner..." 
+                   placeholder="{{ __('admin.auctions.filter.search_placeholder') }}" 
                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             
             <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                <option value="">All Status</option>
-                <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Scheduled</option>
-                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                <option value="ended" {{ request('status') == 'ended' ? 'selected' : '' }}>Ended</option>
-                <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Sold</option>
-                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                <option value="">{{ __('admin.auctions.filter.all_status') }}</option>
+                <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>{{ __('admin.auctions.status.scheduled') }}</option>
+                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>{{ __('admin.auctions.status.active') }}</option>
+                <option value="ended" {{ request('status') == 'ended' ? 'selected' : '' }}>{{ __('admin.auctions.status.ended') }}</option>
+                <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>{{ __('admin.auctions.status.sold') }}</option>
+                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>{{ __('admin.auctions.status.cancelled') }}</option>
             </select>
 
             <select name="schedule" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                <option value="">All Schedules</option>
+                <option value="">{{ __('admin.auctions.filter.all_schedules') }}</option>
                 @foreach(\App\Models\AuctionSchedule::all() as $schedule)
                 <option value="{{ $schedule->id }}" {{ request('schedule') == $schedule->id ? 'selected' : '' }}>
-                    {{ $schedule->name }}
+                    {{ $schedule->title }}
                 </option>
                 @endforeach
             </select>
 
             <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
-                <i class="fas fa-filter mr-2"></i>Filter
+                <i class="fas fa-filter mr-2"></i>{{ __('admin.auctions.filter.submit') }}
             </button>
             <a href="{{ route('admin.auctions.index') }}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">
-                <i class="fas fa-redo mr-2"></i>Reset
+                <i class="fas fa-redo mr-2"></i>{{ __('admin.auctions.filter.reset') }}
             </a>
         </form>
     </div>
@@ -98,13 +98,13 @@
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <input type="checkbox" id="selectAll" class="rounded">
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price Range</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bids</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Remaining</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.auctions.table.vehicle') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.auctions.table.schedule') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.auctions.table.price_range') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.auctions.table.bids') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.auctions.table.time_remaining') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.auctions.table.status') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin.auctions.table.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -127,17 +127,17 @@
                                 <div>
                                     <p class="font-semibold text-gray-900">{{ $auction->vehicle->brand ?? 'N/A' }} {{ $auction->vehicle->model ?? '' }}</p>
                                     <p class="text-sm text-gray-500">{{ $auction->vehicle->year ?? '' }}</p>
-                                    <p class="text-xs text-gray-400">Owner: {{ $auction->vehicle->user->name ?? 'Unknown' }}</p>
+                                    <p class="text-xs text-gray-400">{{ __('admin.auctions.owner_label') }} {{ $auction->vehicle->user->name ?? __('admin.auctions.owner_unknown') }}</p>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 text-sm">
-                            <p class="font-medium text-gray-900">{{ $auction->start_time ? $auction->start_time->format('d M Y') : 'N/A' }}</p>
-                            <p class="text-gray-600">{{ $auction->start_time ? $auction->start_time->format('H:i') : '' }} - {{ $auction->end_time ? $auction->end_time->format('H:i') : '' }}</p>
+                            <p class="font-medium text-gray-900">{{ $auction->start_time ? $auction->start_time->locale(app()->getLocale())->translatedFormat('d M Y') : __('admin.auctions.na') }}</p>
+                            <p class="text-gray-600">{{ $auction->start_time ? $auction->start_time->locale(app()->getLocale())->translatedFormat('H:i') : '' }} - {{ $auction->end_time ? $auction->end_time->locale(app()->getLocale())->translatedFormat('H:i') : '' }}</p>
                         </td>
                         <td class="px-6 py-4 text-sm">
                             <p class="font-bold text-green-600">Rp {{ number_format($auction->starting_price ?? 0, 0, ',', '.') }}</p>
-                            <p class="text-xs text-gray-500">Start price</p>
+                            <p class="text-xs text-gray-500">{{ __('admin.auctions.start_price') }}</p>
                         </td>
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
@@ -154,7 +154,7 @@
                                 @if(!$isExpired)
                                     <p class="font-semibold text-orange-600">{{ $remaining->d }}d {{ $remaining->h }}h {{ $remaining->i }}m</p>
                                 @else
-                                    <p class="font-semibold text-red-600">Expired</p>
+                                    <p class="font-semibold text-red-600">{{ __('admin.auctions.expired') }}</p>
                                 @endif
                             @else
                                 <p class="text-gray-400">—</p>
@@ -163,52 +163,57 @@
                         <td class="px-6 py-4">
                             @if($auction->status == 'scheduled')
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    <i class="fas fa-clock mr-1"></i>Scheduled
+                                    <i class="fas fa-clock mr-1"></i>{{ __('admin.auctions.status.scheduled') }}
                                 </span>
                             @elseif($auction->status == 'active')
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    <i class="fas fa-play-circle mr-1"></i>Active
+                                    <i class="fas fa-play-circle mr-1"></i>{{ __('admin.auctions.status.active') }}
                                 </span>
                             @elseif($auction->status == 'ended')
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    <i class="fas fa-flag-checkered mr-1"></i>Ended
+                                    <i class="fas fa-flag-checkered mr-1"></i>{{ __('admin.auctions.status.ended') }}
                                 </span>
                             @elseif($auction->status == 'sold')
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                    <i class="fas fa-check-circle mr-1"></i>Sold
+                                    <i class="fas fa-check-circle mr-1"></i>{{ __('admin.auctions.status.sold') }}
+                                </span>
+                            @elseif($auction->status == 'cancelled')
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-times-circle mr-1"></i>{{ __('admin.auctions.status.cancelled') }}
                                 </span>
                             @else
+                                @php $statusKey = 'admin.auctions.status.' . $auction->status; @endphp
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                    <i class="fas fa-times-circle mr-1"></i>{{ ucfirst($auction->status) }}
+                                    <i class="fas fa-times-circle mr-1"></i>{{ __($statusKey) !== $statusKey ? __($statusKey) : ucfirst($auction->status) }}
                                 </span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-sm">
                             <div class="flex items-center space-x-2">
                                 <a href="{{ route('admin.auctions.show', $auction) }}" 
-                                   class="text-indigo-600 hover:text-indigo-900" title="View Details">
+                                   class="text-indigo-600 hover:text-indigo-900" title="{{ __('admin.auctions.action.view') }}">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <a href="{{ route('admin.auctions.bids', $auction) }}" 
-                                   class="text-blue-600 hover:text-blue-900" title="View Bids">
+                                   class="text-blue-600 hover:text-blue-900" title="{{ __('admin.auctions.action.bids') }}">
                                     <i class="fas fa-gavel"></i>
                                 </a>
                                 <a href="{{ route('admin.auctions.edit', $auction) }}" 
-                                   class="text-yellow-600 hover:text-yellow-900" title="Edit">
+                                   class="text-yellow-600 hover:text-yellow-900" title="{{ __('admin.auctions.action.edit') }}">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 @if($auction->status == 'active')
                                 <button onclick="forceEndAuction({{ $auction->id }})" 
-                                        class="text-red-600 hover:text-red-900" title="Force End">
+                                        class="text-red-600 hover:text-red-900" title="{{ __('admin.auctions.action.force_end') }}">
                                     <i class="fas fa-stop-circle"></i>
                                 </button>
                                 <button onclick="adjustTimer({{ $auction->id }})" 
-                                        class="text-orange-600 hover:text-orange-900" title="Adjust Timer">
+                                        class="text-orange-600 hover:text-orange-900" title="{{ __('admin.auctions.action.adjust_timer') }}">
                                     <i class="fas fa-clock"></i>
                                 </button>
                                 @elseif($auction->status == 'ended')
                                 <button onclick="reopenAuction({{ $auction->id }})" 
-                                        class="text-green-600 hover:text-green-900" title="Reopen">
+                                        class="text-green-600 hover:text-green-900" title="{{ __('admin.auctions.action.reopen') }}">
                                     <i class="fas fa-redo"></i>
                                 </button>
                                 @endif
@@ -219,8 +224,8 @@
                     <tr>
                         <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                             <i class="fas fa-inbox text-4xl mb-3 text-gray-300"></i>
-                            <p class="text-lg font-medium">No auctions found</p>
-                            <p class="text-sm">Try adjusting your filters or create a new auction schedule.</p>
+                            <p class="text-lg font-medium">{{ __('admin.auctions.empty.title') }}</p>
+                            <p class="text-sm">{{ __('admin.auctions.empty.subtitle') }}</p>
                         </td>
                     </tr>
                     @endforelse
@@ -238,17 +243,17 @@
 <!-- Force End Modal -->
 <div id="forceEndModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Force End Auction</h3>
-        <p class="text-gray-600 mb-6">Are you sure you want to force end this auction? This action cannot be undone.</p>
+        <h3 class="text-lg font-bold text-gray-900 mb-4">{{ __('admin.auctions.modal.force_end_title') }}</h3>
+        <p class="text-gray-600 mb-6">{{ __('admin.auctions.modal.force_end_body') }}</p>
         <form id="forceEndForm" method="POST" action="">
             @csrf
             <div class="flex justify-end space-x-3">
                 <button type="button" onclick="closeModal('forceEndModal')" 
                         class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
-                    Cancel
+                    {{ __('admin.auctions.modal.cancel') }}
                 </button>
                 <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                    Force End
+                    {{ __('admin.auctions.modal.force_end_submit') }}
                 </button>
             </div>
         </form>
@@ -258,21 +263,21 @@
 <!-- Adjust Timer Modal -->
 <div id="adjustTimerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Adjust Auction Timer</h3>
+        <h3 class="text-lg font-bold text-gray-900 mb-4">{{ __('admin.auctions.modal.adjust_title') }}</h3>
         <form id="adjustTimerForm" method="POST" action="">
             @csrf
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">New End Time</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('admin.auctions.modal.new_end_time') }}</label>
                 <input type="datetime-local" name="end_time" required
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             </div>
             <div class="flex justify-end space-x-3">
                 <button type="button" onclick="closeModal('adjustTimerModal')" 
                         class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
-                    Cancel
+                    {{ __('admin.auctions.modal.cancel') }}
                 </button>
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                    Update Timer
+                    {{ __('admin.auctions.modal.update_timer') }}
                 </button>
             </div>
         </form>
@@ -282,22 +287,22 @@
 <!-- Reopen Modal -->
 <div id="reopenModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Reopen Auction</h3>
-        <p class="text-gray-600 mb-6">Reopen this auction? You'll need to set a new end time.</p>
+        <h3 class="text-lg font-bold text-gray-900 mb-4">{{ __('admin.auctions.modal.reopen_title') }}</h3>
+        <p class="text-gray-600 mb-6">{{ __('admin.auctions.modal.reopen_body') }}</p>
         <form id="reopenForm" method="POST" action="">
             @csrf
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">New End Time</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('admin.auctions.modal.new_end_time') }}</label>
                 <input type="datetime-local" name="end_time" required
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             </div>
             <div class="flex justify-end space-x-3">
                 <button type="button" onclick="closeModal('reopenModal')" 
                         class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
-                    Cancel
+                    {{ __('admin.auctions.modal.cancel') }}
                 </button>
                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Reopen Auction
+                    {{ __('admin.auctions.modal.reopen_submit') }}
                 </button>
             </div>
         </form>

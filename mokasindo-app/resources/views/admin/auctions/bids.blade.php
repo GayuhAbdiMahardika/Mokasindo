@@ -11,8 +11,11 @@
     <div class="bg-white rounded-lg shadow mb-6 overflow-hidden">
         <div class="p-6">
             <div class="flex items-start gap-6">
-                @if($auction->vehicle->photos->first())
-                <img src="{{ Storage::url($auction->vehicle->photos->first()->path) }}" alt="Vehicle" class="w-48 h-32 rounded object-cover">
+                @php
+                    $primaryImage = $auction->vehicle?->images?->first();
+                @endphp
+                @if($primaryImage)
+                <img src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="Vehicle" class="w-48 h-32 rounded object-cover">
                 @endif
                 
                 <div class="flex-1">
@@ -92,7 +95,7 @@
                 </div>
                 <div>
                     <p class="text-gray-600 text-sm">Leading Bidder</p>
-                    <p class="text-sm font-bold text-gray-900">{{ $auction->bids()->latest('amount')->first()?->user->name ?? 'None' }}</p>
+                    <p class="text-sm font-bold text-gray-900">{{ $auction->bids()->orderBy('bid_amount', 'desc')->first()?->user->name ?? 'None' }}</p>
                 </div>
             </div>
         </div>
@@ -120,10 +123,13 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
+                    @php
+                        $rowStart = method_exists($bids, 'firstItem') ? $bids->firstItem() : 1;
+                    @endphp
                     @forelse($bids as $index => $bid)
                     <tr class="hover:bg-gray-50 {{ $loop->first ? 'bg-green-50' : '' }}">
                         <td class="px-6 py-4 text-sm text-gray-900">
-                            {{ $bids->firstItem() + $index }}
+                            {{ $rowStart + $index }}
                             @if($loop->first)
                                 <i class="fas fa-crown text-yellow-500 ml-2"></i>
                             @endif
@@ -140,7 +146,7 @@
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <p class="text-lg font-bold text-gray-900">Rp {{ number_format($bid->amount, 0, ',', '.') }}</p>
+                            <p class="text-lg font-bold text-gray-900">Rp {{ number_format($bid->bid_amount, 0, ',', '.') }}</p>
                         </td>
                         <td class="px-6 py-4">
                             @if($loop->last)
@@ -148,7 +154,7 @@
                             @else
                                 @php
                                     $prevBid = $bids[$index + 1] ?? null;
-                                    $increase = $prevBid ? $bid->amount - $prevBid->amount : 0;
+                                    $increase = $prevBid ? $bid->bid_amount - $prevBid->bid_amount : 0;
                                 @endphp
                                 <span class="text-sm font-semibold text-green-600">+Rp {{ number_format($increase, 0, ',', '.') }}</span>
                             @endif
@@ -186,7 +192,7 @@
             </table>
         </div>
 
-        @if($bids->hasPages())
+        @if(method_exists($bids, 'hasPages') && $bids->hasPages())
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
             {{ $bids->links() }}
         </div>

@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Auction;
 use App\Models\Deposit;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Midtrans\Config as MidtransConfig;
+use Midtrans\Transaction as MidtransTransaction;
 
 class DepositController extends Controller
 {
@@ -71,6 +75,8 @@ class DepositController extends Controller
             // Generate unique order number
             $orderNumber = 'DEP-' . strtoupper(Str::random(10));
 
+            $deadlineHours = Setting::get('deposit_deadline_hours', 24);
+
             // Create deposit record
             $deposit = Deposit::create([
                 'auction_id' => $auctionId,
@@ -80,7 +86,7 @@ class DepositController extends Controller
                 'order_number' => $orderNumber,
                 'status' => 'pending',
                 'payment_url' => null, // Will be filled by payment gateway
-                'expired_at' => now()->addHours(24),
+                'expired_at' => now()->addHours($deadlineHours),
             ]);
 
             // TODO: Integrate with Midtrans/Xendit
@@ -127,12 +133,15 @@ class DepositController extends Controller
      */
     public function webhook(Request $request)
     {
-        // TODO: Implement payment gateway webhook
-        // Verify signature
-        // Update deposit status based on payment status
-        
+        // Configure Midtrans
+        MidtransConfig::$serverKey = config('services.midtrans.server_key');
+        MidtransConfig::$isProduction = (bool) config('services.midtrans.is_production', false);
+        MidtransConfig::$isSanitized = true;
+        MidtransConfig::$is3ds = (bool) config('services.midtrans.enable_3ds', true);
+
         $orderNumber = $request->input('order_id');
         $status = $request->input('transaction_status');
+        $fraudStatus = $request->input('fraud_status');
 
         $deposit = Deposit::where('order_number', $orderNumber)->first();
 
@@ -143,27 +152,7 @@ class DepositController extends Controller
         try {
             DB::beginTransaction();
 
-            switch ($status) {
-                case 'settlement':
-                case 'capture':
-                    $deposit->update([
-                        'status' => 'paid',
-                        'paid_at' => now(),
-                    ]);
-
-                    // TODO: Send notification to user
-                    break;
-
-                case 'pending':
-                    $deposit->update(['status' => 'pending']);
-                    break;
-
-                case 'deny':
-                case 'cancel':
-                case 'expire':
-                    $deposit->update(['status' => 'failed']);
-                    break;
-            }
+            $this->applyGatewayStatus($deposit, $status, $fraudStatus);
 
             DB::commit();
 
@@ -365,6 +354,109 @@ class DepositController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal memproses penarikan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Handle Midtrans finish/unfinish/error redirect and bring user back to app.
+     */
+    public function midtransReturn(Request $request)
+    {
+        $orderId = $request->query('order_id');
+        $state = $request->path(); // midtrans/finish|unfinish|error
+
+        if (!$orderId) {
+            return redirect()->route('home')->with('error', 'Order ID tidak ditemukan');
+        }
+
+        $deposit = Deposit::where('order_number', $orderId)->first();
+
+        if (!$deposit) {
+            return redirect()->route('home')->with('error', 'Deposit tidak ditemukan');
+        }
+
+        // Try to refresh status from gateway so UI shows latest state even before webhook arrives
+        try {
+            MidtransConfig::$serverKey = config('services.midtrans.server_key');
+            MidtransConfig::$isProduction = (bool) config('services.midtrans.is_production', false);
+            MidtransConfig::$isSanitized = true;
+            MidtransConfig::$is3ds = (bool) config('services.midtrans.enable_3ds', true);
+
+            $statusResponse = MidtransTransaction::status($orderId);
+            $gatewayStatus = $statusResponse->transaction_status ?? null;
+            $gatewayFraud = $statusResponse->fraud_status ?? null;
+
+            DB::beginTransaction();
+            $this->applyGatewayStatus($deposit, $gatewayStatus, $gatewayFraud);
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::warning('Midtrans return status sync failed', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $redirectUrl = $deposit->auction_id
+            ? route('auctions.show', $deposit->auction_id)
+            : route('deposits.index');
+
+        $message = 'Pembayaran sedang diproses, silakan cek status deposit Anda.';
+        $flashKey = 'info';
+
+        if (str_contains($state, 'finish')) {
+            $message = 'Pembayaran Anda diterima, menunggu konfirmasi dari Midtrans.';
+            $flashKey = 'success';
+        } elseif (str_contains($state, 'unfinish')) {
+            $message = 'Pembayaran belum selesai. Silakan selesaikan pembayaran Anda.';
+            $flashKey = 'warning';
+        } elseif (str_contains($state, 'error')) {
+            $message = 'Pembayaran gagal atau dibatalkan.';
+            $flashKey = 'error';
+        }
+
+        return redirect($redirectUrl)->with($flashKey, $message);
+    }
+
+    /**
+     * Normalize Midtrans status handling to keep DB updates consistent.
+     */
+    private function applyGatewayStatus(Deposit $deposit, ?string $status, ?string $fraudStatus = null): void
+    {
+        switch ($status) {
+            case 'capture':
+            case 'settlement':
+                $deposit->update([
+                    'status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+                break;
+
+            case 'pending':
+                $deposit->update(['status' => 'pending']);
+                break;
+
+            case 'deny':
+            case 'cancel':
+                $deposit->update(['status' => 'failed']);
+                break;
+
+            case 'expire':
+                $deposit->update(['status' => 'expired']);
+                break;
+
+            case 'refund':
+            case 'partial_refund':
+                $deposit->update([
+                    'refund_status' => 'refunded',
+                    'refunded_at' => now(),
+                    'status' => 'refunded',
+                ]);
+                break;
+        }
+
+        if ($fraudStatus === 'challenge') {
+            $deposit->update(['status' => 'challenge']);
         }
     }
 }

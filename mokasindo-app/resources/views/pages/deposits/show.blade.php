@@ -23,7 +23,7 @@
                 <div class="flex-1">
                     <h3 class="font-bold text-lg">{{ $auction->vehicle->brand }} {{ $auction->vehicle->model }}</h3>
                     <p class="text-gray-600">{{ $auction->vehicle->year }}</p>
-                    <p class="text-gray-600">{{ $auction->vehicle->city->name ?? '' }}</p>
+                    <p class="text-gray-600">{{ $auction->vehicle->city ?? '' }}</p>
                     <div class="mt-2 pt-2 border-t">
                         <p class="text-sm text-gray-600">Harga Awal:</p>
                         <p class="font-bold text-lg text-blue-600">Rp {{ number_format($auction->starting_price, 0, ',', '.') }}</p>

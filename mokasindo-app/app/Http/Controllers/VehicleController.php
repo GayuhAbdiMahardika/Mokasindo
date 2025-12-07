@@ -5,10 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
 use App\Models\VehicleImage;
-use App\Models\Province;
-use App\Models\City;
-use App\Models\District;
-use App\Models\SubDistrict;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -27,7 +23,7 @@ class VehicleController extends Controller
     {
         // Start Query: Hanya ambil yang statusnya 'approved'
         $query = Vehicle::approved()
-            ->with(['primaryImage', 'city', 'auction', 'province']); // Load relasi biar data lengkap
+            ->with(['primaryImage', 'auction']); // Relasi wilayah dihapus
 
         // A. Search Keyword (Cari di Brand, Model, atau Deskripsi)
         if ($request->filled('search')) {
@@ -52,9 +48,9 @@ class VehicleController extends Controller
             $query->where('starting_price', '<=', $request->max_price);
         }
 
-        // D. Filter Lokasi (Kota)
-        if ($request->filled('city_id')) {
-            $query->where('city_id', $request->city_id);
+        // D. Filter Lokasi (Kota teks)
+        if ($request->filled('city')) {
+            $query->where('city', 'like', "%{$request->city}%");
         }
 
         // E. Sorting (Urutan)
@@ -67,9 +63,6 @@ class VehicleController extends Controller
             $query->latest('approved_at'); // Default: Terbaru
         }
 
-        // Get cities for filter dropdown
-        $cities = City::orderBy('name')->get();
-
         // Eksekusi (12 item per halaman)
         $vehicles = $query->paginate(12);
 
@@ -81,14 +74,14 @@ class VehicleController extends Controller
             ]);
         }
 
-        return view('etalase.index', compact('vehicles', 'cities'));
+        return view('etalase.index', compact('vehicles'));
     }
 
     // 2. GET DETAIL SATU MOBIL
     public function show(Request $request, $id)
     {
         $vehicle = Vehicle::approved()
-            ->with(['images', 'user', 'city', 'province', 'auction', 'district'])
+            ->with(['images', 'user', 'auction'])
             ->find($id);
 
         if (!$vehicle) {
@@ -133,12 +126,7 @@ class VehicleController extends Controller
      */
     public function create()
     {
-        $provinces = Province::orderBy('name')->get();
-        $cities = City::orderBy('name')->get();
-        $districts = District::orderBy('name')->get();
-        $subDistricts = SubDistrict::orderBy('name')->get();
-
-        return view('pages.vehicles.create', compact('provinces', 'cities', 'districts', 'subDistricts'));
+        return view('pages.vehicles.create');
     }
 
     /**
@@ -159,10 +147,10 @@ class VehicleController extends Controller
             'color' => 'required|string|max:50',
             'starting_price' => 'required|numeric|min:0',
             'condition' => 'required|in:baru,bekas',
-            'province_id' => 'required|exists:provinces,id',
-            'city_id' => 'required|exists:cities,id',
-            'district_id' => 'nullable|exists:districts,id',
-            'sub_district_id' => 'nullable|exists:sub_districts,id',
+            'province' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'sub_district' => 'nullable|string|max:100',
             'address' => 'required|string',
             'images' => 'required|array|min:1|max:10',
             'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
@@ -190,11 +178,11 @@ class VehicleController extends Controller
                 'color' => $validated['color'],
                 'starting_price' => $validated['starting_price'],
                 'condition' => $validated['condition'],
-                'province_id' => $validated['province_id'],
-                'city_id' => $validated['city_id'],
-                'district_id' => $validated['district_id'],
-                'sub_district_id' => $validated['sub_district_id'],
-                'address' => $validated['address'],
+                'province' => $validated['province'],
+                'city' => $validated['city'],
+                'district' => $validated['district'] ?? null,
+                'sub_district' => $validated['sub_district'] ?? null,
+                'full_address' => $validated['address'],
                 'status' => 'pending', // Waiting for admin approval
             ]);
 
@@ -212,6 +200,9 @@ class VehicleController extends Controller
                     ]);
                 }
             }
+
+            // Track quota usage for anggota role (weekly cap)
+            $this->quotaService->recordListingCreation($user);
 
             DB::commit();
 
@@ -239,12 +230,7 @@ class VehicleController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $provinces = Province::orderBy('name')->get();
-        $cities = City::where('province_id', $vehicle->province_id)->orderBy('name')->get();
-        $districts = District::where('city_id', $vehicle->city_id)->orderBy('name')->get();
-        $subDistricts = SubDistrict::where('district_id', $vehicle->district_id)->orderBy('name')->get();
-
-        return view('pages.vehicles.edit', compact('vehicle', 'provinces', 'cities', 'districts', 'subDistricts'));
+        return view('pages.vehicles.edit', compact('vehicle'));
     }
 
     /**
@@ -272,10 +258,10 @@ class VehicleController extends Controller
             'color' => 'required|string|max:50',
             'starting_price' => 'required|numeric|min:0',
             'condition' => 'required|in:baru,bekas',
-            'province_id' => 'required|exists:provinces,id',
-            'city_id' => 'required|exists:cities,id',
-            'district_id' => 'nullable|exists:districts,id',
-            'sub_district_id' => 'nullable|exists:sub_districts,id',
+            'province' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'sub_district' => 'nullable|string|max:100',
             'address' => 'required|string',
             'images' => 'nullable|array|max:10',
             'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
@@ -300,11 +286,11 @@ class VehicleController extends Controller
                 'color' => $validated['color'],
                 'starting_price' => $validated['starting_price'],
                 'condition' => $validated['condition'],
-                'province_id' => $validated['province_id'],
-                'city_id' => $validated['city_id'],
-                'district_id' => $validated['district_id'],
-                'sub_district_id' => $validated['sub_district_id'],
-                'address' => $validated['address'],
+                'province' => $validated['province'],
+                'city' => $validated['city'],
+                'district' => $validated['district'] ?? null,
+                'sub_district' => $validated['sub_district'] ?? null,
+                'full_address' => $validated['address'],
             ]);
 
             // Delete selected images

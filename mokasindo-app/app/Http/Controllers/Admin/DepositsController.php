@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\UserDeposit;
+use App\Models\Deposit;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,6 +44,12 @@ class DepositsController extends Controller
 
         $deposits = $query->paginate(20);
 
+        // Bid deposits (auction deposit via Midtrans)
+        $bidDeposits = Deposit::with(['user', 'auction'])
+            ->where('type', 'bid_deposit')
+            ->latest()
+            ->paginate(20, ['*'], 'bid_page');
+
         // Stats
         $stats = [
             'pending' => UserDeposit::where('status', 'pending')->whereIn('type', ['topup', 'withdrawal'])->count(),
@@ -56,7 +64,7 @@ class DepositsController extends Controller
                 ->count()
         ];
 
-        return view('admin.deposits.index', compact('deposits', 'stats'));
+        return view('admin.deposits.index', compact('deposits', 'bidDeposits', 'stats'));
     }
 
     /**
@@ -72,7 +80,7 @@ class DepositsController extends Controller
         try {
             $deposit->update([
                 'status' => 'approved',
-                'verified_by' => auth()->id(),
+                'verified_by' => Auth::id(),
                 'verified_at' => now()
             ]);
 
@@ -115,7 +123,7 @@ class DepositsController extends Controller
         try {
             $deposit->update([
                 'status' => 'rejected',
-                'verified_by' => auth()->id(),
+                'verified_by' => Auth::id(),
                 'verified_at' => now(),
                 'rejection_reason' => $request->reason
             ]);

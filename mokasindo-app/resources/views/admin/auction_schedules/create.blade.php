@@ -19,13 +19,8 @@
                 </div>
 
                 <div>
-                    <label class="text-sm text-gray-600">Location (City)</label>
-                    <select name="location_id" class="w-full border rounded px-3 py-2" required>
-                        <option value="">Select city</option>
-                        @foreach($cities as $city)
-                            <option value="{{ $city->id }}" {{ old('location_id') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
-                        @endforeach
-                    </select>
+                    <label class="text-sm text-gray-600">Location</label>
+                    <input type="text" name="location" value="{{ old('location') }}" class="w-full border rounded px-3 py-2" required placeholder="Contoh: Jakarta Selatan" />
                 </div>
 
                 <div>

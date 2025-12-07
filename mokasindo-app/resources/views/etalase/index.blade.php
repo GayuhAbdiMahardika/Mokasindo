@@ -63,14 +63,9 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kota</label>
-                    <select name="city_id" class="w-full border rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">Semua Kota</option>
-                        @foreach($cities as $city)
-                            <option value="{{ $city->id }}" {{ request('city_id') == $city->id ? 'selected' : '' }}>
-                                {{ $city->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="text" name="city" value="{{ request('city') }}" 
+                           placeholder="Contoh: Bandung"
+                           class="w-full border rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div class="flex items-end">
                     <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition font-medium">
@@ -86,7 +81,7 @@
         <p class="text-gray-600">
             Menampilkan <span class="font-semibold">{{ $vehicles->total() }}</span> kendaraan
         </p>
-        @if(request()->hasAny(['search', 'category', 'min_price', 'max_price', 'city_id']))
+        @if(request()->hasAny(['search', 'category', 'min_price', 'max_price', 'city']))
             <a href="{{ route('etalase.index') }}" class="text-indigo-600 hover:text-indigo-700 text-sm">
                 <i class="fas fa-times mr-1"></i>Reset Filter
             </a>
@@ -147,7 +142,7 @@
 
                         <div class="flex items-center text-gray-400 text-sm mb-4">
                             <i class="fas fa-map-marker-alt mr-1"></i>
-                            <span class="truncate">{{ $vehicle->city->name ?? 'N/A' }}</span>
+                            <span class="truncate">{{ $vehicle->city ?? 'N/A' }}</span>
                         </div>
 
                         <a href="{{ route('etalase.show', $vehicle->id) }}" 
