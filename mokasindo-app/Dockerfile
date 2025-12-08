@@ -25,6 +25,7 @@ RUN apk add --no-cache \
 
 COPY . .
 COPY --from=vendor /app/vendor ./vendor
+COPY --from=vendor /usr/bin/composer /usr/bin/composer
 COPY --from=frontend /app/public/build ./public/build
 
 RUN chown -R www-data:www-data storage bootstrap/cache
