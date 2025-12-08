@@ -20,7 +20,7 @@ WORKDIR /var/www/html
 # INSTALL DEPENDENCIES (Perhatikan baris ini berubah)
 # Kita install library runtime (tanpa -dev) dan biarkan tetap ada
 RUN apk add --no-cache \
-    bash git \
+    bash git nodejs npm \
     libpng libjpeg-turbo freetype icu-libs libzip \
     icu-dev libzip-dev oniguruma-dev zlib-dev libpng-dev freetype-dev libjpeg-turbo-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
