@@ -499,7 +499,16 @@ class AuctionController extends Controller
                         'final_price' => $winningBid->bid_amount,
                     ]);
 
-                    // TODO: Refund all deposits
+                    // Mark all deposits as refunded (manual settlement)
+                    Deposit::where('auction_id', $auction->id)
+                        ->where(function ($q) {
+                            $q->whereNull('refund_status')->orWhere('refund_status', '!=', 'refunded');
+                        })
+                        ->update([
+                            'refund_status' => 'refunded',
+                            'refunded_at' => now(),
+                            'status' => 'refunded',
+                        ]);
                 } else {
                     // Auction won
                     $auction->update([
@@ -513,7 +522,18 @@ class AuctionController extends Controller
 
                     // TODO: Send winner notification
                     // TODO: Create payment invoice for winner
-                    // TODO: Refund deposits for non-winners
+
+                    // Mark deposits of non-winners as refunded (manual status only)
+                    Deposit::where('auction_id', $auction->id)
+                        ->where('user_id', '!=', $winningBid->user_id)
+                        ->where(function ($q) {
+                            $q->whereNull('refund_status')->orWhere('refund_status', '!=', 'refunded');
+                        })
+                        ->update([
+                            'refund_status' => 'refunded',
+                            'refunded_at' => now(),
+                            'status' => 'refunded',
+                        ]);
                 }
             } else {
                 // No bids - auction failed

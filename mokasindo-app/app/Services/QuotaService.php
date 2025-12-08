@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\QuotaExceededException;
 use App\Models\User;
+use App\Models\Setting;
 
 class QuotaService
 {
@@ -22,8 +23,14 @@ class QuotaService
 
         $this->refreshWeeklyCounter($user);
 
-        if ($user->weekly_post_count >= 2) {
-            throw new QuotaExceededException('Akun Anggota hanya dapat membuat 2 listing per minggu. Upgrade ke Member untuk posting tanpa batas.');
+        $limit = (int) Setting::get('anggota_weekly_post_limit', 2);
+
+        if ($limit === 0) {
+            return; // 0 means unlimited for anggota
+        }
+
+        if ($user->weekly_post_count >= $limit) {
+            throw new QuotaExceededException("Akun Anggota hanya dapat membuat {$limit} listing per minggu. Upgrade ke Member untuk posting tanpa batas.");
         }
     }
 
@@ -57,6 +64,12 @@ class QuotaService
 
     private function isUnlimited(User $user): bool
     {
-        return $user->isMember() || $user->isAdmin() || $user->isOwner();
+        $memberUnlimited = (bool) Setting::get('member_unlimited_posting', true);
+
+        if ($memberUnlimited && $user->isMember()) {
+            return true;
+        }
+
+        return $user->isAdmin() || $user->isOwner();
     }
 }
