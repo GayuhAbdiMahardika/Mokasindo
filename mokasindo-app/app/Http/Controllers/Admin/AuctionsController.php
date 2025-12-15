@@ -176,14 +176,17 @@ class AuctionsController extends Controller
         $now = now();
         $results = ['activated' => 0, 'ended' => 0, 'cancelled' => 0];
 
-        // 1. Activate scheduled auctions that have started
+        // 1. Activate scheduled auctions that have started (end_time boleh null)
         $results['activated'] = Auction::where('status', 'scheduled')
             ->where('start_time', '<=', $now)
-            ->where('end_time', '>', $now)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('end_time')->orWhere('end_time', '>', $now);
+            })
             ->update(['status' => 'active']);
 
-        // 2. End active auctions that have passed their end time
+        // 2. End active auctions yang sudah melewati end_time (jika end_time ada)
         $results['ended'] = Auction::where('status', 'active')
+            ->whereNotNull('end_time')
             ->where('end_time', '<=', $now)
             ->update(['status' => 'ended']);
 
