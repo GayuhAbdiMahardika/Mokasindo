@@ -72,6 +72,11 @@ class Vehicle extends Model
         return $this->hasOne(Auction::class);
     }
 
+    public function auctions()
+    {
+        return $this->hasMany(Auction::class);
+    }
+
     // Location fields are stored as plain text from external API; no DB relations.
 
     public function approvedBy()

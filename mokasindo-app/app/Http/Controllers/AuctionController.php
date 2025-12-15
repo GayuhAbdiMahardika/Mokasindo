@@ -24,15 +24,30 @@ class AuctionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Auction::with(['vehicle.primaryImage'])
-            ->where('status', 'active')
-            ->where('start_time', '<=', now())
-            ->where('end_time', '>', now());
+        $query = Auction::with(['vehicle.primaryImage', 'schedule']);
+
+        // Filter by status (default: show active and scheduled)
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } else {
+            // Show active auctions by default, but also include scheduled ones
+            $query->whereIn('status', ['active', 'scheduled']);
+        }
 
         // Filter by category
         if ($request->filled('category')) {
             $query->whereHas('vehicle', function ($q) use ($request) {
                 $q->where('category', $request->category);
+            });
+        }
+
+        // Search by query (brand, model, license_plate)
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->whereHas('vehicle', function ($q) use ($search) {
+                $q->where('brand', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%")
+                  ->orWhere('license_plate', 'like', "%{$search}%");
             });
         }
 

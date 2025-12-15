@@ -71,11 +71,32 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <a href="{{ route('admin.vehicles.edit', $vehicle) }}" class="text-blue-600 hover:underline mr-3">{{ __('admin.vehicles.action.edit') }}</a>
                         @if($vehicle->status === 'pending')
-                            <form method="POST" action="{{ route('admin.vehicles.approve', $vehicle) }}" class="inline">
-                                @csrf
-                                <button type="submit" class="text-green-600 mr-2">{{ __('admin.vehicles.action.approve') }}</button>
-                            </form>
-                            <button type="button" onclick="openRejectModal({{ $vehicle->id }}, '{{ addslashes($vehicle->brand . ' ' . $vehicle->model) }}')" class="text-red-600">{{ __('admin.vehicles.action.reject') }}</button>
+                            <div class="inline-block relative" x-data="{ open: false }">
+                                <button @click="open = !open" type="button" class="text-green-600 hover:text-green-800">
+                                    {{ __('admin.vehicles.action.approve') }} <i class="fas fa-caret-down ml-1"></i>
+                                </button>
+                                <div x-show="open" @click.away="open = false" x-cloak
+                                     class="absolute left-0 mt-1 w-64 bg-white border rounded-lg shadow-lg z-50">
+                                    <form method="POST" action="{{ route('admin.vehicles.approve', $vehicle) }}">
+                                        @csrf
+                                        <button type="submit" class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                                            <i class="fas fa-check text-green-500 mr-2"></i>{{ __('admin.vehicles.approve_only') }}
+                                        </button>
+                                    </form>
+                                    <div class="border-t px-4 py-2 text-xs text-gray-500">{{ __('admin.vehicles.approve_and_add') }}</div>
+                                    @foreach($schedules as $s)
+                                    <form method="POST" action="{{ route('admin.vehicles.approve', $vehicle) }}">
+                                        @csrf
+                                        <input type="hidden" name="schedule_id" value="{{ $s->id }}">
+                                        <button type="submit" class="block w-full text-left px-4 py-2 hover:bg-green-50 text-sm">
+                                            <i class="fas fa-calendar-plus text-blue-500 mr-2"></i>{{ $s->title }}
+                                            <span class="text-xs text-gray-400 block ml-5">{{ $s->start_date->format('d M Y') }}</span>
+                                        </button>
+                                    </form>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <button type="button" onclick="openRejectModal({{ $vehicle->id }}, '{{ addslashes($vehicle->brand . ' ' . $vehicle->model) }}')" class="text-red-600 ml-2">{{ __('admin.vehicles.action.reject') }}</button>
                         @endif
                         <form method="POST" action="{{ route('admin.vehicles.toggle-feature', $vehicle) }}" class="inline ml-2">
                             @csrf
@@ -181,5 +202,9 @@
     }
     function closeRejectModal() { document.getElementById('rejectModal').classList.add('hidden'); }
 </script>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
 
 @endsection

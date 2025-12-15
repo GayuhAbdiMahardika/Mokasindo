@@ -26,7 +26,7 @@
                 </div>
 
 <div class="mt-8 w-full max-w-md mx-auto">
-    <form action="{{ url('/vehicle-search') }}" method="GET" class="relative" id="searchForm">
+    <form action="{{ url('/auctions') }}" method="GET" class="relative" id="searchForm">
         <div class="flex items-center bg-white rounded-full shadow-lg overflow-hidden border border-gray-200">
             <div class="pl-4 text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -58,16 +58,16 @@
 
                 <div class="grid grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto">
                     <div>
-                        <div class="text-4xl font-bold mb-2">1000+</div>
+                        <div class="text-4xl font-bold mb-2">{{ number_format($stats['sold'] ?? 0) }}+</div>
                         <div class="text-indigo-200">{{ __('landing.stats.sold') }}</div>
                     </div>
                     <div>
-                        <div class="text-4xl font-bold mb-2">5000+</div>
+                        <div class="text-4xl font-bold mb-2">{{ number_format($stats['members'] ?? 0) }}+</div>
                         <div class="text-indigo-200">{{ __('landing.stats.members') }}</div>
                     </div>
                     <div>
-                        <div class="text-4xl font-bold mb-2">100%</div>
-                        <div class="text-indigo-200">{{ __('landing.stats.trusted') }}</div>
+                        <div class="text-4xl font-bold mb-2">{{ number_format($stats['auctions'] ?? 0) }}+</div>
+                        <div class="text-indigo-200">{{ __('landing.stats.auctions') }}</div>
                     </div>
                 </div>
             </div>

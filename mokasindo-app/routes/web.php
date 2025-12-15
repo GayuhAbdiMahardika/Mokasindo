@@ -32,7 +32,14 @@ use App\Http\Controllers\Admin\SettingsController;
 */
 
 Route::get('/', function () {
-    return view('landing');
+    // Get dynamic stats from database
+    $stats = [
+        'sold' => \App\Models\Auction::where('status', 'sold')->count(),
+        'members' => \App\Models\User::where('role', 'user')->count(),
+        'auctions' => \App\Models\Auction::count(),
+    ];
+    
+    return view('landing', compact('stats'));
 });
 
 // Locale switcher
@@ -334,6 +341,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // Auctions Management
     Route::resource('auctions', App\Http\Controllers\Admin\AuctionsController::class);
+    Route::post('auctions/sync-status', [App\Http\Controllers\Admin\AuctionsController::class, 'syncStatus'])->name('auctions.sync-status');
+    Route::post('auctions/add-vehicles', [App\Http\Controllers\Admin\AuctionsController::class, 'addVehicles'])->name('auctions.add-vehicles');
     Route::post('auctions/{auction}/force-end', [App\Http\Controllers\Admin\AuctionsController::class, 'forceEnd'])->name('auctions.force-end');
     Route::post('auctions/{auction}/reopen', [App\Http\Controllers\Admin\AuctionsController::class, 'reopen'])->name('auctions.reopen');
     Route::post('auctions/{auction}/adjust-timer', [App\Http\Controllers\Admin\AuctionsController::class, 'adjustTimer'])->name('auctions.adjust-timer');

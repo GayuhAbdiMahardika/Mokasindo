@@ -8,9 +8,37 @@ use App\Models\AuctionSchedule;
 
 class AuctionSchedulesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $schedules = AuctionSchedule::orderBy('start_date', 'desc')->paginate(20);
+        $query = AuctionSchedule::withCount('auctions')
+            ->with(['auctions.vehicle']);
+
+        // Search by title or location
+        if ($request->filled('search')) {
+            $term = $request->search;
+            $query->where(function ($q) use ($term) {
+                $q->where('title', 'like', "%{$term}%")
+                  ->orWhere('location', 'like', "%{$term}%");
+            });
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $now = now();
+            switch ($request->status) {
+                case 'running':
+                    $query->where('start_date', '<=', $now)->where('end_date', '>', $now);
+                    break;
+                case 'upcoming':
+                    $query->where('start_date', '>', $now);
+                    break;
+                case 'ended':
+                    $query->where('end_date', '<=', $now);
+                    break;
+            }
+        }
+
+        $schedules = $query->orderBy('start_date', 'desc')->paginate(20)->appends($request->query());
         return view('admin.auction_schedules.index', compact('schedules'));
     }
 

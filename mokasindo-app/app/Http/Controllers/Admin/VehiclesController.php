@@ -61,7 +61,7 @@ class VehiclesController extends Controller
         return redirect()->route('admin.vehicles.index')->with('status', 'Vehicle updated');
     }
 
-    public function approve(Vehicle $vehicle)
+    public function approve(Request $request, Vehicle $vehicle)
     {
         $vehicle->status = 'approved';
         $vehicle->approved_at = now();
@@ -69,7 +69,41 @@ class VehiclesController extends Controller
         $vehicle->rejection_reason = null;
         $vehicle->save();
 
-        return back()->with('status', 'Vehicle approved');
+        $message = 'Vehicle approved';
+
+        // If schedule_id provided, also create auction entry
+        if ($request->filled('schedule_id')) {
+            $schedule = AuctionSchedule::find($request->schedule_id);
+            
+            if ($schedule) {
+                // Check if already has active/scheduled auction
+                $exists = Auction::where('vehicle_id', $vehicle->id)
+                    ->whereIn('status', ['scheduled', 'active'])
+                    ->exists();
+
+                if (!$exists) {
+                    $depositPercentage = Setting::get('deposit_percentage', 5);
+                    
+                    Auction::create([
+                        'vehicle_id' => $vehicle->id,
+                        'auction_schedule_id' => $schedule->id,
+                        'starting_price' => $vehicle->starting_price,
+                        'current_price' => 0,
+                        'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
+                        'deposit_percentage' => $depositPercentage,
+                        'start_time' => $schedule->start_date,
+                        'end_time' => $schedule->end_date,
+                        'status' => 'scheduled',
+                    ]);
+
+                    $message = "Vehicle approved & added to schedule: {$schedule->title}";
+                } else {
+                    $message = 'Vehicle approved (already in active auction)';
+                }
+            }
+        }
+
+        return back()->with('status', $message);
     }
 
     public function reject(Request $request, Vehicle $vehicle)
