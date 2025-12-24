@@ -1,0 +1,61 @@
+@startuml Sequence_Payment
+
+title Sequence Diagram - Pembayaran Deposit via Midtrans
+
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowThickness 2
+skinparam participantBackgroundColor #FFF3E0
+skinparam participantBorderColor #F57C00
+
+actor User
+participant "DepositController" as DC
+participant "Deposit" as D
+participant "MidtransService" as MS
+participant "Midtrans API" as MA
+database "Database" as DB
+
+User -> DC: payDeposit(auction_id)
+activate DC
+
+DC -> DC: calculateDepositAmount(auction)
+note right: 5% dari starting_price
+
+DC -> D: create(pending_deposit)
+activate D
+D -> DB: INSERT deposit (status='pending')
+DB --> D: deposit_id
+D --> DC: deposit
+deactivate D
+
+DC -> MS: createSnapToken(deposit)
+activate MS
+MS -> MA: POST /snap/v1/transactions
+activate MA
+MA --> MS: snap_token, redirect_url
+deactivate MA
+MS --> DC: payment_url
+deactivate MS
+
+DC --> User: Redirect to Midtrans Payment Page
+
+User -> MA: Complete Payment
+MA -> DC: webhook/callback(transaction_status)
+activate DC
+
+alt Payment Success
+    DC -> D: update(status='completed')
+    activate D
+    D -> DB: UPDATE deposits SET status='completed'
+    D --> DC: updated
+    deactivate D
+    DC --> User: Payment Success, Can Now Bid
+else Payment Failed
+    DC -> D: update(status='failed')
+    DC --> User: Payment Failed
+else Payment Pending
+    DC --> User: Waiting for Payment
+end
+
+deactivate DC
+
+@enduml

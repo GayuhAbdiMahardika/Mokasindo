@@ -1,0 +1,298 @@
+@startuml PDM_Mokasindo
+
+title Physical Data Model (PDM) - Mokasindo Database
+
+skinparam backgroundColor #FEFEFE
+skinparam linetype ortho
+
+!define table(x) entity x << (T,#FFAAAA) >>
+!define pk(x) <b><u>x</u></b>
+!define fk(x) <i>x</i>
+
+table(users) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    --
+    name : VARCHAR(255) NOT NULL
+    email : VARCHAR(255) UNIQUE NOT NULL
+    email_verified_at : TIMESTAMP NULL
+    password : VARCHAR(255) NOT NULL
+    role : ENUM('admin','user') DEFAULT 'user'
+    phone : VARCHAR(20) NULL
+    address : TEXT NULL
+    province : VARCHAR(100) NULL
+    city : VARCHAR(100) NULL
+    district : VARCHAR(100) NULL
+    sub_district : VARCHAR(100) NULL
+    postal_code : VARCHAR(10) NULL
+    telegram_chat_id : VARCHAR(100) NULL
+    telegram_username : VARCHAR(100) NULL
+    avatar : VARCHAR(255) NULL
+    is_active : TINYINT(1) DEFAULT 1
+    verified_at : TIMESTAMP NULL
+    weekly_post_count : INT DEFAULT 0
+    last_post_reset : TIMESTAMP NULL
+    remember_token : VARCHAR(100) NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    INDEX idx_email (email)
+    INDEX idx_role (role)
+    INDEX idx_telegram (telegram_chat_id)
+}
+
+table(vehicles) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(user_id) : BIGINT UNSIGNED NOT NULL
+    --
+    category : ENUM('motor','mobil') NOT NULL
+    brand : VARCHAR(255) NOT NULL
+    model : VARCHAR(255) NOT NULL
+    year : YEAR NOT NULL
+    color : VARCHAR(50) NULL
+    license_plate : VARCHAR(20) NULL
+    mileage : INT NULL
+    description : TEXT NOT NULL
+    starting_price : DECIMAL(15,2) NOT NULL
+    transmission : VARCHAR(20) NULL
+    fuel_type : VARCHAR(20) NULL
+    engine_capacity : INT NULL
+    condition : VARCHAR(20) DEFAULT 'bekas'
+    province : VARCHAR(100) NULL
+    city : VARCHAR(100) NULL
+    district : VARCHAR(100) NULL
+    sub_district : VARCHAR(100) NULL
+    postal_code : VARCHAR(10) NULL
+    latitude : DECIMAL(10,8) NULL
+    longitude : DECIMAL(11,8) NULL
+    full_address : TEXT NULL
+    status : ENUM('draft','pending','approved','rejected','sold') DEFAULT 'draft'
+    rejection_reason : TEXT NULL
+    approved_at : TIMESTAMP NULL
+    fk(approved_by) : BIGINT UNSIGNED NULL
+    views_count : INT DEFAULT 0
+    is_featured : TINYINT(1) DEFAULT 0
+    featured_until : TIMESTAMP NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    deleted_at : TIMESTAMP NULL
+    --
+    FK (user_id) -> users(id) ON DELETE CASCADE
+    FK (approved_by) -> users(id) ON DELETE SET NULL
+    INDEX idx_category_brand_status (category, brand, status)
+    INDEX idx_province_city (province, city)
+    INDEX idx_status (status)
+}
+
+table(vehicle_images) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(vehicle_id) : BIGINT UNSIGNED NOT NULL
+    --
+    image_path : VARCHAR(255) NOT NULL
+    is_primary : TINYINT(1) DEFAULT 0
+    order : INT DEFAULT 0
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    FK (vehicle_id) -> vehicles(id) ON DELETE CASCADE
+    INDEX idx_vehicle_primary (vehicle_id, is_primary)
+}
+
+table(auctions) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(vehicle_id) : BIGINT UNSIGNED NOT NULL
+    --
+    starting_price : DECIMAL(15,2) NOT NULL
+    current_price : DECIMAL(15,2) DEFAULT 0
+    reserve_price : DECIMAL(15,2) NULL
+    deposit_amount : DECIMAL(15,2) NOT NULL
+    deposit_percentage : DECIMAL(5,2) DEFAULT 5.00
+    start_time : TIMESTAMP NULL
+    end_time : TIMESTAMP NULL
+    duration_hours : INT DEFAULT 48
+    status : ENUM('scheduled','active','ended','sold','cancelled','reopened') DEFAULT 'scheduled'
+    fk(winner_id) : BIGINT UNSIGNED NULL
+    won_at : TIMESTAMP NULL
+    payment_deadline : TIMESTAMP NULL
+    payment_deadline_hours : INT DEFAULT 24
+    payment_completed : TINYINT(1) DEFAULT 0
+    payment_completed_at : TIMESTAMP NULL
+    total_bids : INT DEFAULT 0
+    total_participants : INT DEFAULT 0
+    notes : TEXT NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    deleted_at : TIMESTAMP NULL
+    --
+    FK (vehicle_id) -> vehicles(id) ON DELETE CASCADE
+    FK (winner_id) -> users(id) ON DELETE SET NULL
+    INDEX idx_status_time (status, start_time, end_time)
+    INDEX idx_winner (winner_id)
+}
+
+table(bids) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(auction_id) : BIGINT UNSIGNED NOT NULL
+    fk(user_id) : BIGINT UNSIGNED NOT NULL
+    fk(deposit_id) : BIGINT UNSIGNED NULL
+    --
+    bid_amount : DECIMAL(15,2) NOT NULL
+    bid_time : TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    is_winning : TINYINT(1) DEFAULT 0
+    ip_address : VARCHAR(45) NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    FK (auction_id) -> auctions(id) ON DELETE CASCADE
+    FK (user_id) -> users(id) ON DELETE CASCADE
+    FK (deposit_id) -> deposits(id) ON DELETE SET NULL
+    INDEX idx_auction_amount (auction_id, bid_amount DESC)
+    INDEX idx_user (user_id)
+}
+
+table(deposits) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(user_id) : BIGINT UNSIGNED NOT NULL
+    fk(auction_id) : BIGINT UNSIGNED NULL
+    --
+    amount : DECIMAL(15,2) NOT NULL
+    type : ENUM('auction','topup','refund','deduction') DEFAULT 'auction'
+    status : ENUM('pending','completed','failed','refunded') DEFAULT 'pending'
+    payment_id : VARCHAR(100) NULL
+    payment_method : VARCHAR(50) NULL
+    paid_at : TIMESTAMP NULL
+    refunded_at : TIMESTAMP NULL
+    notes : TEXT NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    FK (user_id) -> users(id) ON DELETE CASCADE
+    FK (auction_id) -> auctions(id) ON DELETE SET NULL
+    INDEX idx_user_auction (user_id, auction_id)
+    INDEX idx_status (status)
+}
+
+table(transactions) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(auction_id) : BIGINT UNSIGNED NOT NULL
+    fk(buyer_id) : BIGINT UNSIGNED NOT NULL
+    fk(seller_id) : BIGINT UNSIGNED NOT NULL
+    --
+    final_price : DECIMAL(15,2) NOT NULL
+    platform_fee : DECIMAL(15,2) DEFAULT 0
+    seller_amount : DECIMAL(15,2) NOT NULL
+    status : ENUM('pending','paid','completed','cancelled') DEFAULT 'pending'
+    payment_id : VARCHAR(100) NULL
+    paid_at : TIMESTAMP NULL
+    completed_at : TIMESTAMP NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    FK (auction_id) -> auctions(id) ON DELETE CASCADE
+    FK (buyer_id) -> users(id) ON DELETE CASCADE
+    FK (seller_id) -> users(id) ON DELETE CASCADE
+    INDEX idx_status (status)
+}
+
+table(payments) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(user_id) : BIGINT UNSIGNED NOT NULL
+    --
+    payable_type : VARCHAR(255) NOT NULL
+    payable_id : BIGINT UNSIGNED NOT NULL
+    amount : DECIMAL(15,2) NOT NULL
+    payment_type : VARCHAR(50) NULL
+    payment_method : VARCHAR(50) NULL
+    transaction_id : VARCHAR(100) NULL
+    status : ENUM('pending','success','failed','expired') DEFAULT 'pending'
+    midtrans_response : JSON NULL
+    paid_at : TIMESTAMP NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    FK (user_id) -> users(id) ON DELETE CASCADE
+    INDEX idx_payable (payable_type, payable_id)
+    INDEX idx_transaction (transaction_id)
+}
+
+table(notifications) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(user_id) : BIGINT UNSIGNED NOT NULL
+    --
+    type : VARCHAR(100) NOT NULL
+    title : VARCHAR(255) NOT NULL
+    message : TEXT NOT NULL
+    data : JSON NULL
+    read_at : TIMESTAMP NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    FK (user_id) -> users(id) ON DELETE CASCADE
+    INDEX idx_user_read (user_id, read_at)
+}
+
+table(subscription_plans) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    --
+    name : VARCHAR(100) NOT NULL
+    slug : VARCHAR(100) UNIQUE NOT NULL
+    description : TEXT NULL
+    price : DECIMAL(15,2) NOT NULL
+    duration_days : INT NOT NULL
+    features : JSON NULL
+    weekly_posts : INT DEFAULT 3
+    max_active_listings : INT DEFAULT 5
+    is_active : TINYINT(1) DEFAULT 1
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+}
+
+table(user_subscriptions) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    fk(user_id) : BIGINT UNSIGNED NOT NULL
+    fk(subscription_plan_id) : BIGINT UNSIGNED NOT NULL
+    --
+    starts_at : TIMESTAMP NOT NULL
+    ends_at : TIMESTAMP NOT NULL
+    status : ENUM('active','expired','cancelled') DEFAULT 'active'
+    payment_id : VARCHAR(100) NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    FK (user_id) -> users(id) ON DELETE CASCADE
+    FK (subscription_plan_id) -> subscription_plans(id) ON DELETE CASCADE
+    INDEX idx_user_status (user_id, status)
+}
+
+table(settings) {
+    pk(id) : BIGINT UNSIGNED AUTO_INCREMENT
+    --
+    key : VARCHAR(100) UNIQUE NOT NULL
+    value : TEXT NULL
+    type : VARCHAR(20) DEFAULT 'string'
+    group : VARCHAR(50) DEFAULT 'general'
+    description : TEXT NULL
+    created_at : TIMESTAMP NULL
+    updated_at : TIMESTAMP NULL
+    --
+    INDEX idx_key (key)
+    INDEX idx_group (group)
+}
+
+' Relationships
+users ||--o{ vehicles
+users ||--o{ bids
+users ||--o{ deposits
+users ||--o{ notifications
+users ||--o{ user_subscriptions
+users ||--o{ payments
+
+vehicles ||--o{ vehicle_images
+vehicles ||--o{ auctions
+
+auctions ||--o{ bids
+auctions ||--o{ deposits
+auctions ||--|| transactions
+
+subscription_plans ||--o{ user_subscriptions
+
+@enduml

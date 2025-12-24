@@ -207,160 +207,211 @@
         // load provinces
         if(provinceSelect){
             setLoading(provinceSelect, texts.loadingProvince);
-            fetch('https://kanglerian.my.id/api-wilayah-indonesia/api/provinces.json')
-                .then(r => r.json())
-                .then(provinces => {
-                    if(!Array.isArray(provinces)){
-                        console.error('Unexpected provinces format', provinces);
-                        setLoading(provinceSelect, texts.errorProvince);
-                        return;
-                    }
-                    provinces.sort((a,b) => getName(a).localeCompare(getName(b), 'id'));
-                    provinceSelect.innerHTML = `<option value="" disabled selected>${texts.chooseProvince}</option>`;
-                    provinces.forEach(p => {
-                        const id = getId(p);
-                        const name = getName(p);
-                        const opt = document.createElement('option');
-                        opt.value = id;
-                        opt.textContent = name;
-                        if(oldProvince && String(oldProvince) === String(id)) opt.selected = true;
-                        provinceSelect.appendChild(opt);
-                    });
+            
+            // Try primary API first, fallback to alternatives
+            const apis = [
+                'https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json',
+                'https://kanglerian.my.id/api-wilayah-indonesia/api/provinces.json',
+                'https://ibnux.github.io/data-indonesia/provinsi.json'
+            ];
+            
+            async function loadProvincesWithFallback() {
+                for (const apiUrl of apis) {
+                    try {
+                        console.log('Trying API:', apiUrl);
+                        const response = await fetch(apiUrl);
+                        if (!response.ok) continue;
+                        
+                        const provinces = await response.json();
+                        if(!Array.isArray(provinces) || provinces.length === 0){
+                            console.warn('Invalid data from', apiUrl);
+                            continue;
+                        }
+                        
+                        console.log('Success loading provinces from:', apiUrl);
+                        provinces.sort((a,b) => getName(a).localeCompare(getName(b), 'id'));
+                        provinceSelect.innerHTML = `<option value="" disabled selected>${texts.chooseProvince}</option>`;
+                        provinces.forEach(p => {
+                            const id = getId(p);
+                            const name = getName(p);
+                            const opt = document.createElement('option');
+                            opt.value = name;
+                            opt.textContent = name;
+                            opt.dataset.id = id;
+                            if(oldProvince && String(oldProvince) === String(name)) opt.selected = true;
+                            provinceSelect.appendChild(opt);
+                        });
 
-                    // if oldProvince exists (form returned), load its regencies
-                    if(oldProvince && citySelect){
-                        loadRegencies(String(oldProvince));
+                        if(oldProvince && citySelect){
+                            const selectedOption = provinceSelect.querySelector(`option[value="${oldProvince}"]`);
+                            if(selectedOption && selectedOption.dataset.id){
+                                loadRegencies(selectedOption.dataset.id);
+                            }
+                        }
+                        return;
+                    } catch (err) {
+                        console.warn('Failed to load from', apiUrl, err);
                     }
-                })
-                .catch(err => {
-                    console.error('Gagal memuat provinsi:', err);
-                    setLoading(provinceSelect, texts.noData);
-                });
+                }
+                console.error('All province APIs failed');
+                setLoading(provinceSelect, texts.errorProvince + ' - Silakan refresh halaman');
+            }
+            
+            loadProvincesWithFallback();
         }
 
         // load regencies when province changes
-        function loadRegencies(provinceId){
+        async function loadRegencies(provinceId){
             if(!citySelect) return;
             clearSelect(citySelect, texts.loadingCity);
-            // clear downstream selects
             clearSelect(districtSelect, texts.chooseDistrict);
             clearSelect(subDistrictSelect, texts.chooseSubDistrict);
 
-            fetch(`https://kanglerian.my.id/api-wilayah-indonesia/api/regencies/${provinceId}.json`)
-                .then(r => r.json())
-                .then(regencies => {
-                    if(!Array.isArray(regencies)){
-                        console.error('Unexpected regencies format', regencies);
-                        clearSelect(citySelect, texts.errorCity);
-                        return;
-                    }
+            const apis = [
+                `https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinceId}.json`,
+                `https://kanglerian.my.id/api-wilayah-indonesia/api/regencies/${provinceId}.json`,
+                `https://ibnux.github.io/data-indonesia/kabupaten/${provinceId}.json`
+            ];
+            
+            for (const apiUrl of apis) {
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) continue;
+                    
+                    const regencies = await response.json();
+                    if(!Array.isArray(regencies) || regencies.length === 0) continue;
+                    
                     regencies.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
                     citySelect.innerHTML = `<option value="" disabled selected>${texts.chooseCity}</option>`;
                     regencies.forEach(r => {
                         const opt = document.createElement('option');
-                        opt.value = r.id ?? r.kabupaten_id ?? r.code ?? r.name;
-                        opt.textContent = r.name ?? r.title ?? String(r);
-                        if(oldCity && String(oldCity) === String(opt.value)) opt.selected = true;
+                        const cityName = r.name ?? r.title ?? String(r);
+                        opt.value = cityName;
+                        opt.textContent = cityName;
+                        opt.dataset.id = r.id ?? r.kabupaten_id ?? r.code;
+                        if(oldCity && String(oldCity) === String(cityName)) opt.selected = true;
                         citySelect.appendChild(opt);
                     });
 
-                    // if oldCity exists, load districts for that city
                     if(oldCity){
-                        loadDistricts(String(oldCity));
+                        const selectedOption = citySelect.querySelector(`option[value="${oldCity}"]`);
+                        if(selectedOption && selectedOption.dataset.id){
+                            loadDistricts(selectedOption.dataset.id);
+                        }
                     }
-                })
-                .catch(err => {
-                    console.error('Gagal memuat kota/kabupaten:', err);
-                    clearSelect(citySelect, texts.noData);
-                });
+                    return;
+                } catch (err) {
+                    console.warn('Failed to load regencies from', apiUrl);
+                }
+            }
+            clearSelect(citySelect, texts.errorCity);
         }
 
         // load districts (kecamatan) when city/regency selected
-        function loadDistricts(cityId){
+        async function loadDistricts(cityId){
             if(!districtSelect) return;
             clearSelect(districtSelect, texts.loadingDistrict);
-            // clear downstream select
             clearSelect(subDistrictSelect, texts.chooseSubDistrict);
 
-            fetch(`https://kanglerian.my.id/api-wilayah-indonesia/api/districts/${cityId}.json`)
-                .then(r => r.json())
-                .then(districts => {
-                    if(!Array.isArray(districts)){
-                        console.error('Unexpected districts format', districts);
-                        clearSelect(districtSelect, texts.errorDistrict);
-                        return;
-                    }
+            const apis = [
+                `https://www.emsifa.com/api-wilayah-indonesia/api/districts/${cityId}.json`,
+                `https://kanglerian.my.id/api-wilayah-indonesia/api/districts/${cityId}.json`,
+                `https://ibnux.github.io/data-indonesia/kecamatan/${cityId}.json`
+            ];
+            
+            for (const apiUrl of apis) {
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) continue;
+                    
+                    const districts = await response.json();
+                    if(!Array.isArray(districts) || districts.length === 0) continue;
+                    
                     districts.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
                     districtSelect.innerHTML = `<option value="" disabled selected>${texts.chooseDistrict}</option>`;
                     districts.forEach(d => {
                         const opt = document.createElement('option');
-                        opt.value = d.id ?? d.district_id ?? d.code ?? d.name;
-                        opt.textContent = d.name ?? d.title ?? String(d);
-                        if(oldDistrict && String(oldDistrict) === String(opt.value)) opt.selected = true;
+                        const districtName = d.name ?? d.title ?? String(d);
+                        opt.value = districtName;
+                        opt.textContent = districtName;
+                        opt.dataset.id = d.id ?? d.district_id ?? d.code;
+                        if(oldDistrict && String(oldDistrict) === String(districtName)) opt.selected = true;
                         districtSelect.appendChild(opt);
                     });
 
-                    // if oldDistrict exists, load villages for that district
                     if(oldDistrict){
-                        loadVillages(String(oldDistrict));
+                        const selectedOption = districtSelect.querySelector(`option[value="${oldDistrict}"]`);
+                        if(selectedOption && selectedOption.dataset.id){
+                            loadVillages(selectedOption.dataset.id);
+                        }
                     }
-                })
-                .catch(err => {
-                    console.error('Gagal memuat kecamatan:', err);
-                    clearSelect(districtSelect, texts.noData);
-                });
+                    return;
+                } catch (err) {
+                    console.warn('Failed to load districts from', apiUrl);
+                }
+            }
+            clearSelect(districtSelect, texts.errorDistrict);
         }
 
-        // NEW: load villages (kelurahan) when district selected
-        function loadVillages(districtId){
+        // load villages (kelurahan) when district selected
+        async function loadVillages(districtId){
             if(!subDistrictSelect) return;
             clearSelect(subDistrictSelect, texts.loadingSubDistrict);
 
-            fetch(`https://kanglerian.my.id/api-wilayah-indonesia/api/villages/${districtId}.json`)
-                .then(r => r.json())
-                .then(villages => {
-                    if(!Array.isArray(villages)){
-                        console.error('Unexpected villages format', villages);
-                        clearSelect(subDistrictSelect, texts.errorSubDistrict);
-                        return;
-                    }
+            const apis = [
+                `https://www.emsifa.com/api-wilayah-indonesia/api/villages/${districtId}.json`,
+                `https://kanglerian.my.id/api-wilayah-indonesia/api/villages/${districtId}.json`,
+                `https://ibnux.github.io/data-indonesia/kelurahan/${districtId}.json`
+            ];
+            
+            for (const apiUrl of apis) {
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) continue;
+                    
+                    const villages = await response.json();
+                    if(!Array.isArray(villages) || villages.length === 0) continue;
+                    
                     villages.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
                     subDistrictSelect.innerHTML = `<option value="" disabled selected>${texts.chooseSubDistrict}</option>`;
                     villages.forEach(v => {
                         const opt = document.createElement('option');
-                        opt.value = v.id ?? v.village_id ?? v.code ?? v.name;
-                        opt.textContent = v.name ?? v.title ?? String(v);
-                        if(oldSubDistrict && String(oldSubDistrict) === String(opt.value)) opt.selected = true;
+                        const villageName = v.name ?? v.title ?? String(v);
+                        opt.value = villageName;
+                        opt.textContent = villageName;
+                        if(oldSubDistrict && String(oldSubDistrict) === String(villageName)) opt.selected = true;
                         subDistrictSelect.appendChild(opt);
                     });
-                })
-                .catch(err => {
-                    console.error('Gagal memuat kelurahan:', err);
-                    clearSelect(subDistrictSelect, texts.noData);
-                });
+                    return;
+                } catch (err) {
+                    console.warn('Failed to load villages from', apiUrl);
+                }
+            }
+            clearSelect(subDistrictSelect, texts.errorSubDistrict);
         }
 
-        // attach change listener to province select
+        // Event listeners
         if(provinceSelect){
             provinceSelect.addEventListener('change', function(){
-                const val = this.value;
-                if(val) loadRegencies(val);
+                const selectedOption = this.options[this.selectedIndex];
+                const provinceId = selectedOption.dataset.id || this.value;
+                if(provinceId) loadRegencies(provinceId);
             });
         }
 
-        // attach change listener to city select to load districts
         if(citySelect){
             citySelect.addEventListener('change', function(){
-                const val = this.value;
-                if(val) loadDistricts(val);
+                const selectedOption = this.options[this.selectedIndex];
+                const cityId = selectedOption.dataset.id || this.value;
+                if(cityId) loadDistricts(cityId);
             });
         }
 
-        // attach change listener to district select to load villages
         if(districtSelect){
             districtSelect.addEventListener('change', function(){
-                const val = this.value;
-                if(val) loadVillages(val);
+                const selectedOption = this.options[this.selectedIndex];
+                const districtId = selectedOption.dataset.id || this.value;
+                if(districtId) loadVillages(districtId);
             });
         }
     });

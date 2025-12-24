@@ -1,0 +1,63 @@
+@startuml Activity_Bidding
+
+title Activity Diagram - Proses Bidding
+
+skinparam backgroundColor #FEFEFE
+skinparam ActivityBackgroundColor #FFF3E0
+skinparam ActivityBorderColor #F57C00
+
+|Bidder|
+start
+:Pilih Lelang Aktif;
+:Lihat Detail Kendaraan;
+
+if (Sudah Bayar Deposit?) then (Tidak)
+    :Klik Bayar Deposit;
+    :Redirect ke Midtrans;
+    
+    |Midtrans|
+    :Proses Pembayaran;
+    
+    |Bidder|
+    if (Pembayaran Berhasil?) then (Ya)
+        :Deposit Aktif;
+    else (Tidak)
+        :Kembali ke Detail;
+        stop
+    endif
+else (Ya)
+endif
+
+:Masukkan Jumlah Bid;
+note right
+    Min: Current Price + Increment
+    (default increment: Rp 100.000)
+end note
+
+|System|
+if (Bid >= Min Bid?) then (Ya)
+    :Simpan Bid;
+    :Update Current Price;
+    :Update Total Bids;
+    :Update Participants;
+    
+    |Telegram|
+    :Notifikasi ke Semua Peserta;
+    
+    |Bidder|
+    :Bid Berhasil;
+else (Tidak)
+    |Bidder|
+    :Tampilkan Error;
+    :Bid Ditolak;
+endif
+
+if (Ingin Bid Lagi?) then (Ya)
+    :Masukkan Jumlah Bid;
+else (Tidak)
+    :Tunggu Hasil Lelang;
+endif
+
+stop
+
+@enduml

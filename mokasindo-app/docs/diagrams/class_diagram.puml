@@ -1,0 +1,280 @@
+@startuml Class_Diagram
+
+title Class Diagram - Model Mokasindo
+
+skinparam backgroundColor #FEFEFE
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam classBackgroundColor #E3F2FD
+skinparam classBorderColor #1976D2
+
+' ==================
+' MODELS
+' ==================
+
+class User {
+    +id: bigint
+    +name: string
+    +email: string
+    +password: string
+    +role: enum('admin','user')
+    +phone: string
+    +address: text
+    +province: string
+    +city: string
+    +district: string
+    +sub_district: string
+    +postal_code: string
+    +telegram_chat_id: string
+    +telegram_username: string
+    +avatar: string
+    +is_active: boolean
+    +verified_at: datetime
+    +weekly_post_count: int
+    +last_post_reset: datetime
+    --
+    +vehicles(): HasMany
+    +bids(): HasMany
+    +deposits(): HasMany
+    +wonAuctions(): HasMany
+    +subscriptions(): HasMany
+    +notifications(): HasMany
+}
+
+class Vehicle {
+    +id: bigint
+    +user_id: bigint <<FK>>
+    +category: enum('motor','mobil')
+    +brand: string
+    +model: string
+    +year: year
+    +color: string
+    +license_plate: string
+    +mileage: int
+    +description: text
+    +starting_price: decimal(15,2)
+    +transmission: string
+    +fuel_type: string
+    +engine_capacity: int
+    +condition: string
+    +province: string
+    +city: string
+    +district: string
+    +sub_district: string
+    +postal_code: string
+    +latitude: decimal
+    +longitude: decimal
+    +status: enum
+    +rejection_reason: text
+    +approved_at: datetime
+    +approved_by: bigint <<FK>>
+    +views_count: int
+    +is_featured: boolean
+    --
+    +user(): BelongsTo
+    +images(): HasMany
+    +primaryImage(): HasOne
+    +auctions(): HasMany
+    +approvedBy(): BelongsTo
+    +scopeApproved()
+    +scopePending()
+    +scopeMotor()
+    +scopeMobil()
+}
+
+class VehicleImage {
+    +id: bigint
+    +vehicle_id: bigint <<FK>>
+    +image_path: string
+    +is_primary: boolean
+    +order: int
+    --
+    +vehicle(): BelongsTo
+}
+
+class Auction {
+    +id: bigint
+    +vehicle_id: bigint <<FK>>
+    +starting_price: decimal(15,2)
+    +current_price: decimal(15,2)
+    +reserve_price: decimal(15,2)
+    +deposit_amount: decimal(15,2)
+    +deposit_percentage: decimal(5,2)
+    +start_time: datetime
+    +end_time: datetime
+    +duration_hours: int
+    +status: enum
+    +winner_id: bigint <<FK>>
+    +won_at: datetime
+    +payment_deadline: datetime
+    +payment_deadline_hours: int
+    +payment_completed: boolean
+    +payment_completed_at: datetime
+    +total_bids: int
+    +total_participants: int
+    +notes: text
+    --
+    +vehicle(): BelongsTo
+    +bids(): HasMany
+    +deposits(): HasMany
+    +winner(): BelongsTo
+    +transaction(): HasOne
+    +isActive(): bool
+    +hasEnded(): bool
+    +isPaymentOverdue(): bool
+    +updateCurrentPrice()
+    +scopeActive()
+    +scopeEnded()
+    +scopeScheduled()
+}
+
+class Bid {
+    +id: bigint
+    +auction_id: bigint <<FK>>
+    +user_id: bigint <<FK>>
+    +deposit_id: bigint <<FK>>
+    +bid_amount: decimal(15,2)
+    +bid_time: datetime
+    +is_winning: boolean
+    +ip_address: string
+    --
+    +auction(): BelongsTo
+    +user(): BelongsTo
+    +deposit(): BelongsTo
+}
+
+class Deposit {
+    +id: bigint
+    +user_id: bigint <<FK>>
+    +auction_id: bigint <<FK>>
+    +amount: decimal(15,2)
+    +type: enum
+    +status: enum
+    +payment_id: string
+    +payment_method: string
+    +paid_at: datetime
+    +refunded_at: datetime
+    +notes: text
+    --
+    +user(): BelongsTo
+    +auction(): BelongsTo
+    +bids(): HasMany
+}
+
+class Transaction {
+    +id: bigint
+    +auction_id: bigint <<FK>>
+    +buyer_id: bigint <<FK>>
+    +seller_id: bigint <<FK>>
+    +final_price: decimal(15,2)
+    +platform_fee: decimal(15,2)
+    +seller_amount: decimal(15,2)
+    +status: enum
+    +payment_id: string
+    +paid_at: datetime
+    +completed_at: datetime
+    --
+    +auction(): BelongsTo
+    +buyer(): BelongsTo
+    +seller(): BelongsTo
+}
+
+class Payment {
+    +id: bigint
+    +user_id: bigint <<FK>>
+    +payable_type: string
+    +payable_id: bigint
+    +amount: decimal(15,2)
+    +payment_type: string
+    +payment_method: string
+    +transaction_id: string
+    +status: enum
+    +midtrans_response: json
+    +paid_at: datetime
+    --
+    +user(): BelongsTo
+    +payable(): MorphTo
+}
+
+class Notification {
+    +id: bigint
+    +user_id: bigint <<FK>>
+    +type: string
+    +title: string
+    +message: text
+    +data: json
+    +read_at: datetime
+    --
+    +user(): BelongsTo
+    +markAsRead()
+}
+
+class Setting {
+    +id: bigint
+    +key: string
+    +value: text
+    +type: string
+    +group: string
+    +description: text
+    --
+    {static} +get(key, default)
+    {static} +set(key, value)
+}
+
+class SubscriptionPlan {
+    +id: bigint
+    +name: string
+    +slug: string
+    +description: text
+    +price: decimal(15,2)
+    +duration_days: int
+    +features: json
+    +weekly_posts: int
+    +max_active_listings: int
+    +is_active: boolean
+    --
+    +subscriptions(): HasMany
+}
+
+class UserSubscription {
+    +id: bigint
+    +user_id: bigint <<FK>>
+    +subscription_plan_id: bigint <<FK>>
+    +starts_at: datetime
+    +ends_at: datetime
+    +status: enum
+    +payment_id: string
+    --
+    +user(): BelongsTo
+    +plan(): BelongsTo
+    +isActive(): bool
+}
+
+' ==================
+' RELATIONSHIPS
+' ==================
+
+User "1" --> "*" Vehicle : owns
+User "1" --> "*" Bid : places
+User "1" --> "*" Deposit : makes
+User "1" --> "*" Auction : wins
+User "1" --> "*" Notification : receives
+User "1" --> "*" UserSubscription : has
+
+Vehicle "1" --> "*" VehicleImage : has
+Vehicle "1" --> "*" Auction : listed in
+Vehicle "*" --> "1" User : approved by
+
+Auction "1" --> "*" Bid : receives
+Auction "1" --> "*" Deposit : requires
+Auction "1" --> "1" Transaction : generates
+Auction "*" --> "1" Vehicle : for
+
+Bid "*" --> "1" Deposit : uses
+
+Transaction "*" --> "1" User : buyer
+Transaction "*" --> "1" User : seller
+
+UserSubscription "*" --> "1" SubscriptionPlan : subscribes
+
+@enduml

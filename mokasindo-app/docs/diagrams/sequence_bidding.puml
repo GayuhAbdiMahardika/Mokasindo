@@ -1,0 +1,76 @@
+@startuml Sequence_Bidding
+
+title Sequence Diagram - Proses Bidding
+
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowThickness 2
+skinparam participantBackgroundColor #E3F2FD
+skinparam participantBorderColor #1976D2
+
+actor User
+participant "AuctionController" as AC
+participant "Auction" as A
+participant "Bid" as B
+participant "Deposit" as D
+database "Database" as DB
+participant "TelegramService" as TS
+participant "Telegram API" as TG
+
+User -> AC: placeBid(auction_id, amount)
+activate AC
+
+AC -> D: checkDeposit(user_id, auction_id)
+activate D
+D -> DB: query deposit status
+DB --> D: deposit record
+D --> AC: hasValidDeposit = true/false
+deactivate D
+
+alt No Valid Deposit
+    AC --> User: Error: Deposit Required
+else Has Valid Deposit
+    AC -> A: getCurrentPrice()
+    activate A
+    A -> DB: get current_price
+    DB --> A: current_price
+    A --> AC: current_price
+    deactivate A
+    
+    AC -> AC: validateBid(amount, current_price + min_increment)
+    
+    alt Bid Too Low
+        AC --> User: Error: Bid must be >= min_bid
+    else Bid Valid
+        AC -> B: create(user_id, auction_id, amount)
+        activate B
+        B -> DB: INSERT bid
+        DB --> B: bid_id
+        B --> AC: bid created
+        deactivate B
+        
+        AC -> A: updateCurrentPrice(amount)
+        activate A
+        A -> DB: UPDATE auctions SET current_price
+        A -> DB: INCREMENT total_bids
+        DB --> A: updated
+        A --> AC: success
+        deactivate A
+        
+        AC -> TS: notifyBidders(auction_id, new_bid)
+        activate TS
+        TS -> DB: get all participants with telegram_chat_id
+        DB --> TS: participant list
+        loop for each participant
+            TS -> TG: sendMessage(chat_id, message)
+            TG --> TS: sent
+        end
+        TS --> AC: notifications sent
+        deactivate TS
+        
+        AC --> User: Bid Successful
+    end
+end
+
+deactivate AC
+
+@enduml

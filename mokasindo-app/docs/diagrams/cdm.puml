@@ -1,0 +1,144 @@
+@startuml CDM_Mokasindo
+
+title Conceptual Data Model (CDM) - Mokasindo
+
+skinparam backgroundColor #FEFEFE
+skinparam linetype ortho
+skinparam EntityBackgroundColor #E8F5E9
+skinparam EntityBorderColor #388E3C
+
+entity "USER" as user {
+    * user_id : identifier
+    --
+    name
+    email
+    role
+    phone
+    address
+    telegram_info
+}
+
+entity "VEHICLE" as vehicle {
+    * vehicle_id : identifier
+    --
+    category
+    brand
+    model
+    year
+    specifications
+    location
+    status
+    price
+}
+
+entity "VEHICLE_IMAGE" as vimage {
+    * image_id : identifier
+    --
+    image_path
+    is_primary
+    order
+}
+
+entity "AUCTION" as auction {
+    * auction_id : identifier
+    --
+    starting_price
+    current_price
+    deposit_amount
+    duration
+    time_range
+    status
+}
+
+entity "BID" as bid {
+    * bid_id : identifier
+    --
+    bid_amount
+    bid_time
+    is_winning
+}
+
+entity "DEPOSIT" as deposit {
+    * deposit_id : identifier
+    --
+    amount
+    type
+    status
+    payment_info
+}
+
+entity "TRANSACTION" as transaction {
+    * transaction_id : identifier
+    --
+    final_price
+    fees
+    status
+}
+
+entity "PAYMENT" as payment {
+    * payment_id : identifier
+    --
+    amount
+    method
+    status
+    gateway_response
+}
+
+entity "NOTIFICATION" as notification {
+    * notification_id : identifier
+    --
+    type
+    title
+    message
+    read_status
+}
+
+entity "SUBSCRIPTION_PLAN" as subplan {
+    * plan_id : identifier
+    --
+    name
+    price
+    duration
+    features
+}
+
+entity "USER_SUBSCRIPTION" as usersub {
+    * subscription_id : identifier
+    --
+    period
+    status
+}
+
+entity "SETTING" as setting {
+    * setting_id : identifier
+    --
+    key
+    value
+    group
+}
+
+' Relationships
+user ||--o{ vehicle : "owns"
+user ||--o{ bid : "places"
+user ||--o{ deposit : "makes"
+user ||--o{ notification : "receives"
+user ||--o{ usersub : "subscribes"
+user ||--o| auction : "wins"
+
+vehicle ||--o{ vimage : "has"
+vehicle ||--o{ auction : "listed in"
+
+auction ||--o{ bid : "receives"
+auction ||--o{ deposit : "requires"
+auction ||--|| transaction : "generates"
+
+bid }o--|| deposit : "uses"
+
+transaction }o--|| user : "buyer"
+transaction }o--|| user : "seller"
+
+usersub }o--|| subplan : "follows"
+
+payment }o--|| user : "paid by"
+
+@enduml

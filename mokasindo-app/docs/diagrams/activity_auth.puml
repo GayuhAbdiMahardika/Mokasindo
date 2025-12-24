@@ -1,0 +1,43 @@
+@startuml Activity_Auth
+
+title Activity Diagram - Registrasi & Login
+
+skinparam backgroundColor #FEFEFE
+skinparam ActivityBackgroundColor #E8F5E9
+skinparam ActivityBorderColor #388E3C
+
+start
+:Buka Aplikasi;
+
+if (Sudah Punya Akun?) then (Ya)
+    :Masukkan Email & Password;
+    if (Kredensial Valid?) then (Ya)
+        :Login Berhasil;
+        :Redirect ke Dashboard;
+    else (Tidak)
+        :Tampilkan Error;
+        :Ulangi Login;
+    endif
+else (Tidak)
+    :Isi Form Registrasi;
+    note right
+        - Nama
+        - Email
+        - Password
+        - No. Telepon
+        - Alamat
+    end note
+    :Submit Registrasi;
+    if (Data Valid?) then (Ya)
+        :Buat Akun Baru;
+        :Kirim Email Verifikasi;
+        :Login Otomatis;
+    else (Tidak)
+        :Tampilkan Error Validasi;
+    endif
+endif
+
+:Akses Fitur User;
+stop
+
+@enduml

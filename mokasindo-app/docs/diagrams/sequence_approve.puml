@@ -1,0 +1,78 @@
+@startuml Sequence_ApproveVehicle
+
+title Sequence Diagram - Approve Kendaraan & Auto Create Auction
+
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowThickness 2
+skinparam participantBackgroundColor #E8F5E9
+skinparam participantBorderColor #388E3C
+
+actor Admin
+participant "VehiclesController" as VC
+participant "Vehicle" as V
+participant "Auction" as A
+participant "Setting" as S
+database "Database" as DB
+participant "NotificationService" as NS
+
+Admin -> VC: approve(vehicle_id, duration_hours)
+activate VC
+
+VC -> V: find(vehicle_id)
+activate V
+V -> DB: SELECT * FROM vehicles WHERE id = ?
+DB --> V: vehicle record
+V --> VC: vehicle
+deactivate V
+
+VC -> V: update(status='approved', approved_at, approved_by)
+activate V
+V -> DB: UPDATE vehicles
+DB --> V: updated
+V --> VC: success
+deactivate V
+
+VC -> S: get('deposit_percentage', 5)
+activate S
+S -> DB: SELECT value FROM settings
+DB --> S: 5
+S --> VC: 5%
+deactivate S
+
+VC -> S: get('default_auction_duration_hours', 48)
+S --> VC: duration_hours (from request or default)
+
+VC -> A: checkExisting(vehicle_id)
+activate A
+A -> DB: SELECT FROM auctions WHERE vehicle_id AND status IN ('scheduled','active')
+DB --> A: null (no existing)
+A --> VC: false
+deactivate A
+
+VC -> A: create(auction_data)
+activate A
+note right of A
+    - vehicle_id
+    - starting_price (from vehicle)
+    - deposit_amount (5%)
+    - duration_hours
+    - start_time = now()
+    - end_time = now() + duration
+    - status = 'active'
+end note
+A -> DB: INSERT INTO auctions
+DB --> A: auction_id
+A --> VC: auction created
+deactivate A
+
+VC -> NS: notifyOwner(vehicle.user_id, 'approved')
+activate NS
+NS -> DB: get user telegram_chat_id
+NS --> VC: notification sent
+deactivate NS
+
+VC --> Admin: Success: Vehicle approved & auction started
+
+deactivate VC
+
+@enduml

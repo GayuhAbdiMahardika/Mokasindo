@@ -1,0 +1,111 @@
+@startuml UseCase_Mokasindo
+
+title Use Case Diagram - Sistem Lelang Mokasindo
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam backgroundColor #FEFEFE
+
+' Actors
+actor "Guest" as Guest #LightBlue
+actor "User" as User #LightGreen
+actor "Admin" as Admin #Orange
+actor "Midtrans" as Midtrans <<system>> #LightGray
+actor "Telegram" as Telegram <<system>> #LightGray
+
+User -|> Guest
+
+rectangle "Sistem Lelang Mokasindo" {
+    ' Guest Use Cases
+    usecase "Lihat Daftar Lelang" as UC1
+    usecase "Lihat Detail Lelang" as UC2
+    usecase "Cari Kendaraan" as UC3
+    usecase "Registrasi Akun" as UC4
+    usecase "Login" as UC5
+    usecase "Lihat FAQ" as UC6
+    usecase "Kirim Inquiry" as UC7
+    
+    ' User Use Cases
+    usecase "Kelola Profil" as UC10
+    usecase "Tambah Kendaraan" as UC11
+    usecase "Upload Foto Kendaraan" as UC12
+    usecase "Bayar Deposit" as UC13
+    usecase "Ikut Lelang (Bid)" as UC14
+    usecase "Lihat Riwayat Bid" as UC15
+    usecase "Lihat Wishlist" as UC16
+    usecase "Tambah ke Wishlist" as UC17
+    usecase "Bayar Kemenangan" as UC18
+    usecase "Lihat Notifikasi" as UC19
+    usecase "Hubungkan Telegram" as UC20
+    usecase "Lihat Kendaraan Saya" as UC21
+    usecase "Berlangganan Premium" as UC22
+    
+    ' Admin Use Cases
+    usecase "Kelola Users" as UC30
+    usecase "Approve/Reject Kendaraan" as UC31
+    usecase "Kelola Lelang" as UC32
+    usecase "Sync Status Lelang" as UC33
+    usecase "Force End Lelang" as UC34
+    usecase "Lihat Laporan" as UC35
+    usecase "Kelola Settings" as UC36
+    usecase "Kelola FAQ" as UC37
+    usecase "Kelola Halaman" as UC38
+    usecase "Kelola Tim" as UC39
+    usecase "Kelola Lowongan" as UC40
+    usecase "Kelola Subscription Plans" as UC41
+    usecase "Verifikasi Pembayaran" as UC42
+    
+    ' Relationships - Guest
+    Guest --> UC1
+    Guest --> UC2
+    Guest --> UC3
+    Guest --> UC4
+    Guest --> UC5
+    Guest --> UC6
+    Guest --> UC7
+    
+    ' Relationships - User
+    User --> UC10
+    User --> UC11
+    User --> UC12
+    User --> UC13
+    User --> UC14
+    User --> UC15
+    User --> UC16
+    User --> UC17
+    User --> UC18
+    User --> UC19
+    User --> UC20
+    User --> UC21
+    User --> UC22
+    
+    ' Relationships - Admin
+    Admin --> UC30
+    Admin --> UC31
+    Admin --> UC32
+    Admin --> UC33
+    Admin --> UC34
+    Admin --> UC35
+    Admin --> UC36
+    Admin --> UC37
+    Admin --> UC38
+    Admin --> UC39
+    Admin --> UC40
+    Admin --> UC41
+    Admin --> UC42
+    
+    ' Include/Extend
+    UC11 ..> UC12 : <<include>>
+    UC14 ..> UC13 : <<include>>
+    UC18 ..> UC13 : <<extend>>
+    UC31 ..> UC32 : <<include>>
+    
+    ' System Integration
+    UC13 --> Midtrans
+    UC18 --> Midtrans
+    UC19 --> Telegram
+    Midtrans --> UC42
+}
+
+@enduml

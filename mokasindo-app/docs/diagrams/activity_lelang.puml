@@ -1,0 +1,82 @@
+@startuml Activity_Lelang
+
+title Activity Diagram - Proses Lelang Lengkap
+
+skinparam backgroundColor #FEFEFE
+skinparam ActivityBackgroundColor #E3F2FD
+skinparam ActivityBorderColor #1976D2
+
+|User|
+start
+:Registrasi/Login;
+:Tambah Kendaraan;
+:Upload Foto;
+:Submit untuk Review;
+
+|Admin|
+:Review Kendaraan;
+if (Disetujui?) then (Ya)
+    :Approve Kendaraan;
+    :Set Durasi Lelang;
+    :Auto Create Auction (Active);
+else (Tidak)
+    :Reject dengan Alasan;
+    |User|
+    :Terima Notifikasi Reject;
+    stop
+endif
+
+|User|
+fork
+    :Lihat Lelang Aktif;
+    :Bayar Deposit (5%);
+    
+    |Midtrans|
+    :Proses Pembayaran;
+    if (Pembayaran Sukses?) then (Ya)
+        |User|
+        :Deposit Tercatat;
+    else (Tidak)
+        :Pembayaran Gagal;
+        stop
+    endif
+fork again
+    |System|
+    :Cron Job / Sync Status;
+    :Check Waktu Lelang;
+end fork
+
+|User|
+repeat
+    :Submit Bid;
+    if (Bid Valid?) then (Ya)
+        :Bid Tercatat;
+        :Update Current Price;
+        |Telegram|
+        :Kirim Notifikasi ke Peserta;
+    else (Tidak)
+        :Bid Ditolak;
+    endif
+repeat while (Lelang Masih Aktif?) is (Ya)
+
+|System|
+:Lelang Berakhir;
+:Tentukan Pemenang;
+:Set Payment Deadline (24 jam);
+
+|User|
+:Terima Notifikasi Menang;
+:Bayar Harga Final;
+
+|Midtrans|
+:Proses Pembayaran;
+
+|Admin|
+:Verifikasi Pembayaran;
+:Update Status = Sold;
+
+|User|
+:Proses Pengiriman;
+stop
+
+@enduml
