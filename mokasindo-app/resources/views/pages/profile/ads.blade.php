@@ -51,7 +51,7 @@
                                     <a href="{{ route('vehicles.edit', $vehicle->id) }}" class="flex-1 sm:flex-none text-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:border-indigo-300 hover:text-indigo-600 transition">
                                         Edit
                                     </a>
-                                    <a href="{{ url('/etalase/vehicles/' . $vehicle->id) }}" class="flex-1 sm:flex-none text-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition">
+                                    <a href="{{ route('etalase.show', $vehicle->id) }}" class="flex-1 sm:flex-none text-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition">
                                         Lihat Detail
                                     </a>
                                     <form action="{{ route('vehicles.destroy', $vehicle->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kendaraan ini?')" class="flex-1 sm:flex-none">
