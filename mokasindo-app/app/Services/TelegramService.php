@@ -20,12 +20,13 @@ class TelegramService
     {
         // Validasi Token
         if (!$this->token) {
+            Log::warning('Telegram: Token kosong di .env');
             return ['success' => false, 'error' => 'Token kosong di .env'];
         }
 
         try {
-            // Kirim request ke API Telegram
-            $response = Http::post($this->baseUrl . 'sendMessage', [
+            // Kirim request ke API Telegram dengan timeout 10 detik
+            $response = Http::timeout(10)->post($this->baseUrl . 'sendMessage', [
                 'chat_id' => $chatId,
                 'text'    => $message,
                 'parse_mode' => 'HTML'
@@ -35,10 +36,12 @@ class TelegramService
             if ($response->successful()) {
                 return ['success' => true];
             } else {
+                Log::warning('Telegram Error: ' . $response->body());
                 return ['success' => false, 'error' => 'Telegram Error: ' . $response->body()];
             }
 
         } catch (\Exception $e) {
+            Log::warning('Telegram Koneksi Error: ' . $e->getMessage());
             return ['success' => false, 'error' => 'Koneksi Error: ' . $e->getMessage()];
         }
     }

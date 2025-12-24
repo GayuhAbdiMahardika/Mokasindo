@@ -24,10 +24,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Sync auction status without relying on cron. Throttled to once per minute.
-        Cache::remember('auction_status_last_sync', 60, function () {
-            App::make(AuctionStatusService::class)->sync();
-            return now();
-        });
+        try {
+            Cache::remember('auction_status_last_sync', 60, function () {
+                App::make(AuctionStatusService::class)->sync();
+                return now();
+            });
+        } catch (\Exception $e) {
+            // Log error but don't crash the app
+            \Illuminate\Support\Facades\Log::warning('Auction sync failed: ' . $e->getMessage());
+        }
 
         View::share('availableLocales', ['id' => 'ID', 'en' => 'EN']);
         View::share('currentLocale', App::getLocale());

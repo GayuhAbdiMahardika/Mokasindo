@@ -45,7 +45,7 @@ class CompanyRegistrationController extends Controller
             'email' => $data['email'],
             'phone' => $data['phone'],
             'password' => Hash::make($data['password']),
-            'role' => $isMember ? 'member' : 'user',
+            'role' => $isMember ? 'member' : 'anggota',
             'province' => $data['province'],
             'city' => $data['city'],
             'district' => $data['district'],

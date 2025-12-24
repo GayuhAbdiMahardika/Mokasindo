@@ -81,7 +81,10 @@ Route::middleware('auth')->group(function () {
     // 5. Hasil Bid / Lelang
     Route::get('/my-bids', [MyBidController::class, 'index'])->name('my.bids');
 
-    // 6. Vehicle Management (CRUD Kendaraan)
+    // 6. Lelang Dimenangkan
+    Route::get('/my-wins', [MyBidController::class, 'wins'])->name('my.wins');
+
+    // 7. Vehicle Management (CRUD Kendaraan)
     Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
     Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
     Route::get('/vehicles/{id}/edit', [VehicleController::class, 'edit'])->name('vehicles.edit');

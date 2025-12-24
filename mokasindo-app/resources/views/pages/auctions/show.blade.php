@@ -101,18 +101,76 @@
         <div class="lg:col-span-1">
             <!-- Auction Status -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6 sticky top-4">
-                <!-- Timer -->
-                <div class="text-center mb-6">
-                    <span class="text-sm text-gray-600">Waktu Tersisa</span>
-                    <div id="countdown" class="text-4xl font-bold text-red-600 my-2" data-end="{{ $auction->end_time->toIso8601String() }}">
-                        Loading...
+                
+                @if($auction->status === 'ended')
+                    {{-- Auction telah berakhir --}}
+                    @if($auction->winner_id === Auth::id())
+                        {{-- User adalah pemenang --}}
+                        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white text-center mb-6">
+                            <i class="fas fa-trophy text-5xl mb-3 text-yellow-300"></i>
+                            <h2 class="text-2xl font-bold mb-2">🎉 Selamat!</h2>
+                            <p class="mb-1">Anda Memenangkan Lelang Ini</p>
+                            <p class="text-green-100 text-sm">Harga Final: Rp {{ number_format($auction->final_price, 0, ',', '.') }}</p>
+                        </div>
+                        
+                        @if(!$auction->payment_completed)
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                                <p class="text-orange-800 font-semibold flex items-center mb-2">
+                                    <i class="fas fa-clock mr-2"></i> Batas Waktu Pembayaran
+                                </p>
+                                <p class="text-orange-700 text-sm mb-3">
+                                    {{ $auction->payment_deadline ? $auction->payment_deadline->format('d M Y, H:i') : 'Segera lakukan pembayaran' }}
+                                </p>
+                                <a href="{{ route('payments.show', $auction->id) }}" 
+                                   class="block w-full bg-green-600 hover:bg-green-700 text-white text-center font-bold py-3 px-4 rounded-md transition">
+                                    <i class="fas fa-credit-card mr-2"></i> Lakukan Pembayaran
+                                </a>
+                            </div>
+                        @else
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                                <p class="text-green-800 font-semibold flex items-center">
+                                    <i class="fas fa-check-circle mr-2"></i> Pembayaran Selesai
+                                </p>
+                                <p class="text-green-700 text-sm mt-1">Terima kasih! Transaksi Anda telah berhasil.</p>
+                            </div>
+                        @endif
+                    @elseif($auction->winner_id)
+                        {{-- Ada pemenang tapi bukan user ini --}}
+                        <div class="bg-gray-100 rounded-lg p-6 text-center mb-6">
+                            <i class="fas fa-flag-checkered text-4xl mb-3 text-gray-500"></i>
+                            <h2 class="text-xl font-bold text-gray-800 mb-2">Lelang Telah Berakhir</h2>
+                            <p class="text-gray-600 text-sm">Harga Final: Rp {{ number_format($auction->final_price, 0, ',', '.') }}</p>
+                        </div>
+                        @if(Auth::check() && $userHighestBid)
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                <p class="text-yellow-800 text-sm">
+                                    <i class="fas fa-info-circle mr-1"></i> 
+                                    Sayangnya Anda tidak memenangkan lelang ini. Deposit Anda akan dikembalikan.
+                                </p>
+                            </div>
+                        @endif
+                    @else
+                        {{-- Lelang berakhir tanpa pemenang --}}
+                        <div class="bg-gray-100 rounded-lg p-6 text-center mb-6">
+                            <i class="fas fa-times-circle text-4xl mb-3 text-gray-500"></i>
+                            <h2 class="text-xl font-bold text-gray-800 mb-2">Lelang Berakhir</h2>
+                            <p class="text-gray-600 text-sm">Tidak ada pemenang untuk lelang ini.</p>
+                        </div>
+                    @endif
+                @else
+                    {{-- Lelang aktif --}}
+                    <div class="text-center mb-6">
+                        <span class="text-sm text-gray-600">Waktu Tersisa</span>
+                        <div id="countdown" class="text-4xl font-bold text-red-600 my-2" data-end="{{ $auction->end_time->toIso8601String() }}">
+                            Loading...
+                        </div>
+                        <span class="text-xs text-gray-500">Berakhir: {{ $auction->end_time->format('d M Y, H:i') }}</span>
                     </div>
-                    <span class="text-xs text-gray-500">Berakhir: {{ $auction->end_time->format('d M Y, H:i') }}</span>
-                </div>
+                @endif
 
                 <!-- Current Price -->
                 <div class="bg-blue-50 rounded-lg p-4 mb-6">
-                    <span class="text-sm text-gray-600">Harga Saat Ini</span>
+                    <span class="text-sm text-gray-600">{{ $auction->status === 'ended' ? 'Harga Final' : 'Harga Saat Ini' }}</span>
                     <p id="currentPrice" class="text-3xl font-bold text-blue-600 my-1">
                         Rp {{ number_format($auction->current_price, 0, ',', '.') }}
                     </p>
@@ -122,7 +180,8 @@
                     </div>
                 </div>
 
-                <!-- User Status -->
+                <!-- User Status & Bid Form - Only show if auction is active -->
+                @if($auction->status !== 'ended')
                 @auth
                     @if($isWinning)
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
@@ -196,6 +255,7 @@
                         </a>
                     </div>
                 @endauth
+                @endif
 
                 <!-- Bid History -->
                 <div class="mt-6 pt-6 border-t">
@@ -238,6 +298,8 @@ function parseNumber(str) {
 // Countdown timer
 function updateCountdown() {
     const element = document.getElementById('countdown');
+    if (!element) return; // Element tidak ada (auction ended)
+    
     const endTime = new Date(element.dataset.end);
     const now = new Date();
     const diff = endTime - now;
@@ -246,9 +308,11 @@ function updateCountdown() {
         element.textContent = 'Lelang Berakhir';
         element.classList.remove('text-red-600');
         element.classList.add('text-gray-600');
+        document.getElementById('bidButton')?.setAttribute('disabled', 'true');
         clearInterval(countdownInterval);
         clearInterval(updateInterval);
-        document.getElementById('bidButton')?.setAttribute('disabled', 'true');
+        // Reload setelah 2 detik untuk update tampilan
+        setTimeout(() => location.reload(), 2000);
         return;
     }
 
@@ -258,11 +322,11 @@ function updateCountdown() {
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
     if (days > 0) {
-        element.textContent = `${days}d ${hours}h ${minutes}m`;
+        element.textContent = `${days}h ${hours}j ${minutes}m`;
     } else if (hours > 0) {
-        element.textContent = `${hours}h ${minutes}m ${seconds}s`;
+        element.textContent = `${hours}j ${minutes}m ${seconds}d`;
     } else {
-        element.textContent = `${minutes}m ${seconds}s`;
+        element.textContent = `${minutes}m ${seconds}d`;
         element.classList.add('animate-pulse');
     }
 }

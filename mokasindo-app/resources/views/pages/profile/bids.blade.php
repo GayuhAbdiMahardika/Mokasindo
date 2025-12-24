@@ -16,6 +16,13 @@
 
                 <div class="divide-y divide-gray-100">
                     @forelse($bids as $bid)
+                        @php
+                            // Hitung status real-time: apakah bid ini adalah bid tertinggi di lelang?
+                            $isWinning = $bid->auction && $bid->bid_amount >= ($bid->auction->current_price ?? 0);
+                            // Atau cek apakah bid ini sama dengan bid tertinggi di auction
+                            $highestBid = $bid->auction ? $bid->auction->bids()->max('bid_amount') : 0;
+                            $isWinning = $bid->bid_amount >= $highestBid && $highestBid > 0;
+                        @endphp
                         <div class="p-6 flex flex-col sm:flex-row gap-5 hover:bg-gray-50 transition">
                             <div class="w-full sm:w-32 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                 @if($bid->auction && $bid->auction->vehicle && $bid->auction->vehicle->primaryImage)
@@ -29,8 +36,8 @@
                                     <h3 class="font-bold text-gray-900">
                                         {{ $bid->auction->vehicle->brand ?? 'Unknown' }} {{ $bid->auction->vehicle->model ?? '' }}
                                     </h3>
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full {{ $bid->status == 'winning' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }}">
-                                        {{ $bid->status == 'winning' ? 'Memimpin' : 'Tertinggal' }}
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full {{ $isWinning ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600' }}">
+                                        {{ $isWinning ? 'Memimpin' : 'Tertinggal' }}
                                     </span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4 mt-3">

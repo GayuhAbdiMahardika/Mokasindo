@@ -151,33 +151,37 @@
                     <!-- Province -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Provinsi *</label>
-                        <input type="text" name="province" value="{{ old('province', $vehicle->province) }}" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: Jawa Barat">
+                        <select id="province" name="province" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Pilih Provinsi</option>
+                        </select>
                     </div>
 
                     <!-- City -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kota/Kabupaten *</label>
-                        <input type="text" name="city" value="{{ old('city', $vehicle->city) }}" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: Bandung">
+                        <select id="city" name="city" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Pilih Kota/Kabupaten</option>
+                        </select>
                     </div>
 
                     <!-- District -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kecamatan</label>
-                        <input type="text" name="district" value="{{ old('district', $vehicle->district) }}"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: Coblong">
+                        <select id="district" name="district"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Pilih Kecamatan</option>
+                        </select>
                     </div>
 
                     <!-- Sub District -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kelurahan/Desa</label>
-                        <input type="text" name="sub_district" value="{{ old('sub_district', $vehicle->sub_district) }}"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Contoh: Dago">
+                        <select id="sub_district" name="sub_district"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Pilih Kelurahan</option>
+                        </select>
                     </div>
 
                     <!-- Address -->
@@ -239,6 +243,249 @@
 </div>
 
 <script>
-// Lokasi sekarang diisi bebas atau bisa diisi via fetch API eksternal di frontend jika diperlukan.
+document.addEventListener('DOMContentLoaded', function () {
+    const texts = {
+        loadingProvince: "Memuat provinsi...",
+        loadingCity: "Memuat kota...",
+        loadingDistrict: "Memuat kecamatan...",
+        loadingSubDistrict: "Memuat kelurahan...",
+        chooseProvince: "Pilih Provinsi",
+        chooseCity: "Pilih Kota/Kabupaten",
+        chooseDistrict: "Pilih Kecamatan",
+        chooseSubDistrict: "Pilih Kelurahan",
+        errorProvince: "Gagal memuat provinsi",
+        errorCity: "Gagal memuat kota",
+        errorDistrict: "Gagal memuat kecamatan",
+        errorSubDistrict: "Gagal memuat kelurahan"
+    };
+
+    const provinceSelect = document.getElementById('province');
+    const citySelect = document.getElementById('city');
+    const districtSelect = document.getElementById('district');
+    const subDistrictSelect = document.getElementById('sub_district');
+
+    // Existing data from vehicle
+    const oldProvince = @json(old('province', $vehicle->province));
+    const oldCity = @json(old('city', $vehicle->city));
+    const oldDistrict = @json(old('district', $vehicle->district));
+    const oldSubDistrict = @json(old('sub_district', $vehicle->sub_district));
+
+    function getId(p){ return p.id ?? p.code ?? p.kode ?? p.province_id ?? p.kd ?? p.name ?? ''; }
+    function getName(p){ return p.name ?? p.province ?? p.nama ?? String(p); }
+
+    function setLoading(select, text){
+        if(!select) return;
+        select.innerHTML = `<option value="" disabled selected>${text}</option>`;
+    }
+
+    function clearSelect(select, placeholder){
+        if(!select) return;
+        select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+    }
+
+    // load provinces
+    if(provinceSelect){
+        setLoading(provinceSelect, texts.loadingProvince);
+        
+        const apis = [
+            'https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json',
+            'https://kanglerian.my.id/api-wilayah-indonesia/api/provinces.json',
+            'https://ibnux.github.io/data-indonesia/provinsi.json'
+        ];
+        
+        async function loadProvincesWithFallback() {
+            for (const apiUrl of apis) {
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) continue;
+                    
+                    const provinces = await response.json();
+                    if(!Array.isArray(provinces) || provinces.length === 0) continue;
+                    
+                    provinces.sort((a,b) => getName(a).localeCompare(getName(b), 'id'));
+                    provinceSelect.innerHTML = `<option value="" disabled selected>${texts.chooseProvince}</option>`;
+                    provinces.forEach(p => {
+                        const id = getId(p);
+                        const name = getName(p);
+                        const opt = document.createElement('option');
+                        opt.value = name;
+                        opt.textContent = name;
+                        opt.dataset.id = id;
+                        if(oldProvince && String(oldProvince) === String(name)) opt.selected = true;
+                        provinceSelect.appendChild(opt);
+                    });
+
+                    if(oldProvince && citySelect){
+                        const selectedOption = provinceSelect.querySelector(`option[value="${oldProvince}"]`);
+                        if(selectedOption && selectedOption.dataset.id){
+                            loadRegencies(selectedOption.dataset.id);
+                        }
+                    }
+                    return;
+                } catch (err) {
+                    console.warn('Failed to load from', apiUrl, err);
+                }
+            }
+            setLoading(provinceSelect, texts.errorProvince);
+        }
+        
+        loadProvincesWithFallback();
+    }
+
+    // load regencies when province changes
+    async function loadRegencies(provinceId){
+        if(!citySelect) return;
+        clearSelect(citySelect, texts.loadingCity);
+        clearSelect(districtSelect, texts.chooseDistrict);
+        clearSelect(subDistrictSelect, texts.chooseSubDistrict);
+
+        const apis = [
+            `https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinceId}.json`,
+            `https://kanglerian.my.id/api-wilayah-indonesia/api/regencies/${provinceId}.json`,
+            `https://ibnux.github.io/data-indonesia/kabupaten/${provinceId}.json`
+        ];
+        
+        for (const apiUrl of apis) {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) continue;
+                
+                const regencies = await response.json();
+                if(!Array.isArray(regencies) || regencies.length === 0) continue;
+                
+                regencies.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
+                citySelect.innerHTML = `<option value="" disabled selected>${texts.chooseCity}</option>`;
+                regencies.forEach(r => {
+                    const opt = document.createElement('option');
+                    const cityName = r.name ?? r.title ?? String(r);
+                    opt.value = cityName;
+                    opt.textContent = cityName;
+                    opt.dataset.id = r.id ?? r.kabupaten_id ?? r.code;
+                    if(oldCity && String(oldCity) === String(cityName)) opt.selected = true;
+                    citySelect.appendChild(opt);
+                });
+
+                if(oldCity){
+                    const selectedOption = citySelect.querySelector(`option[value="${oldCity}"]`);
+                    if(selectedOption && selectedOption.dataset.id){
+                        loadDistricts(selectedOption.dataset.id);
+                    }
+                }
+                return;
+            } catch (err) {
+                console.warn('Failed to load regencies from', apiUrl);
+            }
+        }
+        clearSelect(citySelect, texts.errorCity);
+    }
+
+    // load districts (kecamatan)
+    async function loadDistricts(cityId){
+        if(!districtSelect) return;
+        clearSelect(districtSelect, texts.loadingDistrict);
+        clearSelect(subDistrictSelect, texts.chooseSubDistrict);
+
+        const apis = [
+            `https://www.emsifa.com/api-wilayah-indonesia/api/districts/${cityId}.json`,
+            `https://kanglerian.my.id/api-wilayah-indonesia/api/districts/${cityId}.json`,
+            `https://ibnux.github.io/data-indonesia/kecamatan/${cityId}.json`
+        ];
+        
+        for (const apiUrl of apis) {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) continue;
+                
+                const districts = await response.json();
+                if(!Array.isArray(districts) || districts.length === 0) continue;
+                
+                districts.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
+                districtSelect.innerHTML = `<option value="" disabled selected>${texts.chooseDistrict}</option>`;
+                districts.forEach(d => {
+                    const opt = document.createElement('option');
+                    const districtName = d.name ?? d.title ?? String(d);
+                    opt.value = districtName;
+                    opt.textContent = districtName;
+                    opt.dataset.id = d.id ?? d.district_id ?? d.code;
+                    if(oldDistrict && String(oldDistrict) === String(districtName)) opt.selected = true;
+                    districtSelect.appendChild(opt);
+                });
+
+                if(oldDistrict){
+                    const selectedOption = districtSelect.querySelector(`option[value="${oldDistrict}"]`);
+                    if(selectedOption && selectedOption.dataset.id){
+                        loadVillages(selectedOption.dataset.id);
+                    }
+                }
+                return;
+            } catch (err) {
+                console.warn('Failed to load districts from', apiUrl);
+            }
+        }
+        clearSelect(districtSelect, texts.errorDistrict);
+    }
+
+    // load villages (kelurahan)
+    async function loadVillages(districtId){
+        if(!subDistrictSelect) return;
+        clearSelect(subDistrictSelect, texts.loadingSubDistrict);
+
+        const apis = [
+            `https://www.emsifa.com/api-wilayah-indonesia/api/villages/${districtId}.json`,
+            `https://kanglerian.my.id/api-wilayah-indonesia/api/villages/${districtId}.json`,
+            `https://ibnux.github.io/data-indonesia/kelurahan/${districtId}.json`
+        ];
+        
+        for (const apiUrl of apis) {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) continue;
+                
+                const villages = await response.json();
+                if(!Array.isArray(villages) || villages.length === 0) continue;
+                
+                villages.sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
+                subDistrictSelect.innerHTML = `<option value="" disabled selected>${texts.chooseSubDistrict}</option>`;
+                villages.forEach(v => {
+                    const opt = document.createElement('option');
+                    const villageName = v.name ?? v.title ?? String(v);
+                    opt.value = villageName;
+                    opt.textContent = villageName;
+                    if(oldSubDistrict && String(oldSubDistrict) === String(villageName)) opt.selected = true;
+                    subDistrictSelect.appendChild(opt);
+                });
+                return;
+            } catch (err) {
+                console.warn('Failed to load villages from', apiUrl);
+            }
+        }
+        clearSelect(subDistrictSelect, texts.errorSubDistrict);
+    }
+
+    // Event listeners
+    if(provinceSelect){
+        provinceSelect.addEventListener('change', function(){
+            const selectedOption = this.options[this.selectedIndex];
+            const provinceId = selectedOption.dataset.id || this.value;
+            if(provinceId) loadRegencies(provinceId);
+        });
+    }
+
+    if(citySelect){
+        citySelect.addEventListener('change', function(){
+            const selectedOption = this.options[this.selectedIndex];
+            const cityId = selectedOption.dataset.id || this.value;
+            if(cityId) loadDistricts(cityId);
+        });
+    }
+
+    if(districtSelect){
+        districtSelect.addEventListener('change', function(){
+            const selectedOption = this.options[this.selectedIndex];
+            const districtId = selectedOption.dataset.id || this.value;
+            if(districtId) loadVillages(districtId);
+        });
+    }
+});
 </script>
 @endsection

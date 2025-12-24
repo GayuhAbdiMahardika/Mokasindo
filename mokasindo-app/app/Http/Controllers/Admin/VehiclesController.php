@@ -71,9 +71,9 @@ class VehiclesController extends Controller
 
         $message = 'Vehicle approved';
 
-        // Get duration from request or use default from settings
-        $durationHours = $request->input('duration_hours', Setting::get('default_auction_duration_hours', 48));
-        $depositPercentage = Setting::get('deposit_percentage', 5);
+        // Get duration from request or use default from settings (cast to int)
+        $durationHours = (int) $request->input('duration_hours', Setting::get('default_auction_duration_hours', 48));
+        $depositPercentage = (float) Setting::get('deposit_percentage', 5);
 
         // Check if already has active/scheduled auction
         $exists = Auction::where('vehicle_id', $vehicle->id)
@@ -85,7 +85,7 @@ class VehiclesController extends Controller
             Auction::create([
                 'vehicle_id' => $vehicle->id,
                 'starting_price' => $vehicle->starting_price,
-                'current_price' => 0,
+                'current_price' => $vehicle->starting_price, // Harga awal = starting_price
                 'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
                 'deposit_percentage' => $depositPercentage,
                 'duration_hours' => $durationHours,
@@ -167,7 +167,7 @@ class VehiclesController extends Controller
                     Auction::create([
                         'vehicle_id' => $vehicle->id,
                         'starting_price' => $vehicle->starting_price,
-                        'current_price' => 0,
+                        'current_price' => $vehicle->starting_price, // Harga awal = starting_price
                         'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
                         'deposit_percentage' => $depositPercentage,
                         'duration_hours' => $durationHours,
