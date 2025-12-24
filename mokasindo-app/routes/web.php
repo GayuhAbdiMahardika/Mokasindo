@@ -38,7 +38,7 @@ Route::get('/', function () {
         'members' => \App\Models\User::where('role', 'user')->count(),
         'auctions' => \App\Models\Auction::count(),
     ];
-    
+
     return view('landing', compact('stats'));
 });
 
@@ -61,7 +61,7 @@ Route::prefix('etalase')->name('etalase.')->group(function () {
 Route::middleware('auth')->group(function () {
     // Dashboard User
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     // 1. Wishlists
     Route::get('/wishlists', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlists', [WishlistController::class, 'store'])->name('wishlist.store');
@@ -95,7 +95,7 @@ Route::prefix('auctions')->name('auctions.')->group(function () {
     Route::get('/', [AuctionController::class, 'index'])->name('index');
     Route::get('/{id}', [AuctionController::class, 'show'])->name('show');
     Route::get('/{id}/data', [AuctionController::class, 'getData'])->name('data');
-    
+
     // Authenticated routes
     Route::middleware('auth')->group(function () {
         Route::get('/create/{vehicleId}', [AuctionController::class, 'create'])->name('create');
@@ -103,7 +103,7 @@ Route::prefix('auctions')->name('auctions.')->group(function () {
         Route::post('/{id}/bid', [AuctionController::class, 'placeBid'])->name('bid');
         Route::post('/{id}/cancel', [AuctionController::class, 'cancel'])->name('cancel');
         Route::post('/{id}/end', [AuctionController::class, 'end'])->name('end');
-        
+
         // API endpoints for real-time updates
         Route::get('/{id}/bids-data', [AuctionController::class, 'getBidsData'])->name('bids-data');
         Route::get('/{id}/status-data', [AuctionController::class, 'getStatusData'])->name('status-data');
@@ -144,7 +144,7 @@ Route::prefix('payments')->name('payments.')->middleware('auth')->group(function
     Route::get('/invoice/{paymentId}', [PaymentController::class, 'invoice'])->name('invoice');
     Route::post('/confirm/{paymentId}', [PaymentController::class, 'confirm'])->name('confirm');
     Route::post('/webhook', [PaymentController::class, 'webhook'])->name('webhook')->withoutMiddleware('auth');
-    
+
     // Admin only
     Route::post('/verify/{paymentId}', [PaymentController::class, 'verify'])->name('verify');
     Route::post('/reject/{paymentId}', [PaymentController::class, 'reject'])->name('reject');
@@ -187,7 +187,7 @@ Route::controller(CompanyController::class)->group(function () {
 Route::get('/tes-register', function () {
     // Kita pakai WAKTU (time) biar emailnya unik terus setiap detik
     $unik = time();
-    
+
     // Membuat User Baru Pura-pura
     $userBaru = User::create([
         'name' => "Member $unik",
@@ -202,8 +202,8 @@ Route::get('/tes-register', function () {
     event(new Registered($userBaru));
 
     return "✅ User <b>{$userBaru->name}</b> berhasil didaftarkan! <br><br>" .
-           "1. Cek HP Admin (Laporan Pendaftaran Masuk).<br>" .
-           "2. Cek HP User (Ucapan Selamat Datang Masuk).";
+        "1. Cek HP Admin (Laporan Pendaftaran Masuk).<br>" .
+        "2. Cek HP User (Ucapan Selamat Datang Masuk).";
 });
 
 // Instagram feed (example)
@@ -227,7 +227,7 @@ Route::get('/page/{slug}', function ($slug) {
 // Jalankan URL ini sekali di browser agar kamu login otomatis sebagai ID 1 (http://mokasindo.test/force-login)
 Route::get('/force-login', function () {
     $user = User::find(1);
-    
+
     if (!$user) {
         // Buat user dummy jika belum ada
         $user = User::create([
@@ -239,7 +239,7 @@ Route::get('/force-login', function () {
     }
 
     Auth::login($user);
-    
+
     return "<h1>Berhasil Login!</h1> 
             <p>Login sebagai: <b>" . $user->name . "</b></p>
             <p>Menu Cepat: 
@@ -273,13 +273,13 @@ Route::post('/login', function (Request $request) {
 
     if (Auth::attempt($credentials, $remember)) {
         $request->session()->regenerate();
-        
+
         // Redirect based on role
         $user = Auth::user();
         if ($user->role === 'admin') {
             return redirect()->intended('/admin');
         }
-        
+
         return redirect()->intended('/dashboard');
     }
 
@@ -298,13 +298,13 @@ Route::post('/logout', function (Request $request) {
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     // Dashboard
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-    
+
     // Team Management
     Route::resource('teams', App\Http\Controllers\Admin\TeamController::class);
-    
+
     // Users Management (Admin)
     Route::resource('users', App\Http\Controllers\Admin\UsersController::class);
-    
+
     // Vacancy Management
     Route::resource('vacancies', App\Http\Controllers\Admin\VacancyController::class);
     Route::get('vacancies/{vacancy}/applications', [App\Http\Controllers\Admin\VacancyController::class, 'applications'])
@@ -313,17 +313,17 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('applications.download-cv');
     Route::patch('applications/{application}/status', [App\Http\Controllers\Admin\VacancyController::class, 'updateApplicationStatus'])
         ->name('applications.update-status');
-    
+
     // FAQ Management
     Route::resource('faqs', App\Http\Controllers\Admin\FaqController::class);
-    
+
     // Inquiry/Contact Management
     Route::get('inquiries', [App\Http\Controllers\Admin\InquiryController::class, 'index'])->name('inquiries.index');
     Route::get('inquiries/{inquiry}', [App\Http\Controllers\Admin\InquiryController::class, 'show'])->name('inquiries.show');
     Route::post('inquiries/{inquiry}/reply', [App\Http\Controllers\Admin\InquiryController::class, 'reply'])->name('inquiries.reply');
     Route::post('inquiries/{inquiry}/spam', [App\Http\Controllers\Admin\InquiryController::class, 'markAsSpam'])->name('inquiries.spam');
     Route::delete('inquiries/{inquiry}', [App\Http\Controllers\Admin\InquiryController::class, 'destroy'])->name('inquiries.destroy');
-    
+
     // Page Management (CMS)
     Route::resource('pages', App\Http\Controllers\Admin\PageController::class);
     Route::post('pages/{page}/toggle-publish', [App\Http\Controllers\Admin\PageController::class, 'togglePublish'])->name('pages.toggle-publish');
@@ -333,7 +333,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Vehicle / Listings Management (Admin)
     Route::resource('vehicles', App\Http\Controllers\Admin\VehiclesController::class);
     Route::post('vehicles/bulk-action', [App\Http\Controllers\Admin\VehiclesController::class, 'bulkAction'])->name('vehicles.bulk');
-    Route::post('vehicles/assign-schedule', [App\Http\Controllers\Admin\VehiclesController::class, 'assignSchedule'])->name('vehicles.assign-schedule');
     Route::post('vehicles/{vehicle}/approve', [App\Http\Controllers\Admin\VehiclesController::class, 'approve'])->name('vehicles.approve');
     Route::post('vehicles/{vehicle}/reject', [App\Http\Controllers\Admin\VehiclesController::class, 'reject'])->name('vehicles.reject');
     Route::post('vehicles/{vehicle}/toggle-feature', [App\Http\Controllers\Admin\VehiclesController::class, 'toggleFeature'])->name('vehicles.toggle-feature');
@@ -348,8 +347,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('auctions/{auction}/adjust-timer', [App\Http\Controllers\Admin\AuctionsController::class, 'adjustTimer'])->name('auctions.adjust-timer');
     Route::get('auctions/{auction}/bids', [App\Http\Controllers\Admin\AuctionsController::class, 'bids'])->name('auctions.bids');
 
-    // Auction schedules (jadwal lelang)
-    Route::resource('auction-schedules', App\Http\Controllers\Admin\AuctionSchedulesController::class);
 
 
     // Payments & Transactions Management

@@ -12,7 +12,6 @@ class Auction extends Model
 
     protected $fillable = [
         'vehicle_id',
-        'auction_schedule_id',
         'starting_price',
         'current_price',
         'reserve_price',
@@ -75,11 +74,6 @@ class Auction extends Model
     public function transaction()
     {
         return $this->hasOne(Transaction::class);
-    }
-
-    public function schedule()
-    {
-        return $this->belongsTo(AuctionSchedule::class, 'auction_schedule_id');
     }
 
     // Scopes

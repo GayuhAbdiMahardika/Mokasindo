@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
+
 <body class="bg-gray-100">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
@@ -28,7 +30,8 @@
                     </h1>
                     <div class="flex space-x-1">
                         @foreach($availableLocales ?? [] as $localeKey => $label)
-                            <a href="{{ route('locale.switch', $localeKey) }}" class="px-2 py-1 text-xs rounded {{ app()->getLocale() === $localeKey ? 'bg-indigo-500 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }}">
+                            <a href="{{ route('locale.switch', $localeKey) }}"
+                                class="px-2 py-1 text-xs rounded {{ app()->getLocale() === $localeKey ? 'bg-indigo-500 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }}">
                                 {{ $label }}
                             </a>
                         @endforeach
@@ -37,26 +40,32 @@
             </div>
             <nav class="p-4 space-y-2 flex-1 overflow-y-auto">
                 <!-- Dashboard -->
-                <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.dashboard') ? 'bg-gray-800' : '' }}">
+                <a href="{{ route('admin.dashboard') }}"
+                    class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.dashboard') ? 'bg-gray-800' : '' }}">
                     <i class="fas fa-tachometer-alt mr-2"></i> {{ __('admin.dashboard') }}
                 </a>
 
                 <!-- CMS Section -->
                 <div class="mt-4">
                     <p class="text-xs text-gray-400 uppercase px-4 mb-2">{{ __('admin.content') }}</p>
-                    <a href="{{ route('admin.pages.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.pages.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.pages.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.pages.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-file-alt mr-2"></i> {{ __('admin.pages') }}
                     </a>
-                    <a href="{{ route('admin.vehicles.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.vehicles.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.vehicles.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.vehicles.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-car mr-2"></i> {{ __('admin.vehicles') }}
                     </a>
-                    <a href="{{ route('admin.teams.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.teams.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.teams.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.teams.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-users mr-2"></i> {{ __('admin.team') }}
                     </a>
-                    <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.users.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.users.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.users.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-user-cog mr-2"></i> {{ __('admin.users') }}
                     </a>
-                    <a href="{{ route('admin.faqs.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.faqs.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.faqs.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.faqs.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-question-circle mr-2"></i> {{ __('admin.faqs') }}
                     </a>
                 </div>
@@ -64,30 +73,33 @@
                 <!-- Marketplace / Auctions -->
                 <div class="mt-4">
                     <p class="text-xs text-gray-400 uppercase px-4 mb-2">{{ __('admin.marketplace') }}</p>
-                    <a href="{{ route('admin.auctions.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.auctions.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.auctions.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.auctions.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-gavel mr-2"></i> {{ __('admin.auctions') }}
-                    </a>
-                    <a href="{{ route('admin.auction-schedules.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.auction-schedules.*') ? 'bg-gray-800' : '' }}">
-                        <i class="fas fa-calendar-alt mr-2"></i> {{ __('admin.schedules') }}
                     </a>
                 </div>
 
                 <!-- Financial -->
                 <div class="mt-4">
                     <p class="text-xs text-gray-400 uppercase px-4 mb-2">{{ __('admin.financial') }}</p>
-                    <a href="{{ route('admin.payments.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.payments.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.payments.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.payments.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-money-bill-wave mr-2"></i> {{ __('admin.payments') }}
                     </a>
-                    <a href="{{ route('admin.deposits.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.deposits.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.deposits.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.deposits.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-wallet mr-2"></i> {{ __('admin.deposits') }}
                     </a>
-                    <a href="{{ route('admin.user-subscriptions.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.user-subscriptions.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.user-subscriptions.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.user-subscriptions.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-users-cog mr-2"></i> {{ __('admin.subscriptions') }}
                     </a>
-                    <a href="{{ route('admin.reports.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.reports.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.reports.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.reports.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-chart-bar mr-2"></i> {{ __('admin.reports') }}
                     </a>
-                    <a href="{{ route('admin.settings.edit') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.settings.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.settings.edit') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.settings.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-sliders-h mr-2"></i> {{ __('admin.settings') }}
                     </a>
                 </div>
@@ -95,7 +107,8 @@
                 <!-- Career Section -->
                 <div class="mt-4">
                     <p class="text-xs text-gray-400 uppercase px-4 mb-2">{{ __('admin.career_portal') }}</p>
-                    <a href="{{ route('admin.vacancies.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.vacancies.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.vacancies.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.vacancies.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-briefcase mr-2"></i> {{ __('admin.vacancies') }}
                     </a>
                 </div>
@@ -103,7 +116,8 @@
                 <!-- Support Section -->
                 <div class="mt-4">
                     <p class="text-xs text-gray-400 uppercase px-4 mb-2">{{ __('admin.support') }}</p>
-                    <a href="{{ route('admin.inquiries.index') }}" class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.inquiries.*') ? 'bg-gray-800' : '' }}">
+                    <a href="{{ route('admin.inquiries.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-800 transition {{ request()->routeIs('admin.inquiries.*') ? 'bg-gray-800' : '' }}">
                         <i class="fas fa-envelope mr-2"></i> {{ __('admin.inquiries') }}
                     </a>
                 </div>
@@ -177,4 +191,5 @@
 
     @stack('scripts')
 </body>
+
 </html>

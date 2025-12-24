@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Vehicle;
 use App\Models\Auction;
-use App\Models\AuctionSchedule;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,8 +19,8 @@ class VehiclesController extends Controller
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('brand', 'like', "%{$s}%")
-                  ->orWhere('model', 'like', "%{$s}%")
-                  ->orWhere('license_plate', 'like', "%{$s}%");
+                    ->orWhere('model', 'like', "%{$s}%")
+                    ->orWhere('license_plate', 'like', "%{$s}%");
             });
         }
 
@@ -30,14 +29,11 @@ class VehiclesController extends Controller
         }
 
         $vehicles = $query->paginate(15)->appends($request->query());
-        
-        // Get all active schedules for assignment dropdown
-        $schedules = AuctionSchedule::where('is_active', true)
-            ->where('end_date', '>', now()) // Only show schedules that haven't ended
-            ->orderBy('start_date')
-            ->get();
 
-        return view('admin.vehicles.index', compact('vehicles', 'schedules'));
+        // Default auction duration from settings for approve modal
+        $defaultDuration = Setting::get('default_auction_duration_hours', 48);
+
+        return view('admin.vehicles.index', compact('vehicles', 'defaultDuration'));
     }
 
     public function edit(Vehicle $vehicle)
@@ -63,6 +59,10 @@ class VehiclesController extends Controller
 
     public function approve(Request $request, Vehicle $vehicle)
     {
+        $request->validate([
+            'duration_hours' => 'nullable|integer|min:1|max:720', // max 30 hari
+        ]);
+
         $vehicle->status = 'approved';
         $vehicle->approved_at = now();
         $vehicle->approved_by = Auth::id();
@@ -71,36 +71,32 @@ class VehiclesController extends Controller
 
         $message = 'Vehicle approved';
 
-        // If schedule_id provided, also create auction entry
-        if ($request->filled('schedule_id')) {
-            $schedule = AuctionSchedule::find($request->schedule_id);
-            
-            if ($schedule) {
-                // Check if already has active/scheduled auction
-                $exists = Auction::where('vehicle_id', $vehicle->id)
-                    ->whereIn('status', ['scheduled', 'active'])
-                    ->exists();
+        // Get duration from request or use default from settings
+        $durationHours = $request->input('duration_hours', Setting::get('default_auction_duration_hours', 48));
+        $depositPercentage = Setting::get('deposit_percentage', 5);
 
-                if (!$exists) {
-                    $depositPercentage = Setting::get('deposit_percentage', 5);
-                    
-                    Auction::create([
-                        'vehicle_id' => $vehicle->id,
-                        'auction_schedule_id' => $schedule->id,
-                        'starting_price' => $vehicle->starting_price,
-                        'current_price' => 0,
-                        'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
-                        'deposit_percentage' => $depositPercentage,
-                        'start_time' => $schedule->start_date,
-                        'end_time' => $schedule->end_date,
-                        'status' => 'scheduled',
-                    ]);
+        // Check if already has active/scheduled auction
+        $exists = Auction::where('vehicle_id', $vehicle->id)
+            ->whereIn('status', ['scheduled', 'active'])
+            ->exists();
 
-                    $message = "Vehicle approved & added to schedule: {$schedule->title}";
-                } else {
-                    $message = 'Vehicle approved (already in active auction)';
-                }
-            }
+        if (!$exists) {
+            // Langsung buat auction dengan status active
+            Auction::create([
+                'vehicle_id' => $vehicle->id,
+                'starting_price' => $vehicle->starting_price,
+                'current_price' => 0,
+                'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
+                'deposit_percentage' => $depositPercentage,
+                'duration_hours' => $durationHours,
+                'start_time' => now(),
+                'end_time' => now()->addHours($durationHours),
+                'status' => 'active', // Langsung aktif
+            ]);
+
+            $message = "Vehicle approved & auction started ({$durationHours} hours duration)";
+        } else {
+            $message = 'Vehicle approved (already in active auction)';
         }
 
         return back()->with('status', $message);
@@ -142,17 +138,48 @@ class VehiclesController extends Controller
         $request->validate([
             'action' => 'required|string',
             'ids' => 'required|array',
-            'schedule_id' => 'nullable|exists:auction_schedules,id'
+            'duration_hours' => 'nullable|integer|min:1|max:720'
         ]);
 
         $ids = $request->ids;
 
         if ($request->action === 'approve') {
+            // Update status kendaraan
             Vehicle::whereIn('id', $ids)->update([
                 'status' => 'approved',
                 'approved_at' => now(),
                 'approved_by' => Auth::id()
             ]);
+
+            // Buat auction untuk setiap kendaraan yang di-approve
+            $durationHours = $request->input('duration_hours', Setting::get('default_auction_duration_hours', 48));
+            $depositPercentage = Setting::get('deposit_percentage', 5);
+            $created = 0;
+
+            $vehicles = Vehicle::whereIn('id', $ids)->get();
+            foreach ($vehicles as $vehicle) {
+                // Skip jika sudah ada lelang aktif
+                $exists = Auction::where('vehicle_id', $vehicle->id)
+                    ->whereIn('status', ['scheduled', 'active'])
+                    ->exists();
+
+                if (!$exists) {
+                    Auction::create([
+                        'vehicle_id' => $vehicle->id,
+                        'starting_price' => $vehicle->starting_price,
+                        'current_price' => 0,
+                        'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
+                        'deposit_percentage' => $depositPercentage,
+                        'duration_hours' => $durationHours,
+                        'start_time' => now(),
+                        'end_time' => now()->addHours($durationHours),
+                        'status' => 'active',
+                    ]);
+                    $created++;
+                }
+            }
+
+            return back()->with('status', "Berhasil menyetujui " . count($ids) . " kendaraan. {$created} lelang aktif dibuat.");
         } elseif ($request->action === 'set_featured') {
             Vehicle::whereIn('id', $ids)->update(['is_featured' => true]);
         } elseif ($request->action === 'unset_featured') {
@@ -160,63 +187,5 @@ class VehiclesController extends Controller
         }
 
         return back()->with('status', 'Bulk action applied');
-    }
-
-    /**
-     * Assign selected vehicles to an auction schedule by creating scheduled auctions.
-     */
-    public function assignSchedule(Request $request)
-    {
-        $request->validate([
-            'schedule_id' => 'required|exists:auction_schedules,id',
-            'ids' => 'required|array'
-        ]);
-
-        $schedule = AuctionSchedule::find($request->schedule_id);
-        $created = 0;
-        $skipped = 0;
-
-        // Only get approved vehicles
-        $vehicles = Vehicle::whereIn('id', $request->ids)
-            ->where('status', 'approved')
-            ->get();
-
-        $depositPercentage = Setting::get('deposit_percentage', 5);
-
-        foreach ($vehicles as $vehicle) {
-            // skip if there's already a scheduled/active auction for this vehicle
-            $exists = Auction::where('vehicle_id', $vehicle->id)
-                ->whereIn('status', ['scheduled', 'active'])->exists();
-            if ($exists) {
-                $skipped++;
-                continue;
-            }
-
-            Auction::create([
-                'vehicle_id' => $vehicle->id,
-                'auction_schedule_id' => $schedule->id,
-                'starting_price' => $vehicle->starting_price,
-                'current_price' => 0,
-                'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
-                'deposit_percentage' => $depositPercentage,
-                'start_time' => $schedule->start_date,
-                'end_time' => $schedule->end_date,
-                'status' => 'scheduled',
-            ]);
-
-            $created++;
-        }
-
-        $message = "Berhasil memasukkan {$created} kendaraan ke jadwal lelang.";
-        if ($skipped > 0) {
-            $message .= " ({$skipped} dilewati karena sudah ada di lelang aktif)";
-        }
-
-        $notApproved = count($request->ids) - $vehicles->count();
-        if ($notApproved > 0) {
-            $message .= " ({$notApproved} dilewati karena belum approved)";
-        }
-
-        return back()->with('status', $message);
     }
 }
