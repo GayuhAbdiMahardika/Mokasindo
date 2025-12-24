@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Auction;
-use App\Models\AuctionSchedule;
 use App\Models\Bid;
 use App\Models\Setting;
 use App\Models\Vehicle;
@@ -14,16 +13,11 @@ class AuctionsController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Auction::with(['vehicle.user', 'vehicle.images', 'schedule'])->latest();
+        $query = Auction::with(['vehicle.user', 'vehicle.images'])->latest();
 
         // Status filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
-        }
-
-        // Schedule filter
-        if ($request->filled('schedule_id')) {
-            $query->where('auction_schedule_id', $request->schedule_id);
         }
 
         // Search by vehicle brand/model/year/plate or owner name
@@ -44,9 +38,6 @@ class AuctionsController extends Controller
 
         $auctions = $query->paginate(20)->appends($request->query());
 
-        // Get schedules for filter dropdown
-        $schedules = AuctionSchedule::orderBy('start_date', 'desc')->get();
-
         // Get approved vehicles not in active auction for adding
         $availableVehicles = Vehicle::with('user', 'images')
             ->where('status', 'approved')
@@ -56,11 +47,8 @@ class AuctionsController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get active schedules for adding vehicles
-        $activeSchedules = AuctionSchedule::where('is_active', true)
-            ->where('end_date', '>', now())
-            ->orderBy('start_date')
-            ->get();
+        // Default duration from settings
+        $defaultDuration = Setting::get('default_auction_duration_hours', 48);
 
         // Calculate stats
         $stats = [
@@ -70,29 +58,29 @@ class AuctionsController extends Controller
             'ended' => Auction::whereIn('status', ['ended', 'sold', 'cancelled'])->count(),
         ];
 
-        return view('admin.auctions.index', compact('auctions', 'schedules', 'availableVehicles', 'activeSchedules', 'stats'));
+        return view('admin.auctions.index', compact('auctions', 'availableVehicles', 'defaultDuration', 'stats'));
     }
 
     /**
-     * Add vehicle(s) to an auction schedule.
+     * Add vehicle(s) directly to active auction with custom duration.
      */
     public function addVehicles(Request $request)
     {
         $request->validate([
-            'schedule_id' => 'required|exists:auction_schedules,id',
+            'duration_hours' => 'required|integer|min:1|max:720',
             'vehicle_ids' => 'required|array|min:1',
             'vehicle_ids.*' => 'exists:vehicles,id',
         ]);
 
-        $schedule = AuctionSchedule::findOrFail($request->schedule_id);
+        $durationHours = $request->duration_hours;
         $depositPercentage = Setting::get('deposit_percentage', 5);
-        
+
         $created = 0;
         $skipped = 0;
 
         foreach ($request->vehicle_ids as $vehicleId) {
             $vehicle = Vehicle::find($vehicleId);
-            
+
             if (!$vehicle || $vehicle->status !== 'approved') {
                 $skipped++;
                 continue;
@@ -110,20 +98,20 @@ class AuctionsController extends Controller
 
             Auction::create([
                 'vehicle_id' => $vehicle->id,
-                'auction_schedule_id' => $schedule->id,
                 'starting_price' => $vehicle->starting_price,
                 'current_price' => 0,
                 'deposit_amount' => $vehicle->starting_price * ($depositPercentage / 100),
                 'deposit_percentage' => $depositPercentage,
-                'start_time' => $schedule->start_date,
-                'end_time' => $schedule->end_date,
-                'status' => 'scheduled',
+                'duration_hours' => $durationHours,
+                'start_time' => now(),
+                'end_time' => now()->addHours($durationHours),
+                'status' => 'active', // Langsung aktif
             ]);
 
             $created++;
         }
 
-        $message = "Berhasil menambahkan {$created} kendaraan ke lelang \"{$schedule->title}\".";
+        $message = "Berhasil menambahkan {$created} kendaraan ke lelang ({$durationHours} jam).";
         if ($skipped > 0) {
             $message .= " ({$skipped} dilewati)";
         }
